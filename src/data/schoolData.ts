@@ -795,7 +795,7 @@ export interface GlobalSettings {
   // Annual fees charged to all students
   schoolAnnualFee: number;
   hostelAnnualFee: number;
-  // DCP (Development Charges) charged to all students
+  // DCP (Digital Companion Pack) charged to all students
   schoolDCP: number;
   hostelDCP: number;
   // Admission fee for new students (one-time charge)
