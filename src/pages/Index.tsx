@@ -5,6 +5,10 @@ import { HeaderMetrics } from '@/components/MetricCard';
 import { CampusCard } from '@/components/CampusCard';
 import { HostelCard } from '@/components/HostelCard';
 import { RevenuePieChart, TopCampusesChart, RevenueComparison } from '@/components/Charts';
+import { CampusOverviewTable } from '@/components/CampusOverviewTable';
+import { FeeExplainer } from '@/components/FeeExplainer';
+import { SettingsModal } from '@/components/SettingsModal';
+import { ThemeToggle } from '@/components/ThemeToggle';
 import { generateCSVExport, formatCurrency } from '@/lib/calculations';
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
@@ -19,10 +23,14 @@ const Index = () => {
     campusCalculations,
     topCampuses,
     updateCampus,
+    updateCampusClass,
     updateHostel,
     updateGlobalSettings,
+    applyGlobalDiscount,
     resetToDefaults,
   } = useSimulationState();
+
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
   const handleExport = () => {
     const csv = generateCSVExport(campuses, hostels, globalSettings);
@@ -46,6 +54,11 @@ const Index = () => {
               <p className="text-xs text-muted-foreground">Real-time What-If Simulation Dashboard</p>
             </div>
             <div className="flex items-center gap-2">
+              <ThemeToggle />
+              <Button variant="ghost" size="sm" onClick={() => setIsSettingsOpen(true)}>
+                <Settings className="w-4 h-4 mr-2" />
+                Settings
+              </Button>
               <Button variant="ghost" size="sm" onClick={resetToDefaults}>
                 <RotateCcw className="w-4 h-4 mr-2" />
                 Reset
@@ -87,11 +100,11 @@ const Index = () => {
           </TabsList>
 
           {/* Dashboard Tab */}
-          <TabsContent value="dashboard" className="animate-fade-in">
+          <TabsContent value="dashboard" className="animate-fade-in space-y-6">
             {/* Global Controls */}
-            <div className="campus-card p-5 mb-6">
+            <div className="campus-card p-5">
               <h2 className="text-sm font-medium text-foreground mb-4">Master Control Panel</h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div>
                   <div className="flex justify-between mb-2">
                     <label className="text-xs text-muted-foreground uppercase tracking-wide">Global Fee Hike</label>
@@ -118,10 +131,23 @@ const Index = () => {
                     step={1}
                   />
                 </div>
+                <div>
+                  <div className="flex justify-between mb-2">
+                    <label className="text-xs text-muted-foreground uppercase tracking-wide">Global Discount (All Campuses)</label>
+                    <span className="font-mono text-sm text-warning">{globalSettings.globalDiscount}%</span>
+                  </div>
+                  <Slider
+                    value={[globalSettings.globalDiscount]}
+                    onValueChange={([value]) => applyGlobalDiscount(value)}
+                    min={0}
+                    max={40}
+                    step={1}
+                  />
+                </div>
               </div>
             </div>
 
-            {/* Charts */}
+            {/* Charts Row */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div className="campus-card p-5">
                 <h3 className="text-sm font-medium text-foreground mb-4">Revenue Mix</h3>
@@ -136,6 +162,19 @@ const Index = () => {
                 <RevenueComparison currentRevenue={totals.currentTotalRevenue} projectedRevenue={totals.totalRevenue} />
               </div>
             </div>
+
+            {/* Campus Overview Table */}
+            <div className="campus-card p-5">
+              <h3 className="text-sm font-medium text-foreground mb-4">Campus Overview - Current vs Projected</h3>
+              <CampusOverviewTable calculations={campusCalculations} />
+            </div>
+
+            {/* Fee Calculation Explainer */}
+            <FeeExplainer 
+              globalFeeHike={globalSettings.globalFeeHike}
+              globalStudentGrowth={globalSettings.globalStudentGrowth}
+              globalDiscount={globalSettings.globalDiscount}
+            />
           </TabsContent>
 
           {/* Campuses Tab */}
@@ -167,6 +206,15 @@ const Index = () => {
           </TabsContent>
         </Tabs>
       </main>
+
+      {/* Settings Modal */}
+      <SettingsModal
+        isOpen={isSettingsOpen}
+        onClose={() => setIsSettingsOpen(false)}
+        campuses={campuses}
+        onUpdateCampus={updateCampus}
+        onUpdateCampusClass={updateCampusClass}
+      />
     </div>
   );
 };

@@ -3,6 +3,7 @@ import {
   CampusData, 
   HostelData, 
   GlobalSettings,
+  ClassData,
   initialCampusData, 
   initialHostelData,
   initialGlobalSettings 
@@ -26,6 +27,16 @@ export function useSimulationState() {
     ));
   }, []);
 
+  // Update a single class within a campus
+  const updateCampusClass = useCallback((campusId: string, classIndex: number, updates: Partial<ClassData>) => {
+    setCampuses(prev => prev.map(campus => {
+      if (campus.id !== campusId) return campus;
+      const newClasses = [...campus.classes];
+      newClasses[classIndex] = { ...newClasses[classIndex], ...updates };
+      return { ...campus, classes: newClasses };
+    }));
+  }, []);
+
   // Update a single hostel
   const updateHostel = useCallback((hostelId: string, updates: Partial<HostelData>) => {
     setHostels(prev => prev.map(hostel => 
@@ -36,6 +47,12 @@ export function useSimulationState() {
   // Update global settings
   const updateGlobalSettings = useCallback((updates: Partial<GlobalSettings>) => {
     setGlobalSettings(prev => ({ ...prev, ...updates }));
+  }, []);
+
+  // Apply global discount to all campuses
+  const applyGlobalDiscount = useCallback((discount: number) => {
+    setCampuses(prev => prev.map(campus => ({ ...campus, discountRate: discount })));
+    setGlobalSettings(prev => ({ ...prev, globalDiscount: discount }));
   }, []);
 
   // Calculate totals
@@ -70,8 +87,10 @@ export function useSimulationState() {
     campusCalculations,
     topCampuses,
     updateCampus,
+    updateCampusClass,
     updateHostel,
     updateGlobalSettings,
+    applyGlobalDiscount,
     resetToDefaults,
     setCampuses,
     setHostels,
