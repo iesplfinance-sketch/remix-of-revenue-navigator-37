@@ -94,5 +94,6 @@ export function useSimulationState() {
     resetToDefaults,
     setCampuses,
     setHostels,
+    setGlobalSettings,
   };
 }
