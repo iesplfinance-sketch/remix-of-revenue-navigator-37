@@ -2,19 +2,24 @@ import { HelpCircle, Calculator, TrendingUp, Percent, Users } from 'lucide-react
 import { formatCurrency, formatPercent } from '@/lib/calculations';
 
 interface FeeExplainerProps {
-  globalFeeHike: number;
+  globalNewAdmissionFeeHike: number;
+  globalRenewalFeeHike: number;
   globalStudentGrowth: number;
   globalDiscount: number;
 }
 
-export function FeeExplainer({ globalFeeHike, globalStudentGrowth, globalDiscount }: FeeExplainerProps) {
-  // Example calculation
-  const exampleBaseFee = 300000;
-  const exampleStudents = 100;
+export function FeeExplainer({ globalNewAdmissionFeeHike, globalRenewalFeeHike, globalStudentGrowth, globalDiscount }: FeeExplainerProps) {
+  // Example calculation for new admission
+  const exampleNewAdmFee = 350000;
+  const exampleRenewalFee = 300000;
+  const exampleNewAdmStudents = 30;
+  const exampleRenewalStudents = 70;
   
-  const feeAfterHike = exampleBaseFee * (1 + globalFeeHike / 100);
-  const studentsAfterGrowth = Math.round(exampleStudents * (1 + globalStudentGrowth / 100));
-  const grossRevenue = feeAfterHike * studentsAfterGrowth;
+  const newAdmFeeAfterHike = exampleNewAdmFee * (1 + globalNewAdmissionFeeHike / 100);
+  const renewalFeeAfterHike = exampleRenewalFee * (1 + globalRenewalFeeHike / 100);
+  const newAdmStudentsAfterGrowth = Math.round(exampleNewAdmStudents * (1 + globalStudentGrowth / 100));
+  const renewalStudentsAfterGrowth = Math.round(exampleRenewalStudents * (1 + globalStudentGrowth / 100));
+  const grossRevenue = (newAdmFeeAfterHike * newAdmStudentsAfterGrowth) + (renewalFeeAfterHike * renewalStudentsAfterGrowth);
   const netRevenue = grossRevenue * (1 - globalDiscount / 100);
 
   return (
@@ -28,7 +33,7 @@ export function FeeExplainer({ globalFeeHike, globalStudentGrowth, globalDiscoun
       <div className="bg-surface-2 rounded-lg p-4 mb-4">
         <p className="text-sm text-muted-foreground leading-relaxed">
           <strong className="text-foreground">Simple Formula:</strong><br />
-          Net Revenue = (Base Fee × Fee Hike) × (Students × Growth) × (1 - Discount)
+          Net Revenue = (New Adm Fee × Fee Hike) × New Students + (Renewal Fee × Fee Hike) × Renewal Students - Discount
         </p>
       </div>
 
@@ -39,9 +44,9 @@ export function FeeExplainer({ globalFeeHike, globalStudentGrowth, globalDiscoun
             <span className="text-xs font-bold text-primary">1</span>
           </div>
           <div>
-            <p className="text-sm font-medium text-foreground">Apply Fee Hike</p>
+            <p className="text-sm font-medium text-foreground">Apply Fee Hike (New Admission)</p>
             <p className="text-xs text-muted-foreground">
-              Base Fee ₨{exampleBaseFee.toLocaleString()} + {globalFeeHike}% = <span className="text-primary font-mono">₨{feeAfterHike.toLocaleString()}</span>
+              Base Fee ₨{exampleNewAdmFee.toLocaleString()} + {globalNewAdmissionFeeHike}% = <span className="text-primary font-mono">₨{newAdmFeeAfterHike.toLocaleString()}</span>
             </p>
           </div>
         </div>
@@ -51,9 +56,9 @@ export function FeeExplainer({ globalFeeHike, globalStudentGrowth, globalDiscoun
             <span className="text-xs font-bold text-primary">2</span>
           </div>
           <div>
-            <p className="text-sm font-medium text-foreground">Apply Student Growth</p>
+            <p className="text-sm font-medium text-foreground">Apply Fee Hike (Renewal)</p>
             <p className="text-xs text-muted-foreground">
-              {exampleStudents} students + {globalStudentGrowth}% = <span className="text-primary font-mono">{studentsAfterGrowth} students</span>
+              Base Fee ₨{exampleRenewalFee.toLocaleString()} + {globalRenewalFeeHike}% = <span className="text-primary font-mono">₨{renewalFeeAfterHike.toLocaleString()}</span>
             </p>
           </div>
         </div>
@@ -63,16 +68,29 @@ export function FeeExplainer({ globalFeeHike, globalStudentGrowth, globalDiscoun
             <span className="text-xs font-bold text-primary">3</span>
           </div>
           <div>
+            <p className="text-sm font-medium text-foreground">Apply Student Growth</p>
+            <p className="text-xs text-muted-foreground">
+              New Adm: {exampleNewAdmStudents} + {globalStudentGrowth}% = <span className="text-primary font-mono">{newAdmStudentsAfterGrowth}</span> | 
+              Renewal: {exampleRenewalStudents} + {globalStudentGrowth}% = <span className="text-primary font-mono">{renewalStudentsAfterGrowth}</span>
+            </p>
+          </div>
+        </div>
+
+        <div className="flex items-start gap-3">
+          <div className="w-6 h-6 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+            <span className="text-xs font-bold text-primary">4</span>
+          </div>
+          <div>
             <p className="text-sm font-medium text-foreground">Calculate Gross Revenue</p>
             <p className="text-xs text-muted-foreground">
-              ₨{feeAfterHike.toLocaleString()} × {studentsAfterGrowth} = <span className="text-primary font-mono">{formatCurrency(grossRevenue)}</span>
+              (₨{newAdmFeeAfterHike.toLocaleString()} × {newAdmStudentsAfterGrowth}) + (₨{renewalFeeAfterHike.toLocaleString()} × {renewalStudentsAfterGrowth}) = <span className="text-primary font-mono">{formatCurrency(grossRevenue)}</span>
             </p>
           </div>
         </div>
 
         <div className="flex items-start gap-3">
           <div className="w-6 h-6 rounded-full bg-warning/20 flex items-center justify-center flex-shrink-0 mt-0.5">
-            <span className="text-xs font-bold text-warning">4</span>
+            <span className="text-xs font-bold text-warning">5</span>
           </div>
           <div>
             <p className="text-sm font-medium text-foreground">Apply Society Discount</p>
@@ -82,7 +100,6 @@ export function FeeExplainer({ globalFeeHike, globalStudentGrowth, globalDiscoun
           </div>
         </div>
       </div>
-
       {/* Key Terms */}
       <div className="mt-5 pt-4 border-t border-border">
         <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2">Key Terms</p>
