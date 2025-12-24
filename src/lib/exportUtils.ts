@@ -40,7 +40,8 @@ export function generateExcelExport(
     ['GLOBAL SETTINGS'],
     [''],
     ['Setting', 'Value'],
-    ['Global Fee Hike', `${globalSettings.globalFeeHike}%`],
+    ['Global New Admission Fee Hike', `${globalSettings.globalNewAdmissionFeeHike}%`],
+    ['Global Renewal Fee Hike', `${globalSettings.globalRenewalFeeHike}%`],
     ['Global Student Growth', `${globalSettings.globalStudentGrowth}%`],
     ['Global Discount Rate', `${globalSettings.globalDiscount}%`],
     ['School Annual Fee', globalSettings.schoolAnnualFee],
@@ -62,13 +63,14 @@ export function generateExcelExport(
   // ========== CAMPUS BREAKDOWN SHEETS ==========
   campuses.forEach((campus, campusIndex) => {
     const calc = calculateCampusRevenue(campus, globalSettings);
-    const effectiveFeeHike = campus.feeHike + globalSettings.globalFeeHike;
+    const effectiveNewAdmissionFeeHike = campus.newAdmissionFeeHike + globalSettings.globalNewAdmissionFeeHike;
+    const effectiveRenewalFeeHike = campus.renewalFeeHike + globalSettings.globalRenewalFeeHike;
     const effectiveGrowth = campus.studentGrowth + globalSettings.globalStudentGrowth;
 
     const campusData: (string | number)[][] = [
       [BRAND_NAME],
       [`Campus: ${campus.name}`],
-      [`Fee Hike: ${effectiveFeeHike}% | Student Growth: ${effectiveGrowth}% | Discount: ${campus.discountRate}%`],
+      [`New Adm Fee Hike: ${effectiveNewAdmissionFeeHike}% | Renewal Fee Hike: ${effectiveRenewalFeeHike}% | Student Growth: ${effectiveGrowth}% | Discount: ${campus.discountRate}%`],
       [''],
       // Header rows
       [
@@ -89,7 +91,8 @@ export function generateExcelExport(
       .filter(cls => cls.renewalCount > 0 || cls.newAdmissionCount > 0)
       .forEach(cls => {
         const growthMultiplier = 1 + (effectiveGrowth / 100);
-        const feeMultiplier = 1 + (effectiveFeeHike / 100);
+        const newAdmFeeMultiplier = 1 + (effectiveNewAdmissionFeeHike / 100);
+        const renewalFeeMultiplier = 1 + (effectiveRenewalFeeHike / 100);
 
         const currentNewAdm = cls.newAdmissionCount;
         const currentNewFee = cls.newAdmissionFee;
@@ -99,10 +102,10 @@ export function generateExcelExport(
         const currentRenewalTotal = currentRenewal * currentRenewalFee;
 
         const forecastNewAdm = Math.round(currentNewAdm * growthMultiplier);
-        const forecastNewFee = Math.round(currentNewFee * feeMultiplier);
+        const forecastNewFee = Math.round(currentNewFee * newAdmFeeMultiplier);
         const forecastNewTotal = forecastNewAdm * forecastNewFee;
         const forecastRenewal = Math.round(currentRenewal * growthMultiplier);
-        const forecastRenewalFee = Math.round(currentRenewalFee * feeMultiplier);
+        const forecastRenewalFee = Math.round(currentRenewalFee * renewalFeeMultiplier);
         const forecastRenewalTotal = forecastRenewal * forecastRenewalFee;
 
         totalCurrentNewAdm += currentNewAdm;
@@ -311,7 +314,7 @@ export function generatePDFExport(
   doc.setFontSize(9);
   doc.setFont('helvetica', 'normal');
   doc.setTextColor(0, 0, 0);
-  doc.text(`Fee Hike: ${globalSettings.globalFeeHike}%  |  Student Growth: ${globalSettings.globalStudentGrowth}%  |  Discount: ${globalSettings.globalDiscount}%`, 30, 145);
+  doc.text(`New Adm Fee Hike: ${globalSettings.globalNewAdmissionFeeHike}%  |  Renewal Fee Hike: ${globalSettings.globalRenewalFeeHike}%  |  Student Growth: ${globalSettings.globalStudentGrowth}%  |  Discount: ${globalSettings.globalDiscount}%`, 30, 145);
   doc.text(`School Annual Fee: Rs. ${globalSettings.schoolAnnualFee.toLocaleString()}  |  Hostel Annual Fee: Rs. ${globalSettings.hostelAnnualFee.toLocaleString()}`, 30, 152);
   doc.text(`School DCP: Rs. ${globalSettings.schoolDCP.toLocaleString()}  |  Hostel DCP: Rs. ${globalSettings.hostelDCP.toLocaleString()}`, 30, 159);
 

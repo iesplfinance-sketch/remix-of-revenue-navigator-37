@@ -133,12 +133,25 @@ const Index = () => {
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div>
                   <div className="flex justify-between mb-2">
-                    <label className="text-xs text-muted-foreground uppercase tracking-wide">Global Fee Hike</label>
-                    <span className="font-mono text-sm text-primary">+{globalSettings.globalFeeHike}%</span>
+                    <label className="text-xs text-muted-foreground uppercase tracking-wide">New Admission Fee Hike</label>
+                    <span className="font-mono text-sm text-primary">+{globalSettings.globalNewAdmissionFeeHike}%</span>
                   </div>
                   <Slider
-                    value={[globalSettings.globalFeeHike]}
-                    onValueChange={([value]) => updateGlobalSettings({ globalFeeHike: value })}
+                    value={[globalSettings.globalNewAdmissionFeeHike]}
+                    onValueChange={([value]) => updateGlobalSettings({ globalNewAdmissionFeeHike: value })}
+                    min={0}
+                    max={50}
+                    step={1}
+                  />
+                </div>
+                <div>
+                  <div className="flex justify-between mb-2">
+                    <label className="text-xs text-muted-foreground uppercase tracking-wide">Renewal Fee Hike</label>
+                    <span className="font-mono text-sm text-primary">+{globalSettings.globalRenewalFeeHike}%</span>
+                  </div>
+                  <Slider
+                    value={[globalSettings.globalRenewalFeeHike]}
+                    onValueChange={([value]) => updateGlobalSettings({ globalRenewalFeeHike: value })}
                     min={0}
                     max={50}
                     step={1}
@@ -198,7 +211,8 @@ const Index = () => {
 
             {/* Fee Calculation Explainer */}
             <FeeExplainer 
-              globalFeeHike={globalSettings.globalFeeHike}
+              globalNewAdmissionFeeHike={globalSettings.globalNewAdmissionFeeHike}
+              globalRenewalFeeHike={globalSettings.globalRenewalFeeHike}
               globalStudentGrowth={globalSettings.globalStudentGrowth}
               globalDiscount={globalSettings.globalDiscount}
             />
