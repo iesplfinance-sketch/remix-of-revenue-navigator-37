@@ -746,10 +746,20 @@ export interface GlobalSettings {
   globalFeeHike: number;
   globalStudentGrowth: number;
   globalDiscount: number;
+  // Annual fees charged to all students
+  schoolAnnualFee: number;
+  hostelAnnualFee: number;
+  // DCP (Development Charges) charged to all students
+  schoolDCP: number;
+  hostelDCP: number;
 }
 
 export const initialGlobalSettings: GlobalSettings = {
   globalFeeHike: 0,
   globalStudentGrowth: 0,
   globalDiscount: 15,
+  schoolAnnualFee: 25000,
+  hostelAnnualFee: 15000,
+  schoolDCP: 10000,
+  hostelDCP: 5000,
 };

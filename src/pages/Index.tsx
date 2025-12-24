@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Download, Settings, RotateCcw, TrendingUp, Building, LayoutDashboard } from 'lucide-react';
+import { Download, Settings, RotateCcw, TrendingUp, Building, LayoutDashboard, DollarSign } from 'lucide-react';
 import { useSimulationState } from '@/hooks/useSimulationState';
 import { HeaderMetrics } from '@/components/MetricCard';
 import { CampusCard } from '@/components/CampusCard';
@@ -9,6 +9,8 @@ import { CampusOverviewTable } from '@/components/CampusOverviewTable';
 import { FeeExplainer } from '@/components/FeeExplainer';
 import { SettingsModal } from '@/components/SettingsModal';
 import { ThemeToggle } from '@/components/ThemeToggle';
+import { AdditionalFeesTab } from '@/components/AdditionalFeesTab';
+import { CalculationBreakdown } from '@/components/CalculationBreakdown';
 import { generateCSVExport, formatCurrency } from '@/lib/calculations';
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
@@ -77,6 +79,9 @@ const Index = () => {
             hostelStudents={totals.hostelStudents}
             totalStudents={totals.totalStudents}
             currentTotalRevenue={totals.currentTotalRevenue}
+            annualFeeRevenue={totals.annualFeeRevenue}
+            dcpRevenue={totals.dcpRevenue}
+            grandTotalRevenue={totals.grandTotalRevenue}
           />
         </div>
       </header>
@@ -84,7 +89,7 @@ const Index = () => {
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 py-6">
         <Tabs defaultValue="dashboard" className="w-full">
-          <TabsList className="bg-surface-1 border border-border mb-6">
+          <TabsList className="bg-surface-1 border border-border mb-6 flex-wrap">
             <TabsTrigger value="dashboard" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
               <LayoutDashboard className="w-4 h-4 mr-2" />
               Dashboard
@@ -96,6 +101,10 @@ const Index = () => {
             <TabsTrigger value="hostels" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
               <Building className="w-4 h-4 mr-2" />
               Hostels
+            </TabsTrigger>
+            <TabsTrigger value="fees" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+              <DollarSign className="w-4 h-4 mr-2" />
+              Annual Fee & DCP
             </TabsTrigger>
           </TabsList>
 
@@ -163,11 +172,12 @@ const Index = () => {
               </div>
             </div>
 
-            {/* Campus Overview Table */}
-            <div className="campus-card p-5">
-              <h3 className="text-sm font-medium text-foreground mb-4">Campus Overview - Current vs Projected</h3>
-              <CampusOverviewTable calculations={campusCalculations} />
-            </div>
+            {/* Calculation Breakdown Table */}
+            <CalculationBreakdown
+              campuses={campuses}
+              calculations={campusCalculations}
+              globalSettings={globalSettings}
+            />
 
             {/* Fee Calculation Explainer */}
             <FeeExplainer 
@@ -203,6 +213,16 @@ const Index = () => {
                 />
               ))}
             </div>
+          </TabsContent>
+
+          {/* Annual Fee & DCP Tab */}
+          <TabsContent value="fees">
+            <AdditionalFeesTab
+              globalSettings={globalSettings}
+              schoolStudents={totals.schoolStudents}
+              hostelStudents={totals.hostelStudents}
+              onUpdateGlobalSettings={updateGlobalSettings}
+            />
           </TabsContent>
         </Tabs>
       </main>
