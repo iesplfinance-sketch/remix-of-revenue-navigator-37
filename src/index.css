@@ -9,6 +9,72 @@
 
 @layer base {
   :root {
+    /* Light Theme */
+    --background: 0 0% 98%;
+    --foreground: 230 25% 10%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 230 25% 10%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 230 25% 10%;
+
+    --primary: 165 100% 35%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 220 14% 96%;
+    --secondary-foreground: 230 25% 15%;
+
+    --muted: 220 14% 96%;
+    --muted-foreground: 220 10% 45%;
+
+    --accent: 200 100% 45%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 220 13% 91%;
+    --input: 220 13% 91%;
+    --ring: 165 100% 35%;
+
+    --radius: 0.5rem;
+
+    /* Custom Financial Theme Colors */
+    --positive: 145 70% 35%;
+    --negative: 0 70% 50%;
+    --warning: 45 90% 45%;
+    --info: 200 90% 45%;
+    
+    /* Glows and Effects */
+    --glow-primary: 165 100% 35%;
+    --glow-positive: 145 70% 35%;
+    --glow-negative: 0 70% 50%;
+
+    /* Surface Hierarchy */
+    --surface-0: 0 0% 98%;
+    --surface-1: 0 0% 100%;
+    --surface-2: 220 14% 96%;
+    --surface-3: 220 13% 93%;
+
+    /* Chart Colors */
+    --chart-1: 165 100% 35%;
+    --chart-2: 200 100% 45%;
+    --chart-3: 280 80% 55%;
+    --chart-4: 45 90% 45%;
+    --chart-5: 0 70% 50%;
+
+    --sidebar-background: 0 0% 98%;
+    --sidebar-foreground: 230 25% 10%;
+    --sidebar-primary: 165 100% 35%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 220 14% 96%;
+    --sidebar-accent-foreground: 230 25% 10%;
+    --sidebar-border: 220 13% 91%;
+    --sidebar-ring: 165 100% 35%;
+  }
+
+  .dark {
     /* Bloomberg Terminal Dark Theme */
     --background: 230 25% 5%;
     --foreground: 210 20% 92%;
@@ -37,8 +103,6 @@
     --border: 230 15% 18%;
     --input: 230 15% 15%;
     --ring: 165 100% 42%;
-
-    --radius: 0.5rem;
 
     /* Custom Financial Theme Colors */
     --positive: 145 100% 50%;

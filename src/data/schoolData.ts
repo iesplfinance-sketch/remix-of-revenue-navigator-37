@@ -745,9 +745,11 @@ export const initialHostelData: HostelData[] = [
 export interface GlobalSettings {
   globalFeeHike: number;
   globalStudentGrowth: number;
+  globalDiscount: number;
 }
 
 export const initialGlobalSettings: GlobalSettings = {
   globalFeeHike: 0,
   globalStudentGrowth: 0,
+  globalDiscount: 15,
 };
