@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Download, Settings, RotateCcw, TrendingUp, Building, LayoutDashboard, DollarSign } from 'lucide-react';
+import { Download, Settings, RotateCcw, TrendingUp, Building, LayoutDashboard, DollarSign, FileSpreadsheet, FileText } from 'lucide-react';
 import { useSimulationState } from '@/hooks/useSimulationState';
 import { HeaderMetrics } from '@/components/MetricCard';
 import { CampusCard } from '@/components/CampusCard';
@@ -11,10 +11,11 @@ import { SettingsModal } from '@/components/SettingsModal';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { AdditionalFeesTab } from '@/components/AdditionalFeesTab';
 import { CalculationBreakdown } from '@/components/CalculationBreakdown';
-import { generateCSVExport, formatCurrency } from '@/lib/calculations';
+import { generateExcelExport, generatePDFExport } from '@/lib/exportUtils';
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 
 const Index = () => {
   const {
@@ -35,15 +36,12 @@ const Index = () => {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [expandedCampusId, setExpandedCampusId] = useState<string | null>(null);
 
-  const handleExport = () => {
-    const csv = generateCSVExport(campuses, hostels, globalSettings);
-    const blob = new Blob([csv], { type: 'text/csv' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `revenue-projection-${new Date().toISOString().split('T')[0]}.csv`;
-    a.click();
-    URL.revokeObjectURL(url);
+  const handleExportExcel = () => {
+    generateExcelExport(campuses, hostels, globalSettings);
+  };
+
+  const handleExportPDF = () => {
+    generatePDFExport(campuses, hostels, globalSettings);
   };
 
   const handleToggleCampusExpand = (campusId: string) => {
@@ -57,8 +55,8 @@ const Index = () => {
         <div className="max-w-7xl mx-auto">
           <div className="flex items-center justify-between mb-4">
             <div>
-              <h1 className="text-xl font-semibold text-foreground">Revenue Forecasting Engine</h1>
-              <p className="text-xs text-muted-foreground">Real-time What-If Simulation Dashboard</p>
+              <h1 className="text-xl font-semibold text-foreground">Pak Turk Maarif School & Colleges</h1>
+              <p className="text-xs text-muted-foreground">Revenue Forecasting Engine - Real-time What-If Simulation</p>
             </div>
             <div className="flex items-center gap-2">
               <ThemeToggle />
@@ -70,10 +68,24 @@ const Index = () => {
                 <RotateCcw className="w-4 h-4 mr-2" />
                 Reset
               </Button>
-              <Button variant="default" size="sm" onClick={handleExport}>
-                <Download className="w-4 h-4 mr-2" />
-                Export CSV
-              </Button>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="default" size="sm">
+                    <Download className="w-4 h-4 mr-2" />
+                    Export
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem onClick={handleExportExcel}>
+                    <FileSpreadsheet className="w-4 h-4 mr-2" />
+                    Export Excel (.xlsx)
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={handleExportPDF}>
+                    <FileText className="w-4 h-4 mr-2" />
+                    Export PDF
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
           </div>
           <HeaderMetrics
