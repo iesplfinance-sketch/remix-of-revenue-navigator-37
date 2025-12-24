@@ -71,6 +71,8 @@ export interface TotalCalculation {
 }
 
 // Calculate revenue for a single campus
+// IMPORTANT: Current year revenue is GROSS (no discount) to match spreadsheet
+// Projected year revenue applies discount for net calculation
 export function calculateCampusRevenue(
   campus: CampusData,
   globalSettings: GlobalSettings
@@ -93,7 +95,7 @@ export function calculateCampusRevenue(
     currentRenewalStudents += cls.renewalCount;
     currentNewStudents += cls.newAdmissionCount;
 
-    // Current revenue (before applying any changes)
+    // Current revenue = students × fee (GROSS - no discount deduction)
     currentRenewalRevenue += cls.renewalCount * cls.renewalFee;
     currentNewRevenue += cls.newAdmissionCount * cls.newAdmissionFee;
 
@@ -114,9 +116,11 @@ export function calculateCampusRevenue(
   const projectedNewStudents = Math.round(currentNewStudents * (1 + effectiveNewStudentGrowth));
   const projectedTotalStudents = projectedRenewalStudents + projectedNewStudents;
 
+  // Current year is GROSS (no discount applied) - this matches the spreadsheet formula
   const currentGrossRevenue = currentRenewalRevenue + currentNewRevenue;
-  const currentNetRevenue = currentGrossRevenue * (1 - discountRate);
+  const currentNetRevenue = currentGrossRevenue; // GROSS for current year
 
+  // Projected year applies discount for net calculation
   const projectedGrossRevenue = projectedRenewalRevenue + projectedNewRevenue;
   const projectedNetRevenue = projectedGrossRevenue * (1 - discountRate);
 
@@ -156,6 +160,7 @@ export function calculateCampusRevenue(
 }
 
 // Calculate per-class breakdown for a campus
+// Current year = GROSS (no discount), Projected year = NET (with discount)
 export function calculateClassBreakdown(
   campus: CampusData,
   globalSettings: GlobalSettings
@@ -177,10 +182,12 @@ export function calculateClassBreakdown(
       const projectedNewStudents = Math.round(currentNewStudents * (1 + effectiveNewStudentGrowth));
       const projectedTotalStudents = projectedRenewalStudents + projectedNewStudents;
 
-      const currentRevenue = (currentRenewalStudents * cls.renewalFee + currentNewStudents * cls.newAdmissionFee) * (1 - discountRate);
+      // Current year = GROSS (students × fee, no discount)
+      const currentRevenue = currentRenewalStudents * cls.renewalFee + currentNewStudents * cls.newAdmissionFee;
 
       const hikedRenewalFee = cls.renewalFee * (1 + effectiveRenewalFeeHike);
       const hikedNewFee = cls.newAdmissionFee * (1 + effectiveNewAdmissionFeeHike);
+      // Projected year = NET (with discount applied)
       const projectedRevenue = (projectedRenewalStudents * hikedRenewalFee + projectedNewStudents * hikedNewFee) * (1 - discountRate);
 
       const revenueChange = projectedRevenue - currentRevenue;
