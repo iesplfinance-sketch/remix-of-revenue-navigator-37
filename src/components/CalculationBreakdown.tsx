@@ -1,10 +1,11 @@
-import { useState } from 'react';
-import { ChevronDown, ChevronRight, Calculator, Eye, EyeOff } from 'lucide-react';
+import { useState, useMemo } from 'react';
+import { ChevronDown, ChevronRight, Calculator, Eye, Table, LayoutGrid } from 'lucide-react';
 import { CampusData, GlobalSettings } from '@/data/schoolData';
 import { CampusCalculation, formatCurrency, formatNumber } from '@/lib/calculations';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
+import { Button } from '@/components/ui/button';
 
 interface CalculationBreakdownProps {
   campuses: CampusData[];
@@ -50,6 +51,30 @@ interface ColumnVisibility {
   annualFee: boolean;
   admissionFee: boolean;
   grandTotal: boolean;
+}
+
+interface CampusSummary {
+  id: string;
+  name: string;
+  shortName: string;
+  // Current
+  currentNewAdmCount: number;
+  currentNewAdmRevenue: number;
+  currentRenewalCount: number;
+  currentRenewalRevenue: number;
+  currentDCP: number;
+  currentAnnualFee: number;
+  currentAdmissionFee: number;
+  currentTotalRevenue: number;
+  // Forecasted
+  forecastedNewAdmCount: number;
+  forecastedNewAdmRevenue: number;
+  forecastedRenewalCount: number;
+  forecastedRenewalRevenue: number;
+  forecastedDCP: number;
+  forecastedAnnualFee: number;
+  forecastedAdmissionFee: number;
+  forecastedTotalRevenue: number;
 }
 
 function useClassRows(campus: CampusData, globalSettings: GlobalSettings) {
@@ -149,6 +174,102 @@ function useClassRows(campus: CampusData, globalSettings: GlobalSettings) {
   };
 
   return { classRows, totals, effectiveNewAdmissionFeeHike, effectiveRenewalFeeHike, effectiveNewStudentGrowth, effectiveRenewalGrowth };
+}
+
+// Summary Table Component - Shows totals for each campus
+function SummaryTable({ 
+  summaries, 
+  grandTotals 
+}: { 
+  summaries: CampusSummary[];
+  grandTotals: {
+    currentNewAdmCount: number;
+    currentNewAdmRevenue: number;
+    currentRenewalCount: number;
+    currentRenewalRevenue: number;
+    currentDCP: number;
+    currentAnnualFee: number;
+    currentAdmissionFee: number;
+    currentTotalRevenue: number;
+    forecastedNewAdmCount: number;
+    forecastedNewAdmRevenue: number;
+    forecastedRenewalCount: number;
+    forecastedRenewalRevenue: number;
+    forecastedDCP: number;
+    forecastedAnnualFee: number;
+    forecastedAdmissionFee: number;
+    forecastedTotalRevenue: number;
+  };
+}) {
+  return (
+    <div className="overflow-x-auto">
+      <table className="w-full text-xs border-collapse">
+        <thead>
+          <tr className="bg-surface-1">
+            <th rowSpan={2} className="border border-border p-2 text-left font-semibold sticky left-0 bg-surface-1 z-10">Campus</th>
+            <th colSpan={7} className="border border-border p-2 text-center font-semibold bg-muted/30">Current</th>
+            <th colSpan={7} className="border border-border p-2 text-center font-semibold bg-primary/10">Forecasted</th>
+          </tr>
+          <tr className="bg-surface-2">
+            {/* Current Headers */}
+            <th className="border border-border p-2 text-right text-cyan-400">New Adm Revenue</th>
+            <th className="border border-border p-2 text-right text-green-400">Renewal Revenue</th>
+            <th className="border border-border p-2 text-right text-warning">DCP</th>
+            <th className="border border-border p-2 text-right text-positive">Annual Fee</th>
+            <th className="border border-border p-2 text-right text-blue-500">Adm Fee</th>
+            <th className="border border-border p-2 text-right text-primary font-bold">Total Revenue</th>
+            <th className="border border-border p-1 text-center bg-surface-1"></th>
+            {/* Forecasted Headers */}
+            <th className="border border-border p-2 text-right text-cyan-400">New Adm Revenue</th>
+            <th className="border border-border p-2 text-right text-green-400">Renewal Revenue</th>
+            <th className="border border-border p-2 text-right text-warning">DCP</th>
+            <th className="border border-border p-2 text-right text-positive">Annual Fee</th>
+            <th className="border border-border p-2 text-right text-blue-500">Adm Fee</th>
+            <th className="border border-border p-2 text-right text-primary font-bold">Total Revenue</th>
+          </tr>
+        </thead>
+        <tbody>
+          {summaries.map((summary, idx) => (
+            <tr key={summary.id} className={idx % 2 === 0 ? 'bg-surface-0' : 'bg-surface-1/50'}>
+              <td className="border border-border p-2 font-medium sticky left-0 bg-inherit">{summary.shortName}</td>
+              {/* Current */}
+              <td className="border border-border p-2 text-right font-mono text-cyan-400">{formatNumber(summary.currentNewAdmRevenue)}</td>
+              <td className="border border-border p-2 text-right font-mono text-green-400">{formatNumber(summary.currentRenewalRevenue)}</td>
+              <td className="border border-border p-2 text-right font-mono text-warning">{formatNumber(summary.currentDCP)}</td>
+              <td className="border border-border p-2 text-right font-mono text-positive">{formatNumber(summary.currentAnnualFee)}</td>
+              <td className="border border-border p-2 text-right font-mono text-blue-500">{formatNumber(summary.currentAdmissionFee)}</td>
+              <td className="border border-border p-2 text-right font-mono text-primary font-semibold">{formatNumber(summary.currentTotalRevenue)}</td>
+              <td className="border border-border p-1 bg-surface-1"></td>
+              {/* Forecasted */}
+              <td className="border border-border p-2 text-right font-mono text-cyan-400">{formatNumber(summary.forecastedNewAdmRevenue)}</td>
+              <td className="border border-border p-2 text-right font-mono text-green-400">{formatNumber(summary.forecastedRenewalRevenue)}</td>
+              <td className="border border-border p-2 text-right font-mono text-warning">{formatNumber(summary.forecastedDCP)}</td>
+              <td className="border border-border p-2 text-right font-mono text-positive">{formatNumber(summary.forecastedAnnualFee)}</td>
+              <td className="border border-border p-2 text-right font-mono text-blue-500">{formatNumber(summary.forecastedAdmissionFee)}</td>
+              <td className="border border-border p-2 text-right font-mono text-primary font-semibold">{formatNumber(summary.forecastedTotalRevenue)}</td>
+            </tr>
+          ))}
+          {/* Grand Total Row */}
+          <tr className="bg-primary/20 font-bold">
+            <td className="border border-border p-2 sticky left-0 bg-primary/20">TOTAL</td>
+            <td className="border border-border p-2 text-right font-mono text-cyan-400">{formatCurrency(grandTotals.currentNewAdmRevenue)}</td>
+            <td className="border border-border p-2 text-right font-mono text-green-400">{formatCurrency(grandTotals.currentRenewalRevenue)}</td>
+            <td className="border border-border p-2 text-right font-mono text-warning">{formatCurrency(grandTotals.currentDCP)}</td>
+            <td className="border border-border p-2 text-right font-mono text-positive">{formatCurrency(grandTotals.currentAnnualFee)}</td>
+            <td className="border border-border p-2 text-right font-mono text-blue-500">{formatCurrency(grandTotals.currentAdmissionFee)}</td>
+            <td className="border border-border p-2 text-right font-mono text-primary">{formatCurrency(grandTotals.currentTotalRevenue)}</td>
+            <td className="border border-border p-1 bg-primary/20"></td>
+            <td className="border border-border p-2 text-right font-mono text-cyan-400">{formatCurrency(grandTotals.forecastedNewAdmRevenue)}</td>
+            <td className="border border-border p-2 text-right font-mono text-green-400">{formatCurrency(grandTotals.forecastedRenewalRevenue)}</td>
+            <td className="border border-border p-2 text-right font-mono text-warning">{formatCurrency(grandTotals.forecastedDCP)}</td>
+            <td className="border border-border p-2 text-right font-mono text-positive">{formatCurrency(grandTotals.forecastedAnnualFee)}</td>
+            <td className="border border-border p-2 text-right font-mono text-blue-500">{formatCurrency(grandTotals.forecastedAdmissionFee)}</td>
+            <td className="border border-border p-2 text-right font-mono text-primary">{formatCurrency(grandTotals.forecastedTotalRevenue)}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  );
 }
 
 interface SessionTableProps {
@@ -656,15 +777,6 @@ function CampusBreakdownRow({ campus, calculation, globalSettings }: CampusBreak
                   </div>
                 </TabsContent>
               </Tabs>
-
-              {/* Formula Summary */}
-              <div className="mt-4 p-3 bg-surface-1 rounded-lg">
-                <p className="text-xs text-muted-foreground">
-                  <strong className="text-foreground">Formula:</strong> 
-                  Total Revenue = (New Adm × Fee) + (Renewal × Fee) + DCP + Annual Fee + Admission Fee | 
-                  Net Revenue = Total × (1 - {campus.discountRate}% Discount)
-                </p>
-              </div>
             </div>
           </td>
         </tr>
@@ -674,62 +786,191 @@ function CampusBreakdownRow({ campus, calculation, globalSettings }: CampusBreak
 }
 
 export function CalculationBreakdown({ campuses, calculations, globalSettings }: CalculationBreakdownProps) {
-  // Calculate grand totals
-  const grandTotals = {
-    currentStudents: calculations.reduce((sum, c) => sum + c.currentTotalStudents, 0),
-    projectedStudents: calculations.reduce((sum, c) => sum + c.projectedTotalStudents, 0),
-    currentRevenue: calculations.reduce((sum, c) => sum + c.currentNetRevenue, 0),
-    projectedRevenue: calculations.reduce((sum, c) => sum + c.projectedNetRevenue, 0),
-    revenueChange: calculations.reduce((sum, c) => sum + c.revenueChange, 0),
-  };
+  const [viewMode, setViewMode] = useState<'summary' | 'detailed'>('summary');
+
+  // Calculate campus summaries for the summary table
+  const { summaries, grandTotals } = useMemo(() => {
+    const summaries: CampusSummary[] = campuses.map((campus, index) => {
+      const effectiveNewAdmissionFeeHike = campus.newAdmissionFeeHike + globalSettings.globalNewAdmissionFeeHike;
+      const effectiveRenewalFeeHike = campus.renewalFeeHike + globalSettings.globalRenewalFeeHike;
+      const effectiveNewStudentGrowth = campus.newStudentGrowth + globalSettings.globalNewStudentGrowth;
+      const effectiveRenewalGrowth = campus.renewalGrowth + globalSettings.globalRenewalGrowth;
+
+      let currentNewAdmCount = 0;
+      let currentNewAdmRevenue = 0;
+      let currentRenewalCount = 0;
+      let currentRenewalRevenue = 0;
+      let forecastedNewAdmCount = 0;
+      let forecastedNewAdmRevenue = 0;
+      let forecastedRenewalCount = 0;
+      let forecastedRenewalRevenue = 0;
+
+      campus.classes.forEach(cls => {
+        // Current
+        currentNewAdmCount += cls.newAdmissionCount;
+        currentNewAdmRevenue += cls.newAdmissionCount * cls.newAdmissionFee;
+        currentRenewalCount += cls.renewalCount;
+        currentRenewalRevenue += cls.renewalCount * cls.renewalFee;
+
+        // Forecasted
+        const newStudentGrowthMultiplier = 1 + (effectiveNewStudentGrowth / 100);
+        const renewalGrowthMultiplier = 1 + (effectiveRenewalGrowth / 100);
+        const newAdmFeeMultiplier = 1 + (effectiveNewAdmissionFeeHike / 100);
+        const renewalFeeMultiplier = 1 + (effectiveRenewalFeeHike / 100);
+
+        const fNewAdmCount = Math.round(cls.newAdmissionCount * newStudentGrowthMultiplier);
+        const fNewAdmFee = Math.round(cls.newAdmissionFee * newAdmFeeMultiplier);
+        const fRenewalCount = Math.round(cls.renewalCount * renewalGrowthMultiplier);
+        const fRenewalFee = Math.round(cls.renewalFee * renewalFeeMultiplier);
+
+        forecastedNewAdmCount += fNewAdmCount;
+        forecastedNewAdmRevenue += fNewAdmCount * fNewAdmFee;
+        forecastedRenewalCount += fRenewalCount;
+        forecastedRenewalRevenue += fRenewalCount * fRenewalFee;
+      });
+
+      const totalCurrentStudents = currentNewAdmCount + currentRenewalCount;
+      const totalForecastedStudents = forecastedNewAdmCount + forecastedRenewalCount;
+
+      const currentDCP = totalCurrentStudents * globalSettings.schoolDCP;
+      const currentAnnualFee = totalCurrentStudents * globalSettings.schoolAnnualFee;
+      const currentAdmissionFee = currentNewAdmCount * globalSettings.admissionFee;
+
+      const forecastedDCP = totalForecastedStudents * globalSettings.schoolDCP;
+      const forecastedAnnualFee = totalForecastedStudents * globalSettings.schoolAnnualFee;
+      const forecastedAdmissionFee = forecastedNewAdmCount * globalSettings.admissionFee;
+
+      const currentTotalRevenue = currentNewAdmRevenue + currentRenewalRevenue + currentDCP + currentAnnualFee + currentAdmissionFee;
+      const forecastedTotalRevenue = forecastedNewAdmRevenue + forecastedRenewalRevenue + forecastedDCP + forecastedAnnualFee + forecastedAdmissionFee;
+
+      return {
+        id: campus.id,
+        name: campus.name,
+        shortName: campus.shortName,
+        currentNewAdmCount,
+        currentNewAdmRevenue,
+        currentRenewalCount,
+        currentRenewalRevenue,
+        currentDCP,
+        currentAnnualFee,
+        currentAdmissionFee,
+        currentTotalRevenue,
+        forecastedNewAdmCount,
+        forecastedNewAdmRevenue,
+        forecastedRenewalCount,
+        forecastedRenewalRevenue,
+        forecastedDCP,
+        forecastedAnnualFee,
+        forecastedAdmissionFee,
+        forecastedTotalRevenue,
+      };
+    });
+
+    const grandTotals = summaries.reduce((acc, s) => ({
+      currentNewAdmCount: acc.currentNewAdmCount + s.currentNewAdmCount,
+      currentNewAdmRevenue: acc.currentNewAdmRevenue + s.currentNewAdmRevenue,
+      currentRenewalCount: acc.currentRenewalCount + s.currentRenewalCount,
+      currentRenewalRevenue: acc.currentRenewalRevenue + s.currentRenewalRevenue,
+      currentDCP: acc.currentDCP + s.currentDCP,
+      currentAnnualFee: acc.currentAnnualFee + s.currentAnnualFee,
+      currentAdmissionFee: acc.currentAdmissionFee + s.currentAdmissionFee,
+      currentTotalRevenue: acc.currentTotalRevenue + s.currentTotalRevenue,
+      forecastedNewAdmCount: acc.forecastedNewAdmCount + s.forecastedNewAdmCount,
+      forecastedNewAdmRevenue: acc.forecastedNewAdmRevenue + s.forecastedNewAdmRevenue,
+      forecastedRenewalCount: acc.forecastedRenewalCount + s.forecastedRenewalCount,
+      forecastedRenewalRevenue: acc.forecastedRenewalRevenue + s.forecastedRenewalRevenue,
+      forecastedDCP: acc.forecastedDCP + s.forecastedDCP,
+      forecastedAnnualFee: acc.forecastedAnnualFee + s.forecastedAnnualFee,
+      forecastedAdmissionFee: acc.forecastedAdmissionFee + s.forecastedAdmissionFee,
+      forecastedTotalRevenue: acc.forecastedTotalRevenue + s.forecastedTotalRevenue,
+    }), {
+      currentNewAdmCount: 0,
+      currentNewAdmRevenue: 0,
+      currentRenewalCount: 0,
+      currentRenewalRevenue: 0,
+      currentDCP: 0,
+      currentAnnualFee: 0,
+      currentAdmissionFee: 0,
+      currentTotalRevenue: 0,
+      forecastedNewAdmCount: 0,
+      forecastedNewAdmRevenue: 0,
+      forecastedRenewalCount: 0,
+      forecastedRenewalRevenue: 0,
+      forecastedDCP: 0,
+      forecastedAnnualFee: 0,
+      forecastedAdmissionFee: 0,
+      forecastedTotalRevenue: 0,
+    });
+
+    return { summaries, grandTotals };
+  }, [campuses, globalSettings]);
 
   return (
-    <div className="campus-card overflow-hidden">
-      <div className="p-4 border-b border-border">
-        <h3 className="text-sm font-medium text-foreground flex items-center gap-2">
-          <Calculator className="w-4 h-4 text-primary" />
-          Detailed Calculation Breakdown
-        </h3>
-        <p className="text-xs text-muted-foreground mt-1">
-          Click on any campus to expand. Use tabs to switch between Current/Forecasted views, and toggle columns as needed.
-        </p>
+    <div className="card-base p-6 animate-slide-up">
+      <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-primary/20 flex items-center justify-center">
+            <Calculator className="w-5 h-5 text-primary" />
+          </div>
+          <div>
+            <h2 className="text-xl font-bold text-foreground">Revenue Breakdown</h2>
+            <p className="text-xs text-muted-foreground">
+              {viewMode === 'summary' ? 'Summary view with totals' : 'Detailed class-wise breakdown'}
+            </p>
+          </div>
+        </div>
+        
+        {/* View Mode Toggle */}
+        <div className="flex items-center gap-2">
+          <Button
+            variant={viewMode === 'summary' ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => setViewMode('summary')}
+            className="gap-2"
+          >
+            <Table className="w-4 h-4" />
+            Summary
+          </Button>
+          <Button
+            variant={viewMode === 'detailed' ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => setViewMode('detailed')}
+            className="gap-2"
+          >
+            <LayoutGrid className="w-4 h-4" />
+            Detailed
+          </Button>
+        </div>
       </div>
-      <div className="overflow-x-auto">
-        <table className="w-full text-sm">
-          <thead className="bg-surface-2">
-            <tr>
-              <th className="text-left py-3 px-4 text-xs uppercase tracking-wide text-muted-foreground font-medium">Campus</th>
-              <th className="text-right py-3 px-4 text-xs uppercase tracking-wide text-muted-foreground font-medium">Current Students</th>
-              <th className="text-right py-3 px-4 text-xs uppercase tracking-wide text-muted-foreground font-medium">Projected Students</th>
-              <th className="text-right py-3 px-4 text-xs uppercase tracking-wide text-muted-foreground font-medium">Current Revenue</th>
-              <th className="text-right py-3 px-4 text-xs uppercase tracking-wide text-muted-foreground font-medium">Projected Revenue</th>
-              <th className="text-right py-3 px-4 text-xs uppercase tracking-wide text-muted-foreground font-medium">Change</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-border/50">
-            {campuses.map((campus, index) => (
-              <CampusBreakdownRow
-                key={campus.id}
-                campus={campus}
-                calculation={calculations[index]}
-                globalSettings={globalSettings}
-              />
-            ))}
-          </tbody>
-          <tfoot className="bg-primary/10 border-t-2 border-primary">
-            <tr className="font-bold">
-              <td className="py-3 px-4 text-foreground">GRAND TOTAL</td>
-              <td className="text-right font-mono py-3 px-4">{formatNumber(grandTotals.currentStudents)}</td>
-              <td className="text-right font-mono py-3 px-4 text-primary">{formatNumber(grandTotals.projectedStudents)}</td>
-              <td className="text-right font-mono py-3 px-4">{formatCurrency(grandTotals.currentRevenue)}</td>
-              <td className="text-right font-mono py-3 px-4 text-primary">{formatCurrency(grandTotals.projectedRevenue)}</td>
-              <td className={`text-right font-mono py-3 px-4 ${grandTotals.revenueChange >= 0 ? 'text-positive' : 'text-negative'}`}>
-                {grandTotals.revenueChange >= 0 ? '+' : ''}{formatCurrency(grandTotals.revenueChange)}
-              </td>
-            </tr>
-          </tfoot>
-        </table>
-      </div>
+
+      {viewMode === 'summary' ? (
+        <SummaryTable summaries={summaries} grandTotals={grandTotals} />
+      ) : (
+        <div className="overflow-hidden rounded-xl border border-border">
+          <table className="w-full">
+            <thead className="bg-surface-1">
+              <tr>
+                <th className="text-left py-3 px-4 font-semibold text-foreground">Campus</th>
+                <th className="text-right py-3 px-4 font-semibold text-foreground">Current Students</th>
+                <th className="text-right py-3 px-4 font-semibold text-primary">Forecasted Students</th>
+                <th className="text-right py-3 px-4 font-semibold text-foreground">Current Revenue</th>
+                <th className="text-right py-3 px-4 font-semibold text-primary">Forecasted Revenue</th>
+                <th className="text-right py-3 px-4 font-semibold text-foreground">Change</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-border/50">
+              {campuses.map((campus, index) => (
+                <CampusBreakdownRow
+                  key={campus.id}
+                  campus={campus}
+                  calculation={calculations[index]}
+                  globalSettings={globalSettings}
+                />
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
     </div>
   );
 }
