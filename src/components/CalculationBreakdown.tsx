@@ -236,6 +236,15 @@ function CampusBreakdownRow({ campus, calculation, globalSettings }: CampusBreak
 }
 
 export function CalculationBreakdown({ campuses, calculations, globalSettings }: CalculationBreakdownProps) {
+  // Calculate grand totals
+  const grandTotals = {
+    currentStudents: calculations.reduce((sum, c) => sum + c.currentTotalStudents, 0),
+    projectedStudents: calculations.reduce((sum, c) => sum + c.projectedTotalStudents, 0),
+    currentRevenue: calculations.reduce((sum, c) => sum + c.currentNetRevenue, 0),
+    projectedRevenue: calculations.reduce((sum, c) => sum + c.projectedNetRevenue, 0),
+    revenueChange: calculations.reduce((sum, c) => sum + c.revenueChange, 0),
+  };
+
   return (
     <div className="campus-card overflow-hidden">
       <div className="p-4 border-b border-border">
@@ -269,6 +278,18 @@ export function CalculationBreakdown({ campuses, calculations, globalSettings }:
               />
             ))}
           </tbody>
+          <tfoot className="bg-primary/10 border-t-2 border-primary">
+            <tr className="font-bold">
+              <td className="py-3 px-4 text-foreground">GRAND TOTAL</td>
+              <td className="text-right font-mono py-3 px-4">{formatNumber(grandTotals.currentStudents)}</td>
+              <td className="text-right font-mono py-3 px-4 text-primary">{formatNumber(grandTotals.projectedStudents)}</td>
+              <td className="text-right font-mono py-3 px-4">{formatCurrency(grandTotals.currentRevenue)}</td>
+              <td className="text-right font-mono py-3 px-4 text-primary">{formatCurrency(grandTotals.projectedRevenue)}</td>
+              <td className={`text-right font-mono py-3 px-4 ${grandTotals.revenueChange >= 0 ? 'text-positive' : 'text-negative'}`}>
+                {grandTotals.revenueChange >= 0 ? '+' : ''}{formatCurrency(grandTotals.revenueChange)}
+              </td>
+            </tr>
+          </tfoot>
         </table>
       </div>
     </div>
