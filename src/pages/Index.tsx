@@ -33,6 +33,7 @@ const Index = () => {
   } = useSimulationState();
 
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [expandedCampusId, setExpandedCampusId] = useState<string | null>(null);
 
   const handleExport = () => {
     const csv = generateCSVExport(campuses, hostels, globalSettings);
@@ -43,6 +44,10 @@ const Index = () => {
     a.download = `revenue-projection-${new Date().toISOString().split('T')[0]}.csv`;
     a.click();
     URL.revokeObjectURL(url);
+  };
+
+  const handleToggleCampusExpand = (campusId: string) => {
+    setExpandedCampusId(prev => prev === campusId ? null : campusId);
   };
 
   return (
@@ -197,6 +202,8 @@ const Index = () => {
                   calculation={campusCalculations[index]}
                   globalSettings={globalSettings}
                   onUpdate={(updates) => updateCampus(campus.id, updates)}
+                  isExpanded={expandedCampusId === campus.id}
+                  onToggleExpand={() => handleToggleCampusExpand(campus.id)}
                 />
               ))}
             </div>

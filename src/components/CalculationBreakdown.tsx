@@ -15,11 +15,69 @@ interface CampusBreakdownRowProps {
   globalSettings: GlobalSettings;
 }
 
+interface ClassRowData {
+  className: string;
+  // Current
+  currentNewAdmission: number;
+  currentNewFee: number;
+  currentNewTotal: number;
+  currentRenewal: number;
+  currentRenewalFee: number;
+  currentRenewalTotal: number;
+  // Forecasted
+  forecastedNewAdmission: number;
+  forecastedNewFee: number;
+  forecastedNewTotal: number;
+  forecastedRenewal: number;
+  forecastedRenewalFee: number;
+  forecastedRenewalTotal: number;
+}
+
 function CampusBreakdownRow({ campus, calculation, globalSettings }: CampusBreakdownRowProps) {
   const [isExpanded, setIsExpanded] = useState(false);
 
   const effectiveFeeHike = campus.feeHike + globalSettings.globalFeeHike;
   const effectiveGrowth = campus.studentGrowth + globalSettings.globalStudentGrowth;
+
+  // Calculate class-level breakdown matching Excel format
+  const classRows: ClassRowData[] = campus.classes
+    .filter(cls => cls.renewalCount > 0 || cls.newAdmissionCount > 0 || cls.renewalFee > 0 || cls.newAdmissionFee > 0)
+    .map(cls => {
+      const growthMultiplier = 1 + (effectiveGrowth / 100);
+      const feeMultiplier = 1 + (effectiveFeeHike / 100);
+
+      // Current values
+      const currentNewAdmission = cls.newAdmissionCount;
+      const currentNewFee = cls.newAdmissionFee;
+      const currentNewTotal = currentNewAdmission * currentNewFee;
+      const currentRenewal = cls.renewalCount;
+      const currentRenewalFee = cls.renewalFee;
+      const currentRenewalTotal = currentRenewal * currentRenewalFee;
+
+      // Forecasted values
+      const forecastedNewAdmission = Math.round(currentNewAdmission * growthMultiplier);
+      const forecastedNewFee = Math.round(currentNewFee * feeMultiplier);
+      const forecastedNewTotal = forecastedNewAdmission * forecastedNewFee;
+      const forecastedRenewal = Math.round(currentRenewal * growthMultiplier);
+      const forecastedRenewalFee = Math.round(currentRenewalFee * feeMultiplier);
+      const forecastedRenewalTotal = forecastedRenewal * forecastedRenewalFee;
+
+      return {
+        className: cls.className,
+        currentNewAdmission,
+        currentNewFee,
+        currentNewTotal,
+        currentRenewal,
+        currentRenewalFee,
+        currentRenewalTotal,
+        forecastedNewAdmission,
+        forecastedNewFee,
+        forecastedNewTotal,
+        forecastedRenewal,
+        forecastedRenewalFee,
+        forecastedRenewalTotal,
+      };
+    });
 
   return (
     <>
@@ -50,107 +108,123 @@ function CampusBreakdownRow({ campus, calculation, globalSettings }: CampusBreak
         <tr>
           <td colSpan={6} className="p-0">
             <div className="bg-surface-2/30 p-4 border-y border-border/50 animate-fade-in">
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                {/* Current Fee Calculation */}
-                <div className="space-y-3">
-                  <h4 className="text-sm font-medium text-foreground flex items-center gap-2">
-                    <Calculator className="w-4 h-4 text-muted-foreground" />
-                    Current Fee Calculation
-                  </h4>
-                  <div className="bg-surface-1 rounded-lg p-4 text-xs font-mono space-y-2">
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Renewal Students:</span>
-                      <span className="text-foreground">{formatNumber(calculation.currentRenewalStudents)}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">New Admission Students:</span>
-                      <span className="text-foreground">{formatNumber(calculation.currentNewStudents)}</span>
-                    </div>
-                    <div className="flex justify-between border-t border-border pt-2">
-                      <span className="text-muted-foreground">Total Students:</span>
-                      <span className="text-foreground font-semibold">{formatNumber(calculation.currentTotalStudents)}</span>
-                    </div>
-                    <div className="h-px bg-border my-2" />
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Renewal Revenue:</span>
-                      <span className="text-foreground">{formatCurrency(calculation.currentRenewalRevenue)}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">New Admission Revenue:</span>
-                      <span className="text-foreground">{formatCurrency(calculation.currentNewRevenue)}</span>
-                    </div>
-                    <div className="flex justify-between border-t border-border pt-2">
-                      <span className="text-muted-foreground">Gross Revenue:</span>
-                      <span className="text-foreground">{formatCurrency(calculation.currentGrossRevenue)}</span>
-                    </div>
-                    <div className="flex justify-between text-warning">
-                      <span>Discount ({campus.discountRate}%):</span>
-                      <span>-{formatCurrency(calculation.currentGrossRevenue * (campus.discountRate / 100))}</span>
-                    </div>
-                    <div className="flex justify-between border-t border-border pt-2 text-primary font-semibold">
-                      <span>Net Revenue:</span>
-                      <span>{formatCurrency(calculation.currentNetRevenue)}</span>
-                    </div>
-                  </div>
-                </div>
+              {/* Fee Hike Info */}
+              <div className="mb-4 p-3 bg-primary/10 rounded-lg border border-primary/20">
+                <p className="text-sm font-medium text-foreground">
+                  {effectiveFeeHike}% Increase in Fees | {effectiveGrowth}% Student Growth | {campus.discountRate}% Discount
+                </p>
+              </div>
 
-                {/* Projected Fee Calculation */}
-                <div className="space-y-3">
-                  <h4 className="text-sm font-medium text-foreground flex items-center gap-2">
-                    <Calculator className="w-4 h-4 text-primary" />
-                    Projected Fee Calculation
-                  </h4>
-                  <div className="bg-surface-1 rounded-lg p-4 text-xs font-mono space-y-2">
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Base Renewal Students:</span>
-                      <span className="text-foreground">{formatNumber(calculation.currentRenewalStudents)}</span>
-                    </div>
-                    <div className="flex justify-between text-primary">
-                      <span>+ Growth ({effectiveGrowth}%):</span>
-                      <span>+{formatNumber(calculation.projectedRenewalStudents - calculation.currentRenewalStudents)}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Projected Renewal:</span>
-                      <span className="text-foreground">{formatNumber(calculation.projectedRenewalStudents)}</span>
-                    </div>
-                    <div className="h-px bg-border my-2" />
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Base New Students:</span>
-                      <span className="text-foreground">{formatNumber(calculation.currentNewStudents)}</span>
-                    </div>
-                    <div className="flex justify-between text-primary">
-                      <span>+ Growth ({effectiveGrowth}%):</span>
-                      <span>+{formatNumber(calculation.projectedNewStudents - calculation.currentNewStudents)}</span>
-                    </div>
-                    <div className="flex justify-between border-t border-border pt-2">
-                      <span className="text-muted-foreground">Total Projected Students:</span>
-                      <span className="text-foreground font-semibold">{formatNumber(calculation.projectedTotalStudents)}</span>
-                    </div>
-                    <div className="h-px bg-border my-2" />
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Projected Gross Revenue:</span>
-                      <span className="text-foreground">{formatCurrency(calculation.projectedGrossRevenue)}</span>
-                    </div>
-                    <div className="flex justify-between text-info">
-                      <span>Fee Hike Applied ({effectiveFeeHike}%):</span>
-                      <span>Included</span>
-                    </div>
-                    <div className="flex justify-between text-warning">
-                      <span>Discount ({campus.discountRate}%):</span>
-                      <span>-{formatCurrency(calculation.projectedGrossRevenue * (campus.discountRate / 100))}</span>
-                    </div>
-                    <div className="flex justify-between border-t border-border pt-2 text-positive font-semibold">
-                      <span>Net Projected Revenue:</span>
-                      <span>{formatCurrency(calculation.projectedNetRevenue)}</span>
-                    </div>
-                  </div>
-                </div>
+              {/* Detailed Calculation Table - Excel Format */}
+              <div className="overflow-x-auto">
+                <table className="w-full text-xs border-collapse">
+                  <thead>
+                    <tr className="bg-surface-1">
+                      <th rowSpan={2} className="border border-border p-2 text-left font-semibold">{campus.shortName}</th>
+                      <th colSpan={6} className="border border-border p-2 text-center font-semibold bg-muted/30">Current</th>
+                      <th colSpan={6} className="border border-border p-2 text-center font-semibold bg-primary/10">Forecasted</th>
+                    </tr>
+                    <tr className="bg-surface-2">
+                      <th className="border border-border p-2 text-right text-muted-foreground">New Adm (A)</th>
+                      <th className="border border-border p-2 text-right text-muted-foreground">Fees (B)</th>
+                      <th className="border border-border p-2 text-right text-muted-foreground">Total (A×B)</th>
+                      <th className="border border-border p-2 text-right text-muted-foreground">Renewal (C)</th>
+                      <th className="border border-border p-2 text-right text-muted-foreground">Fees (D)</th>
+                      <th className="border border-border p-2 text-right text-muted-foreground">Total (C×D)</th>
+                      <th className="border border-border p-2 text-right text-primary">New Adm (A)</th>
+                      <th className="border border-border p-2 text-right text-primary">Fees (B)</th>
+                      <th className="border border-border p-2 text-right text-primary">Total (A×B)</th>
+                      <th className="border border-border p-2 text-right text-primary">Renewal (C)</th>
+                      <th className="border border-border p-2 text-right text-primary">Fees (D)</th>
+                      <th className="border border-border p-2 text-right text-primary">Total (C×D)</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {classRows.map((row, idx) => (
+                      <tr key={row.className} className={idx % 2 === 0 ? 'bg-surface-0' : 'bg-surface-1/50'}>
+                        <td className="border border-border p-2 font-medium">{row.className}</td>
+                        {/* Current */}
+                        <td className="border border-border p-2 text-right font-mono">
+                          {row.currentNewAdmission > 0 ? row.currentNewAdmission : '-'}
+                        </td>
+                        <td className="border border-border p-2 text-right font-mono">
+                          {row.currentNewFee > 0 ? formatNumber(row.currentNewFee) : '-'}
+                        </td>
+                        <td className="border border-border p-2 text-right font-mono">
+                          {row.currentNewTotal > 0 ? formatNumber(row.currentNewTotal) : '-'}
+                        </td>
+                        <td className="border border-border p-2 text-right font-mono">
+                          {row.currentRenewal > 0 ? row.currentRenewal : '-'}
+                        </td>
+                        <td className="border border-border p-2 text-right font-mono">
+                          {row.currentRenewalFee > 0 ? formatNumber(row.currentRenewalFee) : '-'}
+                        </td>
+                        <td className="border border-border p-2 text-right font-mono">
+                          {row.currentRenewalTotal > 0 ? formatNumber(row.currentRenewalTotal) : '-'}
+                        </td>
+                        {/* Forecasted */}
+                        <td className="border border-border p-2 text-right font-mono text-primary">
+                          {row.forecastedNewAdmission > 0 ? row.forecastedNewAdmission : '-'}
+                        </td>
+                        <td className="border border-border p-2 text-right font-mono text-primary">
+                          {row.forecastedNewFee > 0 ? formatNumber(row.forecastedNewFee) : '-'}
+                        </td>
+                        <td className="border border-border p-2 text-right font-mono text-primary">
+                          {row.forecastedNewTotal > 0 ? formatNumber(row.forecastedNewTotal) : '-'}
+                        </td>
+                        <td className="border border-border p-2 text-right font-mono text-primary">
+                          {row.forecastedRenewal > 0 ? row.forecastedRenewal : '-'}
+                        </td>
+                        <td className="border border-border p-2 text-right font-mono text-primary">
+                          {row.forecastedRenewalFee > 0 ? formatNumber(row.forecastedRenewalFee) : '-'}
+                        </td>
+                        <td className="border border-border p-2 text-right font-mono text-primary">
+                          {row.forecastedRenewalTotal > 0 ? formatNumber(row.forecastedRenewalTotal) : '-'}
+                        </td>
+                      </tr>
+                    ))}
+                    {/* Totals Row */}
+                    <tr className="bg-surface-1 font-semibold">
+                      <td className="border border-border p-2">TOTAL</td>
+                      <td className="border border-border p-2 text-right font-mono">
+                        {classRows.reduce((sum, r) => sum + r.currentNewAdmission, 0)}
+                      </td>
+                      <td className="border border-border p-2 text-right font-mono">-</td>
+                      <td className="border border-border p-2 text-right font-mono">
+                        {formatNumber(classRows.reduce((sum, r) => sum + r.currentNewTotal, 0))}
+                      </td>
+                      <td className="border border-border p-2 text-right font-mono">
+                        {classRows.reduce((sum, r) => sum + r.currentRenewal, 0)}
+                      </td>
+                      <td className="border border-border p-2 text-right font-mono">-</td>
+                      <td className="border border-border p-2 text-right font-mono">
+                        {formatNumber(classRows.reduce((sum, r) => sum + r.currentRenewalTotal, 0))}
+                      </td>
+                      <td className="border border-border p-2 text-right font-mono text-primary">
+                        {classRows.reduce((sum, r) => sum + r.forecastedNewAdmission, 0)}
+                      </td>
+                      <td className="border border-border p-2 text-right font-mono text-primary">-</td>
+                      <td className="border border-border p-2 text-right font-mono text-primary">
+                        {formatNumber(classRows.reduce((sum, r) => sum + r.forecastedNewTotal, 0))}
+                      </td>
+                      <td className="border border-border p-2 text-right font-mono text-primary">
+                        {classRows.reduce((sum, r) => sum + r.forecastedRenewal, 0)}
+                      </td>
+                      <td className="border border-border p-2 text-right font-mono text-primary">-</td>
+                      <td className="border border-border p-2 text-right font-mono text-primary">
+                        {formatNumber(classRows.reduce((sum, r) => sum + r.forecastedRenewalTotal, 0))}
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
               </div>
 
               {/* Formula Summary */}
               <div className="mt-4 p-3 bg-surface-1 rounded-lg">
                 <p className="text-xs text-muted-foreground">
-                  <strong className="text-foreground">Formula:</strong> Net Revenue = (Renewal Students × Renewal Fee + New Students × New Fee) × (1 + Fee Hike%) × (1 - Discount%)
+                  <strong className="text-foreground">Formula:</strong> Total Fees New Admission = Students (A) × Fees (B) | 
+                  Total Fees Renewal = Students (C) × Fees (D) | 
+                  Net Revenue = (Total New + Total Renewal) × (1 - {campus.discountRate}% Discount)
                 </p>
               </div>
             </div>
@@ -170,7 +244,7 @@ export function CalculationBreakdown({ campuses, calculations, globalSettings }:
           Detailed Calculation Breakdown
         </h3>
         <p className="text-xs text-muted-foreground mt-1">
-          Click on any campus to expand and see the complete calculation math
+          Click on any campus to expand and see the complete calculation math (like Excel format)
         </p>
       </div>
       <div className="overflow-x-auto">

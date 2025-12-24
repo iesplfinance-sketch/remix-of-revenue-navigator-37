@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { ChevronDown, ChevronUp, AlertTriangle, Users } from 'lucide-react';
 import { CampusData } from '@/data/schoolData';
 import { CampusCalculation, calculateClassBreakdown, formatCurrency, formatNumber, formatPercent } from '@/lib/calculations';
@@ -11,20 +10,21 @@ interface CampusCardProps {
   calculation: CampusCalculation;
   globalSettings: GlobalSettings;
   onUpdate: (updates: Partial<CampusData>) => void;
+  isExpanded: boolean;
+  onToggleExpand: () => void;
 }
 
-export function CampusCard({ campus, calculation, globalSettings, onUpdate }: CampusCardProps) {
-  const [isExpanded, setIsExpanded] = useState(false);
+export function CampusCard({ campus, calculation, globalSettings, onUpdate, isExpanded, onToggleExpand }: CampusCardProps) {
   const classBreakdown = calculateClassBreakdown(campus, globalSettings);
 
-  const cardClasses = `campus-card ${isExpanded ? 'campus-card-expanded' : ''} ${calculation.isOverCapacity ? 'campus-card-warning' : ''}`;
+  const cardClasses = `campus-card transition-all duration-300 ${isExpanded ? 'campus-card-expanded col-span-1 lg:col-span-2 xl:col-span-3' : ''} ${calculation.isOverCapacity ? 'campus-card-warning' : ''}`;
 
   return (
     <div className={cardClasses}>
       {/* Card Header */}
       <div 
         className="p-4 cursor-pointer flex items-center justify-between hover:bg-surface-2/50 transition-colors"
-        onClick={() => setIsExpanded(!isExpanded)}
+        onClick={onToggleExpand}
       >
         <div className="flex-1 min-w-0">
           <h3 className="font-medium text-sm text-foreground truncate">{campus.name}</h3>
@@ -59,7 +59,7 @@ export function CampusCard({ campus, calculation, globalSettings, onUpdate }: Ca
       {/* Expanded Content */}
       {isExpanded && (
         <div className="border-t border-border animate-fade-in">
-          <div className="p-4 grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="p-4 grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* Left: Controls */}
             <div className="space-y-5">
               <div>
@@ -132,8 +132,8 @@ export function CampusCard({ campus, calculation, globalSettings, onUpdate }: Ca
               </div>
             </div>
 
-            {/* Right: Data Table */}
-            <div className="overflow-x-auto">
+            {/* Right: Data Table - spans 2 columns */}
+            <div className="lg:col-span-2 overflow-x-auto">
               <table className="data-grid w-full text-xs">
                 <thead>
                   <tr>
@@ -146,7 +146,7 @@ export function CampusCard({ campus, calculation, globalSettings, onUpdate }: Ca
                   </tr>
                 </thead>
                 <tbody>
-                  {classBreakdown.slice(0, 10).map(cls => (
+                  {classBreakdown.map(cls => (
                     <tr key={cls.className}>
                       <td className="font-medium">{cls.className}</td>
                       <td className="text-right font-mono">{cls.currentTotalStudents}</td>
@@ -160,11 +160,6 @@ export function CampusCard({ campus, calculation, globalSettings, onUpdate }: Ca
                   ))}
                 </tbody>
               </table>
-              {classBreakdown.length > 10 && (
-                <div className="text-xs text-muted-foreground mt-2 text-center">
-                  +{classBreakdown.length - 10} more classes
-                </div>
-              )}
             </div>
           </div>
         </div>

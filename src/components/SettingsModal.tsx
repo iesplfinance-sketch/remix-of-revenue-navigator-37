@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { X, Save, Users, DollarSign } from 'lucide-react';
+import { X, Users, DollarSign, Building2 } from 'lucide-react';
 import { CampusData, ClassData } from '@/data/schoolData';
 import { formatCurrency } from '@/lib/calculations';
 import { Button } from '@/components/ui/button';
@@ -84,6 +84,10 @@ export function SettingsModal({ isOpen, onClose, campuses, onUpdateCampus, onUpd
                       <TabsTrigger value="fees">
                         <DollarSign className="w-4 h-4 mr-2" />
                         Fee Structure
+                      </TabsTrigger>
+                      <TabsTrigger value="capacity">
+                        <Building2 className="w-4 h-4 mr-2" />
+                        Capacity
                       </TabsTrigger>
                     </TabsList>
                   </div>
@@ -173,6 +177,57 @@ export function SettingsModal({ isOpen, onClose, campuses, onUpdateCampus, onUpd
                           ))}
                         </tbody>
                       </table>
+                    </TabsContent>
+
+                    <TabsContent value="capacity" className="mt-0">
+                      <div className="space-y-6">
+                        <div className="campus-card p-4">
+                          <h4 className="text-sm font-medium text-foreground mb-4">Maximum Student Capacity</h4>
+                          <div className="flex items-center gap-4">
+                            <label className="text-xs text-muted-foreground uppercase tracking-wide min-w-32">
+                              Max Strength:
+                            </label>
+                            <Input
+                              type="number"
+                              value={campus.maxCapacity}
+                              onChange={(e) => onUpdateCampus(campus.id, { maxCapacity: parseInt(e.target.value) || 0 })}
+                              className="w-32 h-9 text-sm font-mono bg-surface-2 border-border text-right"
+                            />
+                            <span className="text-xs text-muted-foreground">students</span>
+                          </div>
+                          <p className="text-xs text-muted-foreground mt-3">
+                            This sets the maximum capacity for this campus. If projected students exceed this, a warning will be shown.
+                          </p>
+                        </div>
+
+                        <div className="campus-card p-4">
+                          <h4 className="text-sm font-medium text-foreground mb-2">Current Statistics</h4>
+                          <div className="grid grid-cols-2 gap-4 text-sm">
+                            <div>
+                              <span className="text-muted-foreground">Current Students:</span>
+                              <span className="ml-2 font-mono text-foreground">
+                                {campus.classes.reduce((sum, c) => sum + c.renewalCount + c.newAdmissionCount, 0)}
+                              </span>
+                            </div>
+                            <div>
+                              <span className="text-muted-foreground">Max Capacity:</span>
+                              <span className="ml-2 font-mono text-foreground">{campus.maxCapacity}</span>
+                            </div>
+                            <div>
+                              <span className="text-muted-foreground">Utilization:</span>
+                              <span className="ml-2 font-mono text-foreground">
+                                {((campus.classes.reduce((sum, c) => sum + c.renewalCount + c.newAdmissionCount, 0) / campus.maxCapacity) * 100).toFixed(1)}%
+                              </span>
+                            </div>
+                            <div>
+                              <span className="text-muted-foreground">Available Seats:</span>
+                              <span className="ml-2 font-mono text-positive">
+                                {campus.maxCapacity - campus.classes.reduce((sum, c) => sum + c.renewalCount + c.newAdmissionCount, 0)}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
                     </TabsContent>
                   </ScrollArea>
                 </Tabs>
