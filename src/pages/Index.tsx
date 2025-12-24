@@ -130,49 +130,78 @@ const Index = () => {
             {/* Global Controls */}
             <div className="campus-card p-5">
               <h2 className="text-sm font-medium text-foreground mb-4">Master Control Panel</h2>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-6">
                 <div>
                   <div className="flex justify-between mb-2">
                     <label className="text-xs text-muted-foreground uppercase tracking-wide">New Admission Fee Hike</label>
-                    <span className="font-mono text-sm text-primary">+{globalSettings.globalNewAdmissionFeeHike}%</span>
+                    <span className="font-mono text-sm text-primary">{globalSettings.globalNewAdmissionFeeHike > 0 ? '+' : ''}{globalSettings.globalNewAdmissionFeeHike}%</span>
                   </div>
                   <Slider
                     value={[globalSettings.globalNewAdmissionFeeHike]}
                     onValueChange={([value]) => updateGlobalSettings({ globalNewAdmissionFeeHike: value })}
-                    min={0}
-                    max={50}
-                    step={1}
-                  />
-                </div>
-                <div>
-                  <div className="flex justify-between mb-2">
-                    <label className="text-xs text-muted-foreground uppercase tracking-wide">Renewal Fee Hike</label>
-                    <span className="font-mono text-sm text-primary">+{globalSettings.globalRenewalFeeHike}%</span>
-                  </div>
-                  <Slider
-                    value={[globalSettings.globalRenewalFeeHike]}
-                    onValueChange={([value]) => updateGlobalSettings({ globalRenewalFeeHike: value })}
-                    min={0}
-                    max={50}
-                    step={1}
-                  />
-                </div>
-                <div>
-                  <div className="flex justify-between mb-2">
-                    <label className="text-xs text-muted-foreground uppercase tracking-wide">Global Student Growth</label>
-                    <span className="font-mono text-sm text-primary">{globalSettings.globalStudentGrowth > 0 ? '+' : ''}{globalSettings.globalStudentGrowth}%</span>
-                  </div>
-                  <Slider
-                    value={[globalSettings.globalStudentGrowth]}
-                    onValueChange={([value]) => updateGlobalSettings({ globalStudentGrowth: value })}
                     min={-20}
                     max={50}
                     step={1}
                   />
+                  <div className="flex justify-between mt-1 text-xs text-muted-foreground">
+                    <span>-20%</span>
+                    <span>+50%</span>
+                  </div>
                 </div>
                 <div>
                   <div className="flex justify-between mb-2">
-                    <label className="text-xs text-muted-foreground uppercase tracking-wide">Global Discount (All Campuses)</label>
+                    <label className="text-xs text-muted-foreground uppercase tracking-wide">Renewal Fee Hike</label>
+                    <span className="font-mono text-sm text-primary">{globalSettings.globalRenewalFeeHike > 0 ? '+' : ''}{globalSettings.globalRenewalFeeHike}%</span>
+                  </div>
+                  <Slider
+                    value={[globalSettings.globalRenewalFeeHike]}
+                    onValueChange={([value]) => updateGlobalSettings({ globalRenewalFeeHike: value })}
+                    min={-20}
+                    max={50}
+                    step={1}
+                  />
+                  <div className="flex justify-between mt-1 text-xs text-muted-foreground">
+                    <span>-20%</span>
+                    <span>+50%</span>
+                  </div>
+                </div>
+                <div>
+                  <div className="flex justify-between mb-2">
+                    <label className="text-xs text-muted-foreground uppercase tracking-wide">New Student Growth</label>
+                    <span className="font-mono text-sm text-primary">{globalSettings.globalNewStudentGrowth > 0 ? '+' : ''}{globalSettings.globalNewStudentGrowth}%</span>
+                  </div>
+                  <Slider
+                    value={[globalSettings.globalNewStudentGrowth]}
+                    onValueChange={([value]) => updateGlobalSettings({ globalNewStudentGrowth: value })}
+                    min={-20}
+                    max={50}
+                    step={1}
+                  />
+                  <div className="flex justify-between mt-1 text-xs text-muted-foreground">
+                    <span>-20%</span>
+                    <span>+50%</span>
+                  </div>
+                </div>
+                <div>
+                  <div className="flex justify-between mb-2">
+                    <label className="text-xs text-muted-foreground uppercase tracking-wide">Renewal Growth</label>
+                    <span className="font-mono text-sm text-primary">{globalSettings.globalRenewalGrowth > 0 ? '+' : ''}{globalSettings.globalRenewalGrowth}%</span>
+                  </div>
+                  <Slider
+                    value={[globalSettings.globalRenewalGrowth]}
+                    onValueChange={([value]) => updateGlobalSettings({ globalRenewalGrowth: value })}
+                    min={-20}
+                    max={50}
+                    step={1}
+                  />
+                  <div className="flex justify-between mt-1 text-xs text-muted-foreground">
+                    <span>-20%</span>
+                    <span>+50%</span>
+                  </div>
+                </div>
+                <div>
+                  <div className="flex justify-between mb-2">
+                    <label className="text-xs text-muted-foreground uppercase tracking-wide">Global Discount</label>
                     <span className="font-mono text-sm text-warning">{globalSettings.globalDiscount}%</span>
                   </div>
                   <Slider
@@ -182,6 +211,10 @@ const Index = () => {
                     max={40}
                     step={1}
                   />
+                  <div className="flex justify-between mt-1 text-xs text-muted-foreground">
+                    <span>0%</span>
+                    <span>40%</span>
+                  </div>
                 </div>
               </div>
             </div>
@@ -213,7 +246,8 @@ const Index = () => {
             <FeeExplainer 
               globalNewAdmissionFeeHike={globalSettings.globalNewAdmissionFeeHike}
               globalRenewalFeeHike={globalSettings.globalRenewalFeeHike}
-              globalStudentGrowth={globalSettings.globalStudentGrowth}
+              globalNewStudentGrowth={globalSettings.globalNewStudentGrowth}
+              globalRenewalGrowth={globalSettings.globalRenewalGrowth}
               globalDiscount={globalSettings.globalDiscount}
             />
           </TabsContent>
@@ -254,6 +288,7 @@ const Index = () => {
               globalSettings={globalSettings}
               schoolStudents={totals.schoolStudents}
               hostelStudents={totals.hostelStudents}
+              newStudents={totals.totalNewStudents}
               onUpdateGlobalSettings={updateGlobalSettings}
             />
           </TabsContent>

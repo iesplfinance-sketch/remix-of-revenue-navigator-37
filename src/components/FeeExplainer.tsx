@@ -4,11 +4,12 @@ import { formatCurrency, formatPercent } from '@/lib/calculations';
 interface FeeExplainerProps {
   globalNewAdmissionFeeHike: number;
   globalRenewalFeeHike: number;
-  globalStudentGrowth: number;
+  globalNewStudentGrowth: number;
+  globalRenewalGrowth: number;
   globalDiscount: number;
 }
 
-export function FeeExplainer({ globalNewAdmissionFeeHike, globalRenewalFeeHike, globalStudentGrowth, globalDiscount }: FeeExplainerProps) {
+export function FeeExplainer({ globalNewAdmissionFeeHike, globalRenewalFeeHike, globalNewStudentGrowth, globalRenewalGrowth, globalDiscount }: FeeExplainerProps) {
   // Example calculation for new admission
   const exampleNewAdmFee = 350000;
   const exampleRenewalFee = 300000;
@@ -17,8 +18,8 @@ export function FeeExplainer({ globalNewAdmissionFeeHike, globalRenewalFeeHike, 
   
   const newAdmFeeAfterHike = exampleNewAdmFee * (1 + globalNewAdmissionFeeHike / 100);
   const renewalFeeAfterHike = exampleRenewalFee * (1 + globalRenewalFeeHike / 100);
-  const newAdmStudentsAfterGrowth = Math.round(exampleNewAdmStudents * (1 + globalStudentGrowth / 100));
-  const renewalStudentsAfterGrowth = Math.round(exampleRenewalStudents * (1 + globalStudentGrowth / 100));
+  const newAdmStudentsAfterGrowth = Math.round(exampleNewAdmStudents * (1 + globalNewStudentGrowth / 100));
+  const renewalStudentsAfterGrowth = Math.round(exampleRenewalStudents * (1 + globalRenewalGrowth / 100));
   const grossRevenue = (newAdmFeeAfterHike * newAdmStudentsAfterGrowth) + (renewalFeeAfterHike * renewalStudentsAfterGrowth);
   const netRevenue = grossRevenue * (1 - globalDiscount / 100);
 
@@ -33,7 +34,7 @@ export function FeeExplainer({ globalNewAdmissionFeeHike, globalRenewalFeeHike, 
       <div className="bg-surface-2 rounded-lg p-4 mb-4">
         <p className="text-sm text-muted-foreground leading-relaxed">
           <strong className="text-foreground">Simple Formula:</strong><br />
-          Net Revenue = (New Adm Fee × Fee Hike) × New Students + (Renewal Fee × Fee Hike) × Renewal Students - Discount
+          Net Revenue = [(New Adm Fee × Fee Hike) × New Students] + [(Renewal Fee × Fee Hike) × Renewal Students] - Discount + DCP + Annual Fee + Admission Fee
         </p>
       </div>
 
@@ -68,10 +69,10 @@ export function FeeExplainer({ globalNewAdmissionFeeHike, globalRenewalFeeHike, 
             <span className="text-xs font-bold text-primary">3</span>
           </div>
           <div>
-            <p className="text-sm font-medium text-foreground">Apply Student Growth</p>
+            <p className="text-sm font-medium text-foreground">Apply Student Growth (Separate)</p>
             <p className="text-xs text-muted-foreground">
-              New Adm: {exampleNewAdmStudents} + {globalStudentGrowth}% = <span className="text-primary font-mono">{newAdmStudentsAfterGrowth}</span> | 
-              Renewal: {exampleRenewalStudents} + {globalStudentGrowth}% = <span className="text-primary font-mono">{renewalStudentsAfterGrowth}</span>
+              New Adm: {exampleNewAdmStudents} + {globalNewStudentGrowth}% = <span className="text-primary font-mono">{newAdmStudentsAfterGrowth}</span> | 
+              Renewal: {exampleRenewalStudents} + {globalRenewalGrowth}% = <span className="text-primary font-mono">{renewalStudentsAfterGrowth}</span>
             </p>
           </div>
         </div>
@@ -96,6 +97,18 @@ export function FeeExplainer({ globalNewAdmissionFeeHike, globalRenewalFeeHike, 
             <p className="text-sm font-medium text-foreground">Apply Society Discount</p>
             <p className="text-xs text-muted-foreground">
               {formatCurrency(grossRevenue)} - {globalDiscount}% discount = <span className="text-positive font-mono font-semibold">{formatCurrency(netRevenue)}</span>
+            </p>
+          </div>
+        </div>
+
+        <div className="flex items-start gap-3">
+          <div className="w-6 h-6 rounded-full bg-positive/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+            <span className="text-xs font-bold text-positive">6</span>
+          </div>
+          <div>
+            <p className="text-sm font-medium text-foreground">Add Additional Fees</p>
+            <p className="text-xs text-muted-foreground">
+              + DCP (per student) + Annual Fee (per student) + Admission Fee (new students only)
             </p>
           </div>
         </div>

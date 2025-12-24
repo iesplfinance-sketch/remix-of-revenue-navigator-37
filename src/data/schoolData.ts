@@ -16,7 +16,8 @@ export interface CampusData {
   classes: ClassData[];
   maxCapacity: number;
   discountRate: number; // Default 15%
-  studentGrowth: number; // Default 0%
+  newStudentGrowth: number; // Default 0% - Growth rate for new admissions
+  renewalGrowth: number; // Default 0% - Growth rate for renewals
   newAdmissionFeeHike: number; // Default 0% - Fee hike for new admission students
   renewalFeeHike: number; // Default 0% - Fee hike for renewal students
 }
@@ -44,7 +45,8 @@ export const initialCampusData: CampusData[] = [
     shortName: 'ISB Chak Shahzad',
     maxCapacity: 1180,
     discountRate: 15,
-    studentGrowth: 0,
+    newStudentGrowth: 0,
+    renewalGrowth: 0,
     newAdmissionFeeHike: 0,
     renewalFeeHike: 0,
     classes: [
@@ -78,7 +80,8 @@ export const initialCampusData: CampusData[] = [
     shortName: 'Intl Maarif H-8',
     maxCapacity: 1146,
     discountRate: 15,
-    studentGrowth: 0,
+    newStudentGrowth: 0,
+    renewalGrowth: 0,
     newAdmissionFeeHike: 0,
     renewalFeeHike: 0,
     classes: [
@@ -112,7 +115,8 @@ export const initialCampusData: CampusData[] = [
     shortName: 'ISB F-11',
     maxCapacity: 132,
     discountRate: 15,
-    studentGrowth: 0,
+    newStudentGrowth: 0,
+    renewalGrowth: 0,
     newAdmissionFeeHike: 0,
     renewalFeeHike: 0,
     classes: [
@@ -146,7 +150,8 @@ export const initialCampusData: CampusData[] = [
     shortName: 'ISB G-10',
     maxCapacity: 440,
     discountRate: 15,
-    studentGrowth: 0,
+    newStudentGrowth: 0,
+    renewalGrowth: 0,
     newAdmissionFeeHike: 0,
     renewalFeeHike: 0,
     classes: [
@@ -180,7 +185,8 @@ export const initialCampusData: CampusData[] = [
     shortName: 'LHR Raiwind Boys',
     maxCapacity: 1196,
     discountRate: 15,
-    studentGrowth: 0,
+    newStudentGrowth: 0,
+    renewalGrowth: 0,
     newAdmissionFeeHike: 0,
     renewalFeeHike: 0,
     classes: [
@@ -214,7 +220,8 @@ export const initialCampusData: CampusData[] = [
     shortName: 'LHR Asifa Girls',
     maxCapacity: 1070,
     discountRate: 15,
-    studentGrowth: 0,
+    newStudentGrowth: 0,
+    renewalGrowth: 0,
     newAdmissionFeeHike: 0,
     renewalFeeHike: 0,
     classes: [
@@ -248,7 +255,8 @@ export const initialCampusData: CampusData[] = [
     shortName: 'LHR Dream Gardens',
     maxCapacity: 672,
     discountRate: 15,
-    studentGrowth: 0,
+    newStudentGrowth: 0,
+    renewalGrowth: 0,
     newAdmissionFeeHike: 0,
     renewalFeeHike: 0,
     classes: [
@@ -282,7 +290,8 @@ export const initialCampusData: CampusData[] = [
     shortName: 'LHR Islampura',
     maxCapacity: 662,
     discountRate: 15,
-    studentGrowth: 0,
+    newStudentGrowth: 0,
+    renewalGrowth: 0,
     newAdmissionFeeHike: 0,
     renewalFeeHike: 0,
     classes: [
@@ -316,7 +325,8 @@ export const initialCampusData: CampusData[] = [
     shortName: 'LHR Khayaban',
     maxCapacity: 564,
     discountRate: 15,
-    studentGrowth: 0,
+    newStudentGrowth: 0,
+    renewalGrowth: 0,
     newAdmissionFeeHike: 0,
     renewalFeeHike: 0,
     classes: [
@@ -350,7 +360,8 @@ export const initialCampusData: CampusData[] = [
     shortName: 'Multan Ali Chowk',
     maxCapacity: 280,
     discountRate: 15,
-    studentGrowth: 0,
+    newStudentGrowth: 0,
+    renewalGrowth: 0,
     newAdmissionFeeHike: 0,
     renewalFeeHike: 0,
     classes: [
@@ -384,7 +395,8 @@ export const initialCampusData: CampusData[] = [
     shortName: 'Multan Model Town',
     maxCapacity: 716,
     discountRate: 15,
-    studentGrowth: 0,
+    newStudentGrowth: 0,
+    renewalGrowth: 0,
     newAdmissionFeeHike: 0,
     renewalFeeHike: 0,
     classes: [
@@ -418,7 +430,8 @@ export const initialCampusData: CampusData[] = [
     shortName: 'PSH Hayatabad',
     maxCapacity: 892,
     discountRate: 15,
-    studentGrowth: 0,
+    newStudentGrowth: 0,
+    renewalGrowth: 0,
     newAdmissionFeeHike: 0,
     renewalFeeHike: 0,
     classes: [
@@ -452,7 +465,8 @@ export const initialCampusData: CampusData[] = [
     shortName: 'PSH Uni Town Girls',
     maxCapacity: 350,
     discountRate: 15,
-    studentGrowth: 0,
+    newStudentGrowth: 0,
+    renewalGrowth: 0,
     newAdmissionFeeHike: 0,
     renewalFeeHike: 0,
     classes: [
@@ -486,7 +500,8 @@ export const initialCampusData: CampusData[] = [
     shortName: 'Jamshoro LUMHS',
     maxCapacity: 584,
     discountRate: 15,
-    studentGrowth: 0,
+    newStudentGrowth: 0,
+    renewalGrowth: 0,
     newAdmissionFeeHike: 0,
     renewalFeeHike: 0,
     classes: [
@@ -520,7 +535,8 @@ export const initialCampusData: CampusData[] = [
     shortName: 'HYD Isra',
     maxCapacity: 652,
     discountRate: 15,
-    studentGrowth: 0,
+    newStudentGrowth: 0,
+    renewalGrowth: 0,
     newAdmissionFeeHike: 0,
     renewalFeeHike: 0,
     classes: [
@@ -554,7 +570,8 @@ export const initialCampusData: CampusData[] = [
     shortName: 'KHI Johar Boys',
     maxCapacity: 408,
     discountRate: 15,
-    studentGrowth: 0,
+    newStudentGrowth: 0,
+    renewalGrowth: 0,
     newAdmissionFeeHike: 0,
     renewalFeeHike: 0,
     classes: [
@@ -588,7 +605,8 @@ export const initialCampusData: CampusData[] = [
     shortName: 'KHI Gulshan Girls',
     maxCapacity: 450,
     discountRate: 15,
-    studentGrowth: 0,
+    newStudentGrowth: 0,
+    renewalGrowth: 0,
     newAdmissionFeeHike: 0,
     renewalFeeHike: 0,
     classes: [
@@ -622,7 +640,8 @@ export const initialCampusData: CampusData[] = [
     shortName: 'Quetta Boys',
     maxCapacity: 774,
     discountRate: 15,
-    studentGrowth: 0,
+    newStudentGrowth: 0,
+    renewalGrowth: 0,
     newAdmissionFeeHike: 0,
     renewalFeeHike: 0,
     classes: [
@@ -656,7 +675,8 @@ export const initialCampusData: CampusData[] = [
     shortName: 'Quetta Girls',
     maxCapacity: 766,
     discountRate: 15,
-    studentGrowth: 0,
+    newStudentGrowth: 0,
+    renewalGrowth: 0,
     newAdmissionFeeHike: 0,
     renewalFeeHike: 0,
     classes: [
@@ -690,7 +710,8 @@ export const initialCampusData: CampusData[] = [
     shortName: 'Quetta Jinnah Town',
     maxCapacity: 440,
     discountRate: 15,
-    studentGrowth: 0,
+    newStudentGrowth: 0,
+    renewalGrowth: 0,
     newAdmissionFeeHike: 0,
     renewalFeeHike: 0,
     classes: [
@@ -724,7 +745,8 @@ export const initialCampusData: CampusData[] = [
     shortName: 'Khairpur',
     maxCapacity: 1065,
     discountRate: 15,
-    studentGrowth: 0,
+    newStudentGrowth: 0,
+    renewalGrowth: 0,
     newAdmissionFeeHike: 0,
     renewalFeeHike: 0,
     classes: [
@@ -767,7 +789,8 @@ export const initialHostelData: HostelData[] = [
 export interface GlobalSettings {
   globalNewAdmissionFeeHike: number;
   globalRenewalFeeHike: number;
-  globalStudentGrowth: number;
+  globalNewStudentGrowth: number; // Growth rate for new admissions
+  globalRenewalGrowth: number; // Growth rate for renewals
   globalDiscount: number;
   // Annual fees charged to all students
   schoolAnnualFee: number;
@@ -782,7 +805,8 @@ export interface GlobalSettings {
 export const initialGlobalSettings: GlobalSettings = {
   globalNewAdmissionFeeHike: 0,
   globalRenewalFeeHike: 0,
-  globalStudentGrowth: 0,
+  globalNewStudentGrowth: 0,
+  globalRenewalGrowth: 0,
   globalDiscount: 15,
   schoolAnnualFee: 25000,
   hostelAnnualFee: 15000,
