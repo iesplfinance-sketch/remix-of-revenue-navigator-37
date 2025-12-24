@@ -19,6 +19,11 @@ export function CampusCard({ campus, calculation, globalSettings, onUpdate, isEx
 
   const cardClasses = `campus-card transition-all duration-300 ${isExpanded ? 'campus-card-expanded col-span-1 lg:col-span-2 xl:col-span-3' : ''} ${calculation.isOverCapacity ? 'campus-card-warning' : ''}`;
 
+  // Calculate effective fee hikes
+  const effectiveNewAdmissionFeeHike = campus.newAdmissionFeeHike + globalSettings.globalNewAdmissionFeeHike;
+  const effectiveRenewalFeeHike = campus.renewalFeeHike + globalSettings.globalRenewalFeeHike;
+  const effectiveGrowth = campus.studentGrowth + globalSettings.globalStudentGrowth;
+
   return (
     <div className={cardClasses}>
       {/* Card Header */}
@@ -88,15 +93,38 @@ export function CampusCard({ campus, calculation, globalSettings, onUpdate, isEx
               <div>
                 <div className="flex justify-between mb-2">
                   <label className="text-xs text-muted-foreground uppercase tracking-wide">
-                    Fee Hike %
+                    New Admission Fee Hike %
                   </label>
                   <span className="font-mono text-sm text-primary">
-                    +{campus.feeHike}%
+                    +{campus.newAdmissionFeeHike}%
                   </span>
                 </div>
                 <Slider
-                  value={[campus.feeHike]}
-                  onValueChange={([value]) => onUpdate({ feeHike: value })}
+                  value={[campus.newAdmissionFeeHike]}
+                  onValueChange={([value]) => onUpdate({ newAdmissionFeeHike: value })}
+                  min={0}
+                  max={50}
+                  step={1}
+                  className="w-full"
+                />
+                <div className="flex justify-between mt-1 text-xs text-muted-foreground">
+                  <span>0%</span>
+                  <span>+50%</span>
+                </div>
+              </div>
+
+              <div>
+                <div className="flex justify-between mb-2">
+                  <label className="text-xs text-muted-foreground uppercase tracking-wide">
+                    Renewal Fee Hike %
+                  </label>
+                  <span className="font-mono text-sm text-primary">
+                    +{campus.renewalFeeHike}%
+                  </span>
+                </div>
+                <Slider
+                  value={[campus.renewalFeeHike]}
+                  onValueChange={([value]) => onUpdate({ renewalFeeHike: value })}
                   min={0}
                   max={50}
                   step={1}
@@ -134,6 +162,13 @@ export function CampusCard({ campus, calculation, globalSettings, onUpdate, isEx
 
             {/* Right: Data Table - spans 2 columns */}
             <div className="lg:col-span-2 overflow-x-auto">
+              {/* Info Banner */}
+              <div className="mb-4 p-3 bg-primary/10 rounded-lg border border-primary/20">
+                <p className="text-sm font-medium text-foreground">
+                  New Adm Fee: +{effectiveNewAdmissionFeeHike}% | Renewal Fee: +{effectiveRenewalFeeHike}% | Growth: {effectiveGrowth}% | Discount: {campus.discountRate}%
+                </p>
+              </div>
+              
               <table className="data-grid w-full text-xs">
                 <thead>
                   <tr>

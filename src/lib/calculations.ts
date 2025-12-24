@@ -22,6 +22,9 @@ export interface CampusCalculation {
   revenueChangePercent: number;
   isOverCapacity: boolean;
   capacityUtilization: number;
+  // Admission fee revenue for new students
+  currentAdmissionFeeRevenue: number;
+  projectedAdmissionFeeRevenue: number;
 }
 
 export interface ClassCalculation {
@@ -61,7 +64,10 @@ export interface TotalCalculation {
   // Additional fees
   annualFeeRevenue: number;
   dcpRevenue: number;
+  admissionFeeRevenue: number;
   grandTotalRevenue: number;
+  // New students count for admission fee calculation
+  totalNewStudents: number;
 }
 
 // Calculate revenue for a single campus
@@ -70,7 +76,8 @@ export function calculateCampusRevenue(
   globalSettings: GlobalSettings
 ): CampusCalculation {
   const effectiveStudentGrowth = (campus.studentGrowth + globalSettings.globalStudentGrowth) / 100;
-  const effectiveFeeHike = (campus.feeHike + globalSettings.globalFeeHike) / 100;
+  const effectiveNewAdmissionFeeHike = (campus.newAdmissionFeeHike + globalSettings.globalNewAdmissionFeeHike) / 100;
+  const effectiveRenewalFeeHike = (campus.renewalFeeHike + globalSettings.globalRenewalFeeHike) / 100;
   const discountRate = campus.discountRate / 100;
 
   let currentRenewalStudents = 0;
@@ -93,9 +100,9 @@ export function calculateCampusRevenue(
     const projRenewal = Math.round(cls.renewalCount * (1 + effectiveStudentGrowth));
     const projNew = Math.round(cls.newAdmissionCount * (1 + effectiveStudentGrowth));
 
-    // Projected revenue with fee hike
-    const hikedRenewalFee = cls.renewalFee * (1 + effectiveFeeHike);
-    const hikedNewFee = cls.newAdmissionFee * (1 + effectiveFeeHike);
+    // Projected revenue with separate fee hikes for new admission and renewal
+    const hikedRenewalFee = cls.renewalFee * (1 + effectiveRenewalFeeHike);
+    const hikedNewFee = cls.newAdmissionFee * (1 + effectiveNewAdmissionFeeHike);
 
     projectedRenewalRevenue += projRenewal * hikedRenewalFee;
     projectedNewRevenue += projNew * hikedNewFee;
@@ -111,6 +118,10 @@ export function calculateCampusRevenue(
 
   const projectedGrossRevenue = projectedRenewalRevenue + projectedNewRevenue;
   const projectedNetRevenue = projectedGrossRevenue * (1 - discountRate);
+
+  // Admission fee revenue (one-time charge for new students)
+  const currentAdmissionFeeRevenue = currentNewStudents * globalSettings.admissionFee;
+  const projectedAdmissionFeeRevenue = projectedNewStudents * globalSettings.admissionFee;
 
   const revenueChange = projectedNetRevenue - currentNetRevenue;
   const revenueChangePercent = currentNetRevenue > 0 
@@ -138,6 +149,8 @@ export function calculateCampusRevenue(
     revenueChangePercent,
     isOverCapacity: projectedTotalStudents > campus.maxCapacity,
     capacityUtilization: (projectedTotalStudents / campus.maxCapacity) * 100,
+    currentAdmissionFeeRevenue,
+    projectedAdmissionFeeRevenue,
   };
 }
 
@@ -147,7 +160,8 @@ export function calculateClassBreakdown(
   globalSettings: GlobalSettings
 ): ClassCalculation[] {
   const effectiveStudentGrowth = (campus.studentGrowth + globalSettings.globalStudentGrowth) / 100;
-  const effectiveFeeHike = (campus.feeHike + globalSettings.globalFeeHike) / 100;
+  const effectiveNewAdmissionFeeHike = (campus.newAdmissionFeeHike + globalSettings.globalNewAdmissionFeeHike) / 100;
+  const effectiveRenewalFeeHike = (campus.renewalFeeHike + globalSettings.globalRenewalFeeHike) / 100;
   const discountRate = campus.discountRate / 100;
 
   return campus.classes
@@ -163,8 +177,8 @@ export function calculateClassBreakdown(
 
       const currentRevenue = (currentRenewalStudents * cls.renewalFee + currentNewStudents * cls.newAdmissionFee) * (1 - discountRate);
 
-      const hikedRenewalFee = cls.renewalFee * (1 + effectiveFeeHike);
-      const hikedNewFee = cls.newAdmissionFee * (1 + effectiveFeeHike);
+      const hikedRenewalFee = cls.renewalFee * (1 + effectiveRenewalFeeHike);
+      const hikedNewFee = cls.newAdmissionFee * (1 + effectiveNewAdmissionFeeHike);
       const projectedRevenue = (projectedRenewalStudents * hikedRenewalFee + projectedNewStudents * hikedNewFee) * (1 - discountRate);
 
       const revenueChange = projectedRevenue - currentRevenue;
@@ -210,12 +224,14 @@ export function calculateTotals(
   let schoolStudents = 0;
   let schoolRevenue = 0;
   let currentSchoolRevenue = 0;
+  let totalNewStudents = 0;
 
   campuses.forEach(campus => {
     const calc = calculateCampusRevenue(campus, globalSettings);
     schoolStudents += calc.projectedTotalStudents;
     schoolRevenue += calc.projectedNetRevenue;
     currentSchoolRevenue += calc.currentNetRevenue;
+    totalNewStudents += calc.projectedNewStudents;
   });
 
   let hostelStudents = 0;
@@ -231,8 +247,9 @@ export function calculateTotals(
   // Calculate additional fees
   const annualFeeRevenue = (schoolStudents * globalSettings.schoolAnnualFee) + (hostelStudents * globalSettings.hostelAnnualFee);
   const dcpRevenue = (schoolStudents * globalSettings.schoolDCP) + (hostelStudents * globalSettings.hostelDCP);
+  const admissionFeeRevenue = totalNewStudents * globalSettings.admissionFee;
   const tuitionRevenue = schoolRevenue + hostelRevenue;
-  const grandTotalRevenue = tuitionRevenue + annualFeeRevenue + dcpRevenue;
+  const grandTotalRevenue = tuitionRevenue + annualFeeRevenue + dcpRevenue + admissionFeeRevenue;
 
   return {
     schoolStudents,
@@ -246,7 +263,9 @@ export function calculateTotals(
     currentTotalRevenue: currentSchoolRevenue + currentHostelRevenue,
     annualFeeRevenue,
     dcpRevenue,
+    admissionFeeRevenue,
     grandTotalRevenue,
+    totalNewStudents,
   };
 }
 
@@ -300,6 +319,7 @@ export function generateCSVExport(
   rows.push(['Total Tuition Revenue', `Rs. ${totals.totalRevenue.toLocaleString()}`]);
   rows.push(['Annual Fee Revenue', `Rs. ${totals.annualFeeRevenue.toLocaleString()}`]);
   rows.push(['DCP Revenue', `Rs. ${totals.dcpRevenue.toLocaleString()}`]);
+  rows.push(['Admission Fee Revenue', `Rs. ${totals.admissionFeeRevenue.toLocaleString()}`]);
   rows.push(['GRAND TOTAL REVENUE', `Rs. ${totals.grandTotalRevenue.toLocaleString()}`]);
   rows.push(['']);
 
@@ -307,13 +327,15 @@ export function generateCSVExport(
   rows.push(['=== GLOBAL SETTINGS ===']);
   rows.push(['']);
   rows.push(['Setting', 'Value']);
-  rows.push(['Global Fee Hike', `${globalSettings.globalFeeHike}%`]);
+  rows.push(['Global New Admission Fee Hike', `${globalSettings.globalNewAdmissionFeeHike}%`]);
+  rows.push(['Global Renewal Fee Hike', `${globalSettings.globalRenewalFeeHike}%`]);
   rows.push(['Global Student Growth', `${globalSettings.globalStudentGrowth}%`]);
   rows.push(['Global Discount Rate', `${globalSettings.globalDiscount}%`]);
   rows.push(['School Annual Fee', `Rs. ${globalSettings.schoolAnnualFee.toLocaleString()}`]);
   rows.push(['Hostel Annual Fee', `Rs. ${globalSettings.hostelAnnualFee.toLocaleString()}`]);
   rows.push(['School DCP', `Rs. ${globalSettings.schoolDCP.toLocaleString()}`]);
   rows.push(['Hostel DCP', `Rs. ${globalSettings.hostelDCP.toLocaleString()}`]);
+  rows.push(['Admission Fee', `Rs. ${globalSettings.admissionFee.toLocaleString()}`]);
   rows.push(['']);
 
   // Campus Details Header
