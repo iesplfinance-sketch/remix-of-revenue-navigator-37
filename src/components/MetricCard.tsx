@@ -72,6 +72,9 @@ interface HeaderMetricsProps {
   hostelStudents: number;
   totalStudents: number;
   currentTotalRevenue: number;
+  annualFeeRevenue: number;
+  dcpRevenue: number;
+  grandTotalRevenue: number;
 }
 
 export function HeaderMetrics({
@@ -82,39 +85,65 @@ export function HeaderMetrics({
   hostelStudents,
   totalStudents,
   currentTotalRevenue,
+  annualFeeRevenue,
+  dcpRevenue,
+  grandTotalRevenue,
 }: HeaderMetricsProps) {
   const revenueChange = ((totalRevenue - currentTotalRevenue) / currentTotalRevenue) * 100;
 
   return (
-    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
-      <MetricCard
-        title="School Revenue"
-        value={formatCurrency(schoolRevenue)}
-        subtitle="Projected Net Tuition"
-        variant="primary"
-      />
-      <MetricCard
-        title="Hostel Revenue"
-        value={formatCurrency(hostelRevenue)}
-        subtitle="Residential Revenue"
-      />
-      <MetricCard
-        title="Total Revenue"
-        value={formatCurrency(totalRevenue)}
-        trend={revenueChange}
-        trendLabel="vs current"
-        variant={revenueChange > 0 ? 'positive' : 'default'}
-      />
-      <MetricCard
-        title="Student Breakdown"
-        value={`${formatNumber(schoolStudents)} | ${formatNumber(hostelStudents)}`}
-        subtitle="School | Hostel"
-      />
-      <MetricCard
-        title="Total Students"
-        value={formatNumber(totalStudents)}
-        subtitle="All Campuses"
-      />
+    <div className="space-y-3">
+      {/* Main Revenue Row */}
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
+        <MetricCard
+          title="School Revenue"
+          value={formatCurrency(schoolRevenue)}
+          subtitle="Projected Net Tuition"
+          variant="primary"
+        />
+        <MetricCard
+          title="Hostel Revenue"
+          value={formatCurrency(hostelRevenue)}
+          subtitle="Residential Revenue"
+        />
+        <MetricCard
+          title="Tuition Revenue"
+          value={formatCurrency(totalRevenue)}
+          trend={revenueChange}
+          trendLabel="vs current"
+          variant={revenueChange > 0 ? 'positive' : 'default'}
+        />
+        <MetricCard
+          title="Student Breakdown"
+          value={`${formatNumber(schoolStudents)} | ${formatNumber(hostelStudents)}`}
+          subtitle="School | Hostel"
+        />
+        <MetricCard
+          title="Total Students"
+          value={formatNumber(totalStudents)}
+          subtitle="All Campuses"
+        />
+      </div>
+      
+      {/* Additional Fees Row */}
+      <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+        <MetricCard
+          title="Annual Fee"
+          value={formatCurrency(annualFeeRevenue)}
+          subtitle="All Students"
+        />
+        <MetricCard
+          title="DCP Revenue"
+          value={formatCurrency(dcpRevenue)}
+          subtitle="Development Charges"
+        />
+        <MetricCard
+          title="Grand Total"
+          value={formatCurrency(grandTotalRevenue)}
+          subtitle="Tuition + Annual + DCP"
+          variant="positive"
+        />
+      </div>
     </div>
   );
 }

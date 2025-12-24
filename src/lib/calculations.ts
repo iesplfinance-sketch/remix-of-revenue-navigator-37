@@ -58,6 +58,10 @@ export interface TotalCalculation {
   currentSchoolRevenue: number;
   currentHostelRevenue: number;
   currentTotalRevenue: number;
+  // Additional fees
+  annualFeeRevenue: number;
+  dcpRevenue: number;
+  grandTotalRevenue: number;
 }
 
 // Calculate revenue for a single campus
@@ -224,16 +228,25 @@ export function calculateTotals(
     currentHostelRevenue += hostel.currentOccupancy * hostel.feePerStudent;
   });
 
+  // Calculate additional fees
+  const annualFeeRevenue = (schoolStudents * globalSettings.schoolAnnualFee) + (hostelStudents * globalSettings.hostelAnnualFee);
+  const dcpRevenue = (schoolStudents * globalSettings.schoolDCP) + (hostelStudents * globalSettings.hostelDCP);
+  const tuitionRevenue = schoolRevenue + hostelRevenue;
+  const grandTotalRevenue = tuitionRevenue + annualFeeRevenue + dcpRevenue;
+
   return {
     schoolStudents,
     hostelStudents,
     totalStudents: schoolStudents + hostelStudents,
     schoolRevenue,
     hostelRevenue,
-    totalRevenue: schoolRevenue + hostelRevenue,
+    totalRevenue: tuitionRevenue,
     currentSchoolRevenue,
     currentHostelRevenue,
     currentTotalRevenue: currentSchoolRevenue + currentHostelRevenue,
+    annualFeeRevenue,
+    dcpRevenue,
+    grandTotalRevenue,
   };
 }
 
@@ -260,72 +273,144 @@ export function formatPercent(value: number): string {
   return `${sign}${value.toFixed(1)}%`;
 }
 
-// Generate CSV export data
+// Generate well-formatted CSV export data
 export function generateCSVExport(
   campuses: CampusData[],
   hostels: HostelData[],
   globalSettings: GlobalSettings
 ): string {
-  const headers = [
+  const rows: string[][] = [];
+  const totals = calculateTotals(campuses, hostels, globalSettings);
+
+  // Title and Date
+  rows.push(['SCHOOL REVENUE FORECASTING REPORT']);
+  rows.push([`Generated on: ${new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}`]);
+  rows.push(['']);
+
+  // Summary Section
+  rows.push(['=== EXECUTIVE SUMMARY ===']);
+  rows.push(['']);
+  rows.push(['Metric', 'Value']);
+  rows.push(['Total School Students', totals.schoolStudents.toString()]);
+  rows.push(['Total Hostel Students', totals.hostelStudents.toString()]);
+  rows.push(['Total Students', totals.totalStudents.toString()]);
+  rows.push(['']);
+  rows.push(['School Tuition Revenue', `Rs. ${totals.schoolRevenue.toLocaleString()}`]);
+  rows.push(['Hostel Revenue', `Rs. ${totals.hostelRevenue.toLocaleString()}`]);
+  rows.push(['Total Tuition Revenue', `Rs. ${totals.totalRevenue.toLocaleString()}`]);
+  rows.push(['Annual Fee Revenue', `Rs. ${totals.annualFeeRevenue.toLocaleString()}`]);
+  rows.push(['DCP Revenue', `Rs. ${totals.dcpRevenue.toLocaleString()}`]);
+  rows.push(['GRAND TOTAL REVENUE', `Rs. ${totals.grandTotalRevenue.toLocaleString()}`]);
+  rows.push(['']);
+
+  // Global Settings
+  rows.push(['=== GLOBAL SETTINGS ===']);
+  rows.push(['']);
+  rows.push(['Setting', 'Value']);
+  rows.push(['Global Fee Hike', `${globalSettings.globalFeeHike}%`]);
+  rows.push(['Global Student Growth', `${globalSettings.globalStudentGrowth}%`]);
+  rows.push(['Global Discount Rate', `${globalSettings.globalDiscount}%`]);
+  rows.push(['School Annual Fee', `Rs. ${globalSettings.schoolAnnualFee.toLocaleString()}`]);
+  rows.push(['Hostel Annual Fee', `Rs. ${globalSettings.hostelAnnualFee.toLocaleString()}`]);
+  rows.push(['School DCP', `Rs. ${globalSettings.schoolDCP.toLocaleString()}`]);
+  rows.push(['Hostel DCP', `Rs. ${globalSettings.hostelDCP.toLocaleString()}`]);
+  rows.push(['']);
+
+  // Campus Details Header
+  rows.push(['=== CAMPUS-WISE BREAKDOWN ===']);
+  rows.push(['']);
+  rows.push([
     'Campus',
     'Class',
     'Renewal Students (Current)',
     'Renewal Students (Projected)',
     'New Students (Current)',
     'New Students (Projected)',
-    'Renewal Fee',
-    'New Fee',
-    'Discount Rate',
-    'Current Revenue',
-    'Projected Revenue',
-    'Change'
-  ];
-
-  const rows: string[][] = [];
+    'Total Students (Current)',
+    'Total Students (Projected)',
+    'Renewal Fee (Rs.)',
+    'New Admission Fee (Rs.)',
+    'Discount Rate (%)',
+    'Current Revenue (Rs.)',
+    'Projected Revenue (Rs.)',
+    'Change (Rs.)',
+    'Change (%)'
+  ]);
 
   campuses.forEach(campus => {
+    const campusCalc = calculateCampusRevenue(campus, globalSettings);
     const classBreakdown = calculateClassBreakdown(campus, globalSettings);
+    
+    // Campus summary row
+    rows.push([
+      `>>> ${campus.name}`,
+      'CAMPUS TOTAL',
+      campusCalc.currentRenewalStudents.toString(),
+      campusCalc.projectedRenewalStudents.toString(),
+      campusCalc.currentNewStudents.toString(),
+      campusCalc.projectedNewStudents.toString(),
+      campusCalc.currentTotalStudents.toString(),
+      campusCalc.projectedTotalStudents.toString(),
+      '-',
+      '-',
+      `${campus.discountRate}%`,
+      campusCalc.currentNetRevenue.toLocaleString(),
+      campusCalc.projectedNetRevenue.toLocaleString(),
+      campusCalc.revenueChange.toLocaleString(),
+      `${campusCalc.revenueChangePercent.toFixed(1)}%`
+    ]);
+
+    // Class-wise breakdown
     classBreakdown.forEach(cls => {
       const campusClass = campus.classes.find(c => c.className === cls.className);
       rows.push([
-        campus.name,
+        '',
         cls.className,
         cls.currentRenewalStudents.toString(),
         cls.projectedRenewalStudents.toString(),
         cls.currentNewStudents.toString(),
         cls.projectedNewStudents.toString(),
-        campusClass?.renewalFee.toString() || '0',
-        campusClass?.newAdmissionFee.toString() || '0',
+        cls.currentTotalStudents.toString(),
+        cls.projectedTotalStudents.toString(),
+        campusClass?.renewalFee.toLocaleString() || '0',
+        campusClass?.newAdmissionFee.toLocaleString() || '0',
         `${campus.discountRate}%`,
-        cls.currentRevenue.toFixed(0),
-        cls.projectedRevenue.toFixed(0),
-        cls.revenueChange.toFixed(0)
+        cls.currentRevenue.toLocaleString(),
+        cls.projectedRevenue.toLocaleString(),
+        cls.revenueChange.toLocaleString(),
+        cls.currentRevenue > 0 ? `${((cls.revenueChange / cls.currentRevenue) * 100).toFixed(1)}%` : 'N/A'
       ]);
     });
+    rows.push(['']); // Empty row between campuses
   });
 
-  // Add hostel data
-  rows.push(['', '', '', '', '', '', '', '', '', '', '', '']);
-  rows.push(['HOSTELS', '', '', '', '', '', '', '', '', '', '', '']);
+  // Hostel Section
+  rows.push(['=== HOSTEL BREAKDOWN ===']);
+  rows.push(['']);
+  rows.push([
+    'Hostel Name',
+    'Current Occupancy',
+    'Max Capacity',
+    'Utilization (%)',
+    'Fee per Student (Rs.)',
+    'Total Revenue (Rs.)'
+  ]);
   
   hostels.forEach(hostel => {
     const calc = calculateHostelRevenue(hostel);
     rows.push([
       hostel.name,
-      'Residential',
-      calc.currentOccupancy.toString(),
-      calc.projectedOccupancy.toString(),
-      '0',
-      '0',
-      hostel.feePerStudent.toString(),
-      '0',
-      '0%',
-      calc.currentRevenue.toFixed(0),
-      calc.projectedRevenue.toFixed(0),
-      calc.revenueChange.toFixed(0)
+      hostel.currentOccupancy.toString(),
+      hostel.maxCapacity.toString(),
+      `${calc.utilizationPercent.toFixed(1)}%`,
+      hostel.feePerStudent.toLocaleString(),
+      calc.currentRevenue.toLocaleString()
     ]);
   });
 
-  const csv = [headers.join(','), ...rows.map(row => row.join(','))].join('\n');
+  rows.push(['']);
+  rows.push(['=== END OF REPORT ===']);
+
+  const csv = rows.map(row => row.map(cell => `"${cell}"`).join(',')).join('\n');
   return csv;
 }
