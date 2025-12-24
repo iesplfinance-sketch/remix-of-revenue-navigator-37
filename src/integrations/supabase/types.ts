@@ -14,7 +14,39 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      simulation_states: {
+        Row: {
+          campuses: Json
+          created_at: string
+          description: string | null
+          global_settings: Json
+          hostels: Json
+          id: string
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          campuses: Json
+          created_at?: string
+          description?: string | null
+          global_settings: Json
+          hostels: Json
+          id?: string
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          campuses?: Json
+          created_at?: string
+          description?: string | null
+          global_settings?: Json
+          hostels?: Json
+          id?: string
+          name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

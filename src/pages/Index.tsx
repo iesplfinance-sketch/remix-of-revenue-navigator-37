@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Download, Settings, RotateCcw, TrendingUp, Building, LayoutDashboard, DollarSign, FileSpreadsheet, FileText } from 'lucide-react';
+import { Download, Settings, RotateCcw, TrendingUp, Building, LayoutDashboard, DollarSign, FileSpreadsheet, FileText, Save, FolderOpen } from 'lucide-react';
 import { useSimulationState } from '@/hooks/useSimulationState';
 import { HeaderMetrics } from '@/components/MetricCard';
 import { CampusCard } from '@/components/CampusCard';
@@ -11,12 +11,13 @@ import { SettingsModal } from '@/components/SettingsModal';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { AdditionalFeesTab } from '@/components/AdditionalFeesTab';
 import { CalculationBreakdown } from '@/components/CalculationBreakdown';
+import { SaveLoadModal } from '@/components/SaveLoadModal';
 import { generateExcelExport, generatePDFExport } from '@/lib/exportUtils';
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-
+import { CampusData, HostelData, GlobalSettings } from '@/data/schoolData';
 const Index = () => {
   const {
     campuses,
@@ -31,9 +32,12 @@ const Index = () => {
     updateGlobalSettings,
     applyGlobalDiscount,
     resetToDefaults,
+    setCampuses,
+    setHostels,
+    setGlobalSettings,
   } = useSimulationState();
-
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [isSaveLoadOpen, setIsSaveLoadOpen] = useState(false);
   const [expandedCampusId, setExpandedCampusId] = useState<string | null>(null);
 
   const handleExportExcel = () => {
@@ -48,6 +52,12 @@ const Index = () => {
     setExpandedCampusId(prev => prev === campusId ? null : campusId);
   };
 
+  const handleLoadSimulation = (loadedCampuses: CampusData[], loadedHostels: HostelData[], loadedGlobalSettings: GlobalSettings) => {
+    setCampuses(loadedCampuses);
+    setHostels(loadedHostels);
+    setGlobalSettings(loadedGlobalSettings);
+  };
+
   return (
     <div className="min-h-screen bg-surface-0">
       {/* Sticky Header */}
@@ -60,6 +70,10 @@ const Index = () => {
             </div>
             <div className="flex items-center gap-2">
               <ThemeToggle />
+              <Button variant="outline" size="sm" onClick={() => setIsSaveLoadOpen(true)}>
+                <Save className="w-4 h-4 mr-2" />
+                Save / Load
+              </Button>
               <Button variant="ghost" size="sm" onClick={() => setIsSettingsOpen(true)}>
                 <Settings className="w-4 h-4 mr-2" />
                 Settings
@@ -302,6 +316,16 @@ const Index = () => {
         campuses={campuses}
         onUpdateCampus={updateCampus}
         onUpdateCampusClass={updateCampusClass}
+      />
+
+      {/* Save/Load Modal */}
+      <SaveLoadModal
+        isOpen={isSaveLoadOpen}
+        onClose={() => setIsSaveLoadOpen(false)}
+        campuses={campuses}
+        hostels={hostels}
+        globalSettings={globalSettings}
+        onLoadSimulation={handleLoadSimulation}
       />
     </div>
   );
