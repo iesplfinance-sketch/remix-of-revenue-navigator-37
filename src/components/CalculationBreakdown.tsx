@@ -1,17 +1,14 @@
 import { useState } from 'react';
-import { ChevronDown, ChevronRight, Calculator } from 'lucide-react';
+import { ChevronDown, ChevronRight, Calculator, Eye, EyeOff } from 'lucide-react';
 import { CampusData, GlobalSettings } from '@/data/schoolData';
 import { CampusCalculation, formatCurrency, formatNumber } from '@/lib/calculations';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Label } from '@/components/ui/label';
 
 interface CalculationBreakdownProps {
   campuses: CampusData[];
   calculations: CampusCalculation[];
-  globalSettings: GlobalSettings;
-}
-
-interface CampusBreakdownRowProps {
-  campus: CampusData;
-  calculation: CampusCalculation;
   globalSettings: GlobalSettings;
 }
 
@@ -41,17 +38,26 @@ interface ClassRowData {
   forecastedDCPTotal: number;
   forecastedAnnualTotal: number;
   forecastedAdmissionTotal: number;
+  // Grand totals per class
+  currentGrandTotal: number;
+  forecastedGrandTotal: number;
 }
 
-function CampusBreakdownRow({ campus, calculation, globalSettings }: CampusBreakdownRowProps) {
-  const [isExpanded, setIsExpanded] = useState(false);
+interface ColumnVisibility {
+  newAdmission: boolean;
+  renewal: boolean;
+  dcp: boolean;
+  annualFee: boolean;
+  admissionFee: boolean;
+  grandTotal: boolean;
+}
 
+function useClassRows(campus: CampusData, globalSettings: GlobalSettings) {
   const effectiveNewAdmissionFeeHike = campus.newAdmissionFeeHike + globalSettings.globalNewAdmissionFeeHike;
   const effectiveRenewalFeeHike = campus.renewalFeeHike + globalSettings.globalRenewalFeeHike;
   const effectiveNewStudentGrowth = campus.newStudentGrowth + globalSettings.globalNewStudentGrowth;
   const effectiveRenewalGrowth = campus.renewalGrowth + globalSettings.globalRenewalGrowth;
 
-  // Calculate class-level breakdown matching Excel format
   const classRows: ClassRowData[] = campus.classes
     .filter(cls => cls.renewalCount > 0 || cls.newAdmissionCount > 0 || cls.renewalFee > 0 || cls.newAdmissionFee > 0)
     .map(cls => {
@@ -76,7 +82,7 @@ function CampusBreakdownRow({ campus, calculation, globalSettings }: CampusBreak
       // Current additional fees
       const currentDCPTotal = (currentNewAdmission + currentRenewal) * dcpFee;
       const currentAnnualTotal = (currentNewAdmission + currentRenewal) * annualFee;
-      const currentAdmissionTotal = currentNewAdmission * admissionFee; // Only new students pay admission
+      const currentAdmissionTotal = currentNewAdmission * admissionFee;
 
       // Forecasted values
       const forecastedNewAdmission = Math.round(currentNewAdmission * newStudentGrowthMultiplier);
@@ -90,6 +96,10 @@ function CampusBreakdownRow({ campus, calculation, globalSettings }: CampusBreak
       const forecastedDCPTotal = (forecastedNewAdmission + forecastedRenewal) * dcpFee;
       const forecastedAnnualTotal = (forecastedNewAdmission + forecastedRenewal) * annualFee;
       const forecastedAdmissionTotal = forecastedNewAdmission * admissionFee;
+
+      // Grand totals
+      const currentGrandTotal = currentNewTotal + currentRenewalTotal + currentDCPTotal + currentAnnualTotal + currentAdmissionTotal;
+      const forecastedGrandTotal = forecastedNewTotal + forecastedRenewalTotal + forecastedDCPTotal + forecastedAnnualTotal + forecastedAdmissionTotal;
 
       return {
         className: cls.className,
@@ -114,10 +124,11 @@ function CampusBreakdownRow({ campus, calculation, globalSettings }: CampusBreak
         forecastedDCPTotal,
         forecastedAnnualTotal,
         forecastedAdmissionTotal,
+        currentGrandTotal,
+        forecastedGrandTotal,
       };
     });
 
-  // Calculate totals
   const totals = {
     currentNewAdmission: classRows.reduce((sum, r) => sum + r.currentNewAdmission, 0),
     currentNewTotal: classRows.reduce((sum, r) => sum + r.currentNewTotal, 0),
@@ -126,6 +137,7 @@ function CampusBreakdownRow({ campus, calculation, globalSettings }: CampusBreak
     currentDCPTotal: classRows.reduce((sum, r) => sum + r.currentDCPTotal, 0),
     currentAnnualTotal: classRows.reduce((sum, r) => sum + r.currentAnnualTotal, 0),
     currentAdmissionTotal: classRows.reduce((sum, r) => sum + r.currentAdmissionTotal, 0),
+    currentGrandTotal: classRows.reduce((sum, r) => sum + r.currentGrandTotal, 0),
     forecastedNewAdmission: classRows.reduce((sum, r) => sum + r.forecastedNewAdmission, 0),
     forecastedNewTotal: classRows.reduce((sum, r) => sum + r.forecastedNewTotal, 0),
     forecastedRenewal: classRows.reduce((sum, r) => sum + r.forecastedRenewal, 0),
@@ -133,11 +145,181 @@ function CampusBreakdownRow({ campus, calculation, globalSettings }: CampusBreak
     forecastedDCPTotal: classRows.reduce((sum, r) => sum + r.forecastedDCPTotal, 0),
     forecastedAnnualTotal: classRows.reduce((sum, r) => sum + r.forecastedAnnualTotal, 0),
     forecastedAdmissionTotal: classRows.reduce((sum, r) => sum + r.forecastedAdmissionTotal, 0),
+    forecastedGrandTotal: classRows.reduce((sum, r) => sum + r.forecastedGrandTotal, 0),
   };
 
-  // Grand totals including all fees
-  const currentGrandTotal = totals.currentNewTotal + totals.currentRenewalTotal + totals.currentDCPTotal + totals.currentAnnualTotal + totals.currentAdmissionTotal;
-  const forecastedGrandTotal = totals.forecastedNewTotal + totals.forecastedRenewalTotal + totals.forecastedDCPTotal + totals.forecastedAnnualTotal + totals.forecastedAdmissionTotal;
+  return { classRows, totals, effectiveNewAdmissionFeeHike, effectiveRenewalFeeHike, effectiveNewStudentGrowth, effectiveRenewalGrowth };
+}
+
+interface SessionTableProps {
+  campus: CampusData;
+  classRows: ClassRowData[];
+  totals: ReturnType<typeof useClassRows>['totals'];
+  isForecast: boolean;
+  columns: ColumnVisibility;
+}
+
+function SessionTable({ campus, classRows, totals, isForecast, columns }: SessionTableProps) {
+  return (
+    <table className="w-full text-xs border-collapse">
+      <thead>
+        <tr className="bg-surface-2">
+          <th className="border border-border p-2 text-left font-semibold sticky left-0 bg-surface-2 z-10">{campus.shortName}</th>
+          {columns.newAdmission && (
+            <>
+              <th className="border border-border p-2 text-right text-cyan-400">New Adm</th>
+              <th className="border border-border p-2 text-right text-cyan-400">Fees</th>
+              <th className="border border-border p-2 text-right text-cyan-400">Total</th>
+            </>
+          )}
+          {columns.renewal && (
+            <>
+              <th className="border border-border p-2 text-right text-green-400">Renewal</th>
+              <th className="border border-border p-2 text-right text-green-400">Fees</th>
+              <th className="border border-border p-2 text-right text-green-400">Total</th>
+            </>
+          )}
+          {columns.dcp && <th className="border border-border p-2 text-right text-warning">DCP</th>}
+          {columns.annualFee && <th className="border border-border p-2 text-right text-positive">Annual</th>}
+          {columns.admissionFee && <th className="border border-border p-2 text-right text-blue-500">Adm Fee</th>}
+          {columns.grandTotal && <th className="border border-border p-2 text-right text-primary font-bold">Total</th>}
+        </tr>
+      </thead>
+      <tbody>
+        {classRows.map((row, idx) => (
+          <tr key={row.className} className={idx % 2 === 0 ? 'bg-surface-0' : 'bg-surface-1/50'}>
+            <td className="border border-border p-2 font-medium sticky left-0 bg-inherit">{row.className}</td>
+            {columns.newAdmission && (
+              <>
+                <td className="border border-border p-2 text-right font-mono text-cyan-400">
+                  {(isForecast ? row.forecastedNewAdmission : row.currentNewAdmission) > 0 
+                    ? (isForecast ? row.forecastedNewAdmission : row.currentNewAdmission) : '-'}
+                </td>
+                <td className="border border-border p-2 text-right font-mono">
+                  {(isForecast ? row.forecastedNewFee : row.currentNewFee) > 0 
+                    ? formatNumber(isForecast ? row.forecastedNewFee : row.currentNewFee) : '-'}
+                </td>
+                <td className="border border-border p-2 text-right font-mono text-cyan-400">
+                  {(isForecast ? row.forecastedNewTotal : row.currentNewTotal) > 0 
+                    ? formatNumber(isForecast ? row.forecastedNewTotal : row.currentNewTotal) : '-'}
+                </td>
+              </>
+            )}
+            {columns.renewal && (
+              <>
+                <td className="border border-border p-2 text-right font-mono text-green-400">
+                  {(isForecast ? row.forecastedRenewal : row.currentRenewal) > 0 
+                    ? (isForecast ? row.forecastedRenewal : row.currentRenewal) : '-'}
+                </td>
+                <td className="border border-border p-2 text-right font-mono">
+                  {(isForecast ? row.forecastedRenewalFee : row.currentRenewalFee) > 0 
+                    ? formatNumber(isForecast ? row.forecastedRenewalFee : row.currentRenewalFee) : '-'}
+                </td>
+                <td className="border border-border p-2 text-right font-mono text-green-400">
+                  {(isForecast ? row.forecastedRenewalTotal : row.currentRenewalTotal) > 0 
+                    ? formatNumber(isForecast ? row.forecastedRenewalTotal : row.currentRenewalTotal) : '-'}
+                </td>
+              </>
+            )}
+            {columns.dcp && (
+              <td className="border border-border p-2 text-right font-mono text-warning">
+                {(isForecast ? row.forecastedDCPTotal : row.currentDCPTotal) > 0 
+                  ? formatNumber(isForecast ? row.forecastedDCPTotal : row.currentDCPTotal) : '-'}
+              </td>
+            )}
+            {columns.annualFee && (
+              <td className="border border-border p-2 text-right font-mono text-positive">
+                {(isForecast ? row.forecastedAnnualTotal : row.currentAnnualTotal) > 0 
+                  ? formatNumber(isForecast ? row.forecastedAnnualTotal : row.currentAnnualTotal) : '-'}
+              </td>
+            )}
+            {columns.admissionFee && (
+              <td className="border border-border p-2 text-right font-mono text-blue-500">
+                {(isForecast ? row.forecastedAdmissionTotal : row.currentAdmissionTotal) > 0 
+                  ? formatNumber(isForecast ? row.forecastedAdmissionTotal : row.currentAdmissionTotal) : '-'}
+              </td>
+            )}
+            {columns.grandTotal && (
+              <td className="border border-border p-2 text-right font-mono text-primary font-semibold">
+                {formatNumber(isForecast ? row.forecastedGrandTotal : row.currentGrandTotal)}
+              </td>
+            )}
+          </tr>
+        ))}
+        {/* Totals Row */}
+        <tr className="bg-surface-1 font-semibold">
+          <td className="border border-border p-2 sticky left-0 bg-surface-1">TOTAL</td>
+          {columns.newAdmission && (
+            <>
+              <td className="border border-border p-2 text-right font-mono text-cyan-400">
+                {isForecast ? totals.forecastedNewAdmission : totals.currentNewAdmission}
+              </td>
+              <td className="border border-border p-2 text-right font-mono">-</td>
+              <td className="border border-border p-2 text-right font-mono text-cyan-400">
+                {formatNumber(isForecast ? totals.forecastedNewTotal : totals.currentNewTotal)}
+              </td>
+            </>
+          )}
+          {columns.renewal && (
+            <>
+              <td className="border border-border p-2 text-right font-mono text-green-400">
+                {isForecast ? totals.forecastedRenewal : totals.currentRenewal}
+              </td>
+              <td className="border border-border p-2 text-right font-mono">-</td>
+              <td className="border border-border p-2 text-right font-mono text-green-400">
+                {formatNumber(isForecast ? totals.forecastedRenewalTotal : totals.currentRenewalTotal)}
+              </td>
+            </>
+          )}
+          {columns.dcp && (
+            <td className="border border-border p-2 text-right font-mono text-warning">
+              {formatNumber(isForecast ? totals.forecastedDCPTotal : totals.currentDCPTotal)}
+            </td>
+          )}
+          {columns.annualFee && (
+            <td className="border border-border p-2 text-right font-mono text-positive">
+              {formatNumber(isForecast ? totals.forecastedAnnualTotal : totals.currentAnnualTotal)}
+            </td>
+          )}
+          {columns.admissionFee && (
+            <td className="border border-border p-2 text-right font-mono text-blue-500">
+              {formatNumber(isForecast ? totals.forecastedAdmissionTotal : totals.currentAdmissionTotal)}
+            </td>
+          )}
+          {columns.grandTotal && (
+            <td className="border border-border p-2 text-right font-mono text-primary font-bold">
+              {formatCurrency(isForecast ? totals.forecastedGrandTotal : totals.currentGrandTotal)}
+            </td>
+          )}
+        </tr>
+      </tbody>
+    </table>
+  );
+}
+
+interface CampusBreakdownRowProps {
+  campus: CampusData;
+  calculation: CampusCalculation;
+  globalSettings: GlobalSettings;
+}
+
+function CampusBreakdownRow({ campus, calculation, globalSettings }: CampusBreakdownRowProps) {
+  const [isExpanded, setIsExpanded] = useState(false);
+  const [columns, setColumns] = useState<ColumnVisibility>({
+    newAdmission: true,
+    renewal: true,
+    dcp: true,
+    annualFee: true,
+    admissionFee: true,
+    grandTotal: true,
+  });
+
+  const { classRows, totals, effectiveNewAdmissionFeeHike, effectiveRenewalFeeHike, effectiveNewStudentGrowth, effectiveRenewalGrowth } = 
+    useClassRows(campus, globalSettings);
+
+  const toggleColumn = (key: keyof ColumnVisibility) => {
+    setColumns(prev => ({ ...prev, [key]: !prev[key] }));
+  };
 
   return (
     <>
@@ -168,7 +350,7 @@ function CampusBreakdownRow({ campus, calculation, globalSettings }: CampusBreak
         <tr>
           <td colSpan={6} className="p-0">
             <div className="bg-surface-2/30 p-4 border-y border-border/50 animate-fade-in">
-              {/* Fee Hike Info */}
+              {/* Settings Info */}
               <div className="mb-4 p-3 bg-primary/10 rounded-lg border border-primary/20">
                 <p className="text-sm font-medium text-foreground">
                   New Adm Fee: {effectiveNewAdmissionFeeHike > 0 ? '+' : ''}{effectiveNewAdmissionFeeHike}% | 
@@ -180,130 +362,300 @@ function CampusBreakdownRow({ campus, calculation, globalSettings }: CampusBreak
                 </p>
               </div>
 
-              {/* Detailed Calculation Table - Excel Format */}
-              <div className="overflow-x-auto">
-                <table className="w-full text-xs border-collapse">
-                  <thead>
-                    <tr className="bg-surface-1">
-                      <th rowSpan={2} className="border border-border p-2 text-left font-semibold">{campus.shortName}</th>
-                      <th colSpan={9} className="border border-border p-2 text-center font-semibold bg-muted/30">Current</th>
-                      <th colSpan={9} className="border border-border p-2 text-center font-semibold bg-primary/10">Forecasted</th>
-                    </tr>
-                    <tr className="bg-surface-2">
-                      <th className="border border-border p-2 text-right text-muted-foreground">New Adm</th>
-                      <th className="border border-border p-2 text-right text-muted-foreground">Fees</th>
-                      <th className="border border-border p-2 text-right text-muted-foreground">Total</th>
-                      <th className="border border-border p-2 text-right text-muted-foreground">Renewal</th>
-                      <th className="border border-border p-2 text-right text-muted-foreground">Fees</th>
-                      <th className="border border-border p-2 text-right text-muted-foreground">Total</th>
-                      <th className="border border-border p-2 text-right text-warning">DCP</th>
-                      <th className="border border-border p-2 text-right text-positive">Annual</th>
-                      <th className="border border-border p-2 text-right text-blue-500">Adm Fee</th>
-                      <th className="border border-border p-2 text-right text-primary">New Adm</th>
-                      <th className="border border-border p-2 text-right text-primary">Fees</th>
-                      <th className="border border-border p-2 text-right text-primary">Total</th>
-                      <th className="border border-border p-2 text-right text-primary">Renewal</th>
-                      <th className="border border-border p-2 text-right text-primary">Fees</th>
-                      <th className="border border-border p-2 text-right text-primary">Total</th>
-                      <th className="border border-border p-2 text-right text-warning">DCP</th>
-                      <th className="border border-border p-2 text-right text-positive">Annual</th>
-                      <th className="border border-border p-2 text-right text-blue-500">Adm Fee</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {classRows.map((row, idx) => (
-                      <tr key={row.className} className={idx % 2 === 0 ? 'bg-surface-0' : 'bg-surface-1/50'}>
-                        <td className="border border-border p-2 font-medium">{row.className}</td>
-                        {/* Current */}
-                        <td className="border border-border p-2 text-right font-mono">
-                          {row.currentNewAdmission > 0 ? row.currentNewAdmission : '-'}
-                        </td>
-                        <td className="border border-border p-2 text-right font-mono">
-                          {row.currentNewFee > 0 ? formatNumber(row.currentNewFee) : '-'}
-                        </td>
-                        <td className="border border-border p-2 text-right font-mono">
-                          {row.currentNewTotal > 0 ? formatNumber(row.currentNewTotal) : '-'}
-                        </td>
-                        <td className="border border-border p-2 text-right font-mono">
-                          {row.currentRenewal > 0 ? row.currentRenewal : '-'}
-                        </td>
-                        <td className="border border-border p-2 text-right font-mono">
-                          {row.currentRenewalFee > 0 ? formatNumber(row.currentRenewalFee) : '-'}
-                        </td>
-                        <td className="border border-border p-2 text-right font-mono">
-                          {row.currentRenewalTotal > 0 ? formatNumber(row.currentRenewalTotal) : '-'}
-                        </td>
-                        <td className="border border-border p-2 text-right font-mono text-warning">
-                          {row.currentDCPTotal > 0 ? formatNumber(row.currentDCPTotal) : '-'}
-                        </td>
-                        <td className="border border-border p-2 text-right font-mono text-positive">
-                          {row.currentAnnualTotal > 0 ? formatNumber(row.currentAnnualTotal) : '-'}
-                        </td>
-                        <td className="border border-border p-2 text-right font-mono text-blue-500">
-                          {row.currentAdmissionTotal > 0 ? formatNumber(row.currentAdmissionTotal) : '-'}
-                        </td>
-                        {/* Forecasted */}
-                        <td className="border border-border p-2 text-right font-mono text-primary">
-                          {row.forecastedNewAdmission > 0 ? row.forecastedNewAdmission : '-'}
-                        </td>
-                        <td className="border border-border p-2 text-right font-mono text-primary">
-                          {row.forecastedNewFee > 0 ? formatNumber(row.forecastedNewFee) : '-'}
-                        </td>
-                        <td className="border border-border p-2 text-right font-mono text-primary">
-                          {row.forecastedNewTotal > 0 ? formatNumber(row.forecastedNewTotal) : '-'}
-                        </td>
-                        <td className="border border-border p-2 text-right font-mono text-primary">
-                          {row.forecastedRenewal > 0 ? row.forecastedRenewal : '-'}
-                        </td>
-                        <td className="border border-border p-2 text-right font-mono text-primary">
-                          {row.forecastedRenewalFee > 0 ? formatNumber(row.forecastedRenewalFee) : '-'}
-                        </td>
-                        <td className="border border-border p-2 text-right font-mono text-primary">
-                          {row.forecastedRenewalTotal > 0 ? formatNumber(row.forecastedRenewalTotal) : '-'}
-                        </td>
-                        <td className="border border-border p-2 text-right font-mono text-warning">
-                          {row.forecastedDCPTotal > 0 ? formatNumber(row.forecastedDCPTotal) : '-'}
-                        </td>
-                        <td className="border border-border p-2 text-right font-mono text-positive">
-                          {row.forecastedAnnualTotal > 0 ? formatNumber(row.forecastedAnnualTotal) : '-'}
-                        </td>
-                        <td className="border border-border p-2 text-right font-mono text-blue-500">
-                          {row.forecastedAdmissionTotal > 0 ? formatNumber(row.forecastedAdmissionTotal) : '-'}
-                        </td>
-                      </tr>
-                    ))}
-                    {/* Totals Row */}
-                    <tr className="bg-surface-1 font-semibold">
-                      <td className="border border-border p-2">TOTAL</td>
-                      <td className="border border-border p-2 text-right font-mono">{totals.currentNewAdmission}</td>
-                      <td className="border border-border p-2 text-right font-mono">-</td>
-                      <td className="border border-border p-2 text-right font-mono">{formatNumber(totals.currentNewTotal)}</td>
-                      <td className="border border-border p-2 text-right font-mono">{totals.currentRenewal}</td>
-                      <td className="border border-border p-2 text-right font-mono">-</td>
-                      <td className="border border-border p-2 text-right font-mono">{formatNumber(totals.currentRenewalTotal)}</td>
-                      <td className="border border-border p-2 text-right font-mono text-warning">{formatNumber(totals.currentDCPTotal)}</td>
-                      <td className="border border-border p-2 text-right font-mono text-positive">{formatNumber(totals.currentAnnualTotal)}</td>
-                      <td className="border border-border p-2 text-right font-mono text-blue-500">{formatNumber(totals.currentAdmissionTotal)}</td>
-                      <td className="border border-border p-2 text-right font-mono text-primary">{totals.forecastedNewAdmission}</td>
-                      <td className="border border-border p-2 text-right font-mono text-primary">-</td>
-                      <td className="border border-border p-2 text-right font-mono text-primary">{formatNumber(totals.forecastedNewTotal)}</td>
-                      <td className="border border-border p-2 text-right font-mono text-primary">{totals.forecastedRenewal}</td>
-                      <td className="border border-border p-2 text-right font-mono text-primary">-</td>
-                      <td className="border border-border p-2 text-right font-mono text-primary">{formatNumber(totals.forecastedRenewalTotal)}</td>
-                      <td className="border border-border p-2 text-right font-mono text-warning">{formatNumber(totals.forecastedDCPTotal)}</td>
-                      <td className="border border-border p-2 text-right font-mono text-positive">{formatNumber(totals.forecastedAnnualTotal)}</td>
-                      <td className="border border-border p-2 text-right font-mono text-blue-500">{formatNumber(totals.forecastedAdmissionTotal)}</td>
-                    </tr>
-                    {/* Grand Total Row */}
-                    <tr className="bg-primary/20 font-bold">
-                      <td className="border border-border p-2" colSpan={7}>GRAND TOTAL (All Revenue)</td>
-                      <td className="border border-border p-2 text-right font-mono" colSpan={3}>{formatCurrency(currentGrandTotal)}</td>
-                      <td className="border border-border p-2 text-right font-mono text-primary" colSpan={6}></td>
-                      <td className="border border-border p-2 text-right font-mono text-primary" colSpan={3}>{formatCurrency(forecastedGrandTotal)}</td>
-                    </tr>
-                  </tbody>
-                </table>
+              {/* Column Toggle Controls */}
+              <div className="mb-4 p-3 bg-surface-1 rounded-lg border border-border">
+                <div className="flex items-center gap-2 mb-2">
+                  <Eye className="w-4 h-4 text-muted-foreground" />
+                  <span className="text-sm font-medium text-foreground">Show/Hide Columns:</span>
+                </div>
+                <div className="flex flex-wrap gap-4">
+                  {[
+                    { key: 'newAdmission' as const, label: 'New Admission', color: 'text-cyan-400' },
+                    { key: 'renewal' as const, label: 'Renewal', color: 'text-green-400' },
+                    { key: 'dcp' as const, label: 'DCP', color: 'text-warning' },
+                    { key: 'annualFee' as const, label: 'Annual Fee', color: 'text-positive' },
+                    { key: 'admissionFee' as const, label: 'Admission Fee', color: 'text-blue-500' },
+                    { key: 'grandTotal' as const, label: 'Grand Total', color: 'text-primary' },
+                  ].map(({ key, label, color }) => (
+                    <div key={key} className="flex items-center gap-2">
+                      <Checkbox 
+                        id={`${campus.id}-${key}`}
+                        checked={columns[key]} 
+                        onCheckedChange={() => toggleColumn(key)}
+                      />
+                      <Label htmlFor={`${campus.id}-${key}`} className={`text-xs cursor-pointer ${color}`}>
+                        {label}
+                      </Label>
+                    </div>
+                  ))}
+                </div>
               </div>
+
+              {/* Tabbed View */}
+              <Tabs defaultValue="comparison" className="w-full">
+                <TabsList className="mb-4">
+                  <TabsTrigger value="comparison">Side by Side</TabsTrigger>
+                  <TabsTrigger value="current">Current Session</TabsTrigger>
+                  <TabsTrigger value="forecasted">Forecasted Session</TabsTrigger>
+                </TabsList>
+
+                <TabsContent value="comparison">
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-xs border-collapse">
+                      <thead>
+                        <tr className="bg-surface-1">
+                          <th rowSpan={2} className="border border-border p-2 text-left font-semibold sticky left-0 bg-surface-1 z-10">{campus.shortName}</th>
+                          {(columns.newAdmission || columns.renewal || columns.dcp || columns.annualFee || columns.admissionFee) && (
+                            <th colSpan={
+                              (columns.newAdmission ? 3 : 0) + 
+                              (columns.renewal ? 3 : 0) + 
+                              (columns.dcp ? 1 : 0) + 
+                              (columns.annualFee ? 1 : 0) + 
+                              (columns.admissionFee ? 1 : 0) +
+                              (columns.grandTotal ? 1 : 0)
+                            } className="border border-border p-2 text-center font-semibold bg-muted/30">Current</th>
+                          )}
+                          {(columns.newAdmission || columns.renewal || columns.dcp || columns.annualFee || columns.admissionFee) && (
+                            <th colSpan={
+                              (columns.newAdmission ? 3 : 0) + 
+                              (columns.renewal ? 3 : 0) + 
+                              (columns.dcp ? 1 : 0) + 
+                              (columns.annualFee ? 1 : 0) + 
+                              (columns.admissionFee ? 1 : 0) +
+                              (columns.grandTotal ? 1 : 0)
+                            } className="border border-border p-2 text-center font-semibold bg-primary/10">Forecasted</th>
+                          )}
+                        </tr>
+                        <tr className="bg-surface-2">
+                          {/* Current Headers */}
+                          {columns.newAdmission && (
+                            <>
+                              <th className="border border-border p-2 text-right text-cyan-400">New Adm</th>
+                              <th className="border border-border p-2 text-right text-muted-foreground">Fees</th>
+                              <th className="border border-border p-2 text-right text-cyan-400">Total</th>
+                            </>
+                          )}
+                          {columns.renewal && (
+                            <>
+                              <th className="border border-border p-2 text-right text-green-400">Renewal</th>
+                              <th className="border border-border p-2 text-right text-muted-foreground">Fees</th>
+                              <th className="border border-border p-2 text-right text-green-400">Total</th>
+                            </>
+                          )}
+                          {columns.dcp && <th className="border border-border p-2 text-right text-warning">DCP</th>}
+                          {columns.annualFee && <th className="border border-border p-2 text-right text-positive">Annual</th>}
+                          {columns.admissionFee && <th className="border border-border p-2 text-right text-blue-500">Adm Fee</th>}
+                          {columns.grandTotal && <th className="border border-border p-2 text-right text-primary font-bold">Total</th>}
+                          {/* Forecasted Headers */}
+                          {columns.newAdmission && (
+                            <>
+                              <th className="border border-border p-2 text-right text-cyan-400">New Adm</th>
+                              <th className="border border-border p-2 text-right text-primary">Fees</th>
+                              <th className="border border-border p-2 text-right text-cyan-400">Total</th>
+                            </>
+                          )}
+                          {columns.renewal && (
+                            <>
+                              <th className="border border-border p-2 text-right text-green-400">Renewal</th>
+                              <th className="border border-border p-2 text-right text-primary">Fees</th>
+                              <th className="border border-border p-2 text-right text-green-400">Total</th>
+                            </>
+                          )}
+                          {columns.dcp && <th className="border border-border p-2 text-right text-warning">DCP</th>}
+                          {columns.annualFee && <th className="border border-border p-2 text-right text-positive">Annual</th>}
+                          {columns.admissionFee && <th className="border border-border p-2 text-right text-blue-500">Adm Fee</th>}
+                          {columns.grandTotal && <th className="border border-border p-2 text-right text-primary font-bold">Total</th>}
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {classRows.map((row, idx) => (
+                          <tr key={row.className} className={idx % 2 === 0 ? 'bg-surface-0' : 'bg-surface-1/50'}>
+                            <td className="border border-border p-2 font-medium sticky left-0 bg-inherit">{row.className}</td>
+                            {/* Current */}
+                            {columns.newAdmission && (
+                              <>
+                                <td className="border border-border p-2 text-right font-mono text-cyan-400">
+                                  {row.currentNewAdmission > 0 ? row.currentNewAdmission : '-'}
+                                </td>
+                                <td className="border border-border p-2 text-right font-mono">
+                                  {row.currentNewFee > 0 ? formatNumber(row.currentNewFee) : '-'}
+                                </td>
+                                <td className="border border-border p-2 text-right font-mono text-cyan-400">
+                                  {row.currentNewTotal > 0 ? formatNumber(row.currentNewTotal) : '-'}
+                                </td>
+                              </>
+                            )}
+                            {columns.renewal && (
+                              <>
+                                <td className="border border-border p-2 text-right font-mono text-green-400">
+                                  {row.currentRenewal > 0 ? row.currentRenewal : '-'}
+                                </td>
+                                <td className="border border-border p-2 text-right font-mono">
+                                  {row.currentRenewalFee > 0 ? formatNumber(row.currentRenewalFee) : '-'}
+                                </td>
+                                <td className="border border-border p-2 text-right font-mono text-green-400">
+                                  {row.currentRenewalTotal > 0 ? formatNumber(row.currentRenewalTotal) : '-'}
+                                </td>
+                              </>
+                            )}
+                            {columns.dcp && (
+                              <td className="border border-border p-2 text-right font-mono text-warning">
+                                {row.currentDCPTotal > 0 ? formatNumber(row.currentDCPTotal) : '-'}
+                              </td>
+                            )}
+                            {columns.annualFee && (
+                              <td className="border border-border p-2 text-right font-mono text-positive">
+                                {row.currentAnnualTotal > 0 ? formatNumber(row.currentAnnualTotal) : '-'}
+                              </td>
+                            )}
+                            {columns.admissionFee && (
+                              <td className="border border-border p-2 text-right font-mono text-blue-500">
+                                {row.currentAdmissionTotal > 0 ? formatNumber(row.currentAdmissionTotal) : '-'}
+                              </td>
+                            )}
+                            {columns.grandTotal && (
+                              <td className="border border-border p-2 text-right font-mono font-semibold">
+                                {formatNumber(row.currentGrandTotal)}
+                              </td>
+                            )}
+                            {/* Forecasted */}
+                            {columns.newAdmission && (
+                              <>
+                                <td className="border border-border p-2 text-right font-mono text-cyan-400">
+                                  {row.forecastedNewAdmission > 0 ? row.forecastedNewAdmission : '-'}
+                                </td>
+                                <td className="border border-border p-2 text-right font-mono text-primary">
+                                  {row.forecastedNewFee > 0 ? formatNumber(row.forecastedNewFee) : '-'}
+                                </td>
+                                <td className="border border-border p-2 text-right font-mono text-cyan-400">
+                                  {row.forecastedNewTotal > 0 ? formatNumber(row.forecastedNewTotal) : '-'}
+                                </td>
+                              </>
+                            )}
+                            {columns.renewal && (
+                              <>
+                                <td className="border border-border p-2 text-right font-mono text-green-400">
+                                  {row.forecastedRenewal > 0 ? row.forecastedRenewal : '-'}
+                                </td>
+                                <td className="border border-border p-2 text-right font-mono text-primary">
+                                  {row.forecastedRenewalFee > 0 ? formatNumber(row.forecastedRenewalFee) : '-'}
+                                </td>
+                                <td className="border border-border p-2 text-right font-mono text-green-400">
+                                  {row.forecastedRenewalTotal > 0 ? formatNumber(row.forecastedRenewalTotal) : '-'}
+                                </td>
+                              </>
+                            )}
+                            {columns.dcp && (
+                              <td className="border border-border p-2 text-right font-mono text-warning">
+                                {row.forecastedDCPTotal > 0 ? formatNumber(row.forecastedDCPTotal) : '-'}
+                              </td>
+                            )}
+                            {columns.annualFee && (
+                              <td className="border border-border p-2 text-right font-mono text-positive">
+                                {row.forecastedAnnualTotal > 0 ? formatNumber(row.forecastedAnnualTotal) : '-'}
+                              </td>
+                            )}
+                            {columns.admissionFee && (
+                              <td className="border border-border p-2 text-right font-mono text-blue-500">
+                                {row.forecastedAdmissionTotal > 0 ? formatNumber(row.forecastedAdmissionTotal) : '-'}
+                              </td>
+                            )}
+                            {columns.grandTotal && (
+                              <td className="border border-border p-2 text-right font-mono text-primary font-semibold">
+                                {formatNumber(row.forecastedGrandTotal)}
+                              </td>
+                            )}
+                          </tr>
+                        ))}
+                        {/* Totals Row */}
+                        <tr className="bg-surface-1 font-semibold">
+                          <td className="border border-border p-2 sticky left-0 bg-surface-1">TOTAL</td>
+                          {columns.newAdmission && (
+                            <>
+                              <td className="border border-border p-2 text-right font-mono text-cyan-400">{totals.currentNewAdmission}</td>
+                              <td className="border border-border p-2 text-right font-mono">-</td>
+                              <td className="border border-border p-2 text-right font-mono text-cyan-400">{formatNumber(totals.currentNewTotal)}</td>
+                            </>
+                          )}
+                          {columns.renewal && (
+                            <>
+                              <td className="border border-border p-2 text-right font-mono text-green-400">{totals.currentRenewal}</td>
+                              <td className="border border-border p-2 text-right font-mono">-</td>
+                              <td className="border border-border p-2 text-right font-mono text-green-400">{formatNumber(totals.currentRenewalTotal)}</td>
+                            </>
+                          )}
+                          {columns.dcp && <td className="border border-border p-2 text-right font-mono text-warning">{formatNumber(totals.currentDCPTotal)}</td>}
+                          {columns.annualFee && <td className="border border-border p-2 text-right font-mono text-positive">{formatNumber(totals.currentAnnualTotal)}</td>}
+                          {columns.admissionFee && <td className="border border-border p-2 text-right font-mono text-blue-500">{formatNumber(totals.currentAdmissionTotal)}</td>}
+                          {columns.grandTotal && <td className="border border-border p-2 text-right font-mono font-bold">{formatCurrency(totals.currentGrandTotal)}</td>}
+                          {columns.newAdmission && (
+                            <>
+                              <td className="border border-border p-2 text-right font-mono text-cyan-400">{totals.forecastedNewAdmission}</td>
+                              <td className="border border-border p-2 text-right font-mono text-primary">-</td>
+                              <td className="border border-border p-2 text-right font-mono text-cyan-400">{formatNumber(totals.forecastedNewTotal)}</td>
+                            </>
+                          )}
+                          {columns.renewal && (
+                            <>
+                              <td className="border border-border p-2 text-right font-mono text-green-400">{totals.forecastedRenewal}</td>
+                              <td className="border border-border p-2 text-right font-mono text-primary">-</td>
+                              <td className="border border-border p-2 text-right font-mono text-green-400">{formatNumber(totals.forecastedRenewalTotal)}</td>
+                            </>
+                          )}
+                          {columns.dcp && <td className="border border-border p-2 text-right font-mono text-warning">{formatNumber(totals.forecastedDCPTotal)}</td>}
+                          {columns.annualFee && <td className="border border-border p-2 text-right font-mono text-positive">{formatNumber(totals.forecastedAnnualTotal)}</td>}
+                          {columns.admissionFee && <td className="border border-border p-2 text-right font-mono text-blue-500">{formatNumber(totals.forecastedAdmissionTotal)}</td>}
+                          {columns.grandTotal && <td className="border border-border p-2 text-right font-mono text-primary font-bold">{formatCurrency(totals.forecastedGrandTotal)}</td>}
+                        </tr>
+                        {/* Grand Total Row */}
+                        <tr className="bg-primary/20 font-bold">
+                          <td className="border border-border p-2 sticky left-0 bg-primary/20">GRAND TOTAL</td>
+                          <td className="border border-border p-2 text-right font-mono" colSpan={
+                            (columns.newAdmission ? 3 : 0) + 
+                            (columns.renewal ? 3 : 0) + 
+                            (columns.dcp ? 1 : 0) + 
+                            (columns.annualFee ? 1 : 0) + 
+                            (columns.admissionFee ? 1 : 0) +
+                            (columns.grandTotal ? 1 : 0)
+                          }>{formatCurrency(totals.currentGrandTotal)}</td>
+                          <td className="border border-border p-2 text-right font-mono text-primary" colSpan={
+                            (columns.newAdmission ? 3 : 0) + 
+                            (columns.renewal ? 3 : 0) + 
+                            (columns.dcp ? 1 : 0) + 
+                            (columns.annualFee ? 1 : 0) + 
+                            (columns.admissionFee ? 1 : 0) +
+                            (columns.grandTotal ? 1 : 0)
+                          }>{formatCurrency(totals.forecastedGrandTotal)}</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </TabsContent>
+
+                <TabsContent value="current">
+                  <div className="overflow-x-auto">
+                    <SessionTable 
+                      campus={campus} 
+                      classRows={classRows} 
+                      totals={totals} 
+                      isForecast={false} 
+                      columns={columns}
+                    />
+                  </div>
+                </TabsContent>
+
+                <TabsContent value="forecasted">
+                  <div className="overflow-x-auto">
+                    <SessionTable 
+                      campus={campus} 
+                      classRows={classRows} 
+                      totals={totals} 
+                      isForecast={true} 
+                      columns={columns}
+                    />
+                  </div>
+                </TabsContent>
+              </Tabs>
 
               {/* Formula Summary */}
               <div className="mt-4 p-3 bg-surface-1 rounded-lg">
@@ -339,7 +691,7 @@ export function CalculationBreakdown({ campuses, calculations, globalSettings }:
           Detailed Calculation Breakdown
         </h3>
         <p className="text-xs text-muted-foreground mt-1">
-          Click on any campus to expand and see the complete calculation with DCP, Annual Fee, and Admission Fee columns
+          Click on any campus to expand. Use tabs to switch between Current/Forecasted views, and toggle columns as needed.
         </p>
       </div>
       <div className="overflow-x-auto">

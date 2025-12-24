@@ -53,8 +53,8 @@ export interface HostelCalculation {
 
 export interface TotalCalculation {
   schoolStudents: number;
-  hostelStudents: number;
-  totalStudents: number;
+  hostelStudents: number; // Subset of school students (not additional)
+  totalStudents: number;  // Same as schoolStudents (hostel students are already counted in school)
   schoolRevenue: number;
   hostelRevenue: number;
   totalRevenue: number;
@@ -255,8 +255,8 @@ export function calculateTotals(
 
   return {
     schoolStudents,
-    hostelStudents,
-    totalStudents: schoolStudents + hostelStudents,
+    hostelStudents, // Note: these are a subset of school students, not additional
+    totalStudents: schoolStudents, // Hostel students are already counted in school students
     schoolRevenue,
     hostelRevenue,
     totalRevenue: tuitionRevenue,

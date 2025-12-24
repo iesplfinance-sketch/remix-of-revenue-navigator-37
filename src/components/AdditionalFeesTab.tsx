@@ -145,10 +145,10 @@ export function AdditionalFeesTab({
         <div className="campus-card p-5">
           <h3 className="text-sm font-medium text-foreground mb-4 flex items-center gap-2">
             <Building className="w-4 h-4 text-warning" />
-            DCP (Development Charges) Configuration
+            DCP (Digital Companion Pack) Configuration
           </h3>
           <p className="text-xs text-muted-foreground mb-4">
-            DCP is a one-time development charge for infrastructure improvements, new facilities, and campus development projects.
+            DCP is the Digital Companion Pack - covers digital learning resources, e-learning platforms, and technology-enabled education tools.
           </p>
           
           <div className="space-y-4">
