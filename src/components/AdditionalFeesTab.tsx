@@ -16,13 +16,19 @@ export function AdditionalFeesTab({
   hostelStudents,
   onUpdateGlobalSettings 
 }: AdditionalFeesTabProps) {
+  // Safe defaults for fee values
+  const schoolAnnualFee = globalSettings?.schoolAnnualFee ?? 25000;
+  const hostelAnnualFee = globalSettings?.hostelAnnualFee ?? 15000;
+  const schoolDCP = globalSettings?.schoolDCP ?? 10000;
+  const hostelDCP = globalSettings?.hostelDCP ?? 5000;
+
   // Calculate totals
-  const schoolAnnualTotal = schoolStudents * globalSettings.schoolAnnualFee;
-  const hostelAnnualTotal = hostelStudents * globalSettings.hostelAnnualFee;
+  const schoolAnnualTotal = schoolStudents * schoolAnnualFee;
+  const hostelAnnualTotal = hostelStudents * hostelAnnualFee;
   const totalAnnualFee = schoolAnnualTotal + hostelAnnualTotal;
 
-  const schoolDCPTotal = schoolStudents * globalSettings.schoolDCP;
-  const hostelDCPTotal = hostelStudents * globalSettings.hostelDCP;
+  const schoolDCPTotal = schoolStudents * schoolDCP;
+  const hostelDCPTotal = hostelStudents * hostelDCP;
   const totalDCP = schoolDCPTotal + hostelDCPTotal;
 
   const grandTotal = totalAnnualFee + totalDCP;
@@ -87,7 +93,7 @@ export function AdditionalFeesTab({
                 <span className="text-muted-foreground text-sm">₨</span>
                 <Input
                   type="number"
-                  value={globalSettings.schoolAnnualFee}
+                  value={schoolAnnualFee}
                   onChange={(e) => onUpdateGlobalSettings({ schoolAnnualFee: parseInt(e.target.value) || 0 })}
                   className="w-32 font-mono bg-surface-1 border-border text-right"
                 />
@@ -103,7 +109,7 @@ export function AdditionalFeesTab({
                 <span className="text-muted-foreground text-sm">₨</span>
                 <Input
                   type="number"
-                  value={globalSettings.hostelAnnualFee}
+                  value={hostelAnnualFee}
                   onChange={(e) => onUpdateGlobalSettings({ hostelAnnualFee: parseInt(e.target.value) || 0 })}
                   className="w-32 font-mono bg-surface-1 border-border text-right"
                 />
@@ -139,7 +145,7 @@ export function AdditionalFeesTab({
                 <span className="text-muted-foreground text-sm">₨</span>
                 <Input
                   type="number"
-                  value={globalSettings.schoolDCP}
+                  value={schoolDCP}
                   onChange={(e) => onUpdateGlobalSettings({ schoolDCP: parseInt(e.target.value) || 0 })}
                   className="w-32 font-mono bg-surface-1 border-border text-right"
                 />
@@ -155,7 +161,7 @@ export function AdditionalFeesTab({
                 <span className="text-muted-foreground text-sm">₨</span>
                 <Input
                   type="number"
-                  value={globalSettings.hostelDCP}
+                  value={hostelDCP}
                   onChange={(e) => onUpdateGlobalSettings({ hostelDCP: parseInt(e.target.value) || 0 })}
                   className="w-32 font-mono bg-surface-1 border-border text-right"
                 />
@@ -180,19 +186,19 @@ export function AdditionalFeesTab({
             <div>
               <p className="text-muted-foreground mb-2">School Students:</p>
               <p className="text-foreground">
-                {formatNumber(schoolStudents)} × ₨{globalSettings.schoolAnnualFee.toLocaleString()} = <span className="text-primary">{formatCurrency(schoolAnnualTotal)}</span> (Annual)
+                {formatNumber(schoolStudents)} × ₨{schoolAnnualFee.toLocaleString()} = <span className="text-primary">{formatCurrency(schoolAnnualTotal)}</span> (Annual)
               </p>
               <p className="text-foreground">
-                {formatNumber(schoolStudents)} × ₨{globalSettings.schoolDCP.toLocaleString()} = <span className="text-warning">{formatCurrency(schoolDCPTotal)}</span> (DCP)
+                {formatNumber(schoolStudents)} × ₨{schoolDCP.toLocaleString()} = <span className="text-warning">{formatCurrency(schoolDCPTotal)}</span> (DCP)
               </p>
             </div>
             <div>
               <p className="text-muted-foreground mb-2">Hostel Students:</p>
               <p className="text-foreground">
-                {formatNumber(hostelStudents)} × ₨{globalSettings.hostelAnnualFee.toLocaleString()} = <span className="text-primary">{formatCurrency(hostelAnnualTotal)}</span> (Annual)
+                {formatNumber(hostelStudents)} × ₨{hostelAnnualFee.toLocaleString()} = <span className="text-primary">{formatCurrency(hostelAnnualTotal)}</span> (Annual)
               </p>
               <p className="text-foreground">
-                {formatNumber(hostelStudents)} × ₨{globalSettings.hostelDCP.toLocaleString()} = <span className="text-warning">{formatCurrency(hostelDCPTotal)}</span> (DCP)
+                {formatNumber(hostelStudents)} × ₨{hostelDCP.toLocaleString()} = <span className="text-warning">{formatCurrency(hostelDCPTotal)}</span> (DCP)
               </p>
             </div>
           </div>
