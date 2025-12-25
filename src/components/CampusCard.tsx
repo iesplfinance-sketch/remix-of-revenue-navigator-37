@@ -184,8 +184,8 @@ export function CampusCard({ campus, calculation, globalSettings, onUpdate, isEx
                 <thead>
                   <tr>
                     <th rowSpan={2} className="align-bottom">Class</th>
-                    <th colSpan={5} className="text-center bg-muted/30 border-b border-border">Current Year</th>
-                    <th colSpan={5} className="text-center bg-primary/10 border-b border-border">Forecasted Year</th>
+                    <th colSpan={5} className="text-center bg-muted/30 border-b border-border">Academic Session 25-26</th>
+                    <th colSpan={5} className="text-center bg-primary/10 border-b border-border">Forecast Session 26-27</th>
                     <th rowSpan={2} className="text-right align-bottom">Delta</th>
                   </tr>
                   <tr>
