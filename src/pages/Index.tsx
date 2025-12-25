@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Download, Settings, RotateCcw, TrendingUp, Building, LayoutDashboard, DollarSign, FileSpreadsheet, FileText } from 'lucide-react';
+import { Download, Settings, RotateCcw, TrendingUp, Building, LayoutDashboard, DollarSign, FileSpreadsheet, FileText, Save } from 'lucide-react';
 import { useSimulationState } from '@/hooks/useSimulationState';
 import { HeaderMetrics } from '@/components/MetricCard';
 import { CampusCard } from '@/components/CampusCard';
@@ -8,6 +8,7 @@ import { RevenuePieChart, TopCampusesChart, RevenueComparison } from '@/componen
 import { CampusOverviewTable } from '@/components/CampusOverviewTable';
 import { FeeExplainer } from '@/components/FeeExplainer';
 import { SettingsModal } from '@/components/SettingsModal';
+import { SaveLoadModal } from '@/components/SaveLoadModal';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { AdditionalFeesTab } from '@/components/AdditionalFeesTab';
 import { CalculationBreakdown } from '@/components/CalculationBreakdown';
@@ -31,9 +32,11 @@ const Index = () => {
     updateGlobalSettings,
     applyGlobalDiscount,
     resetToDefaults,
+    loadSimulationState,
   } = useSimulationState();
 
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [isSaveLoadOpen, setIsSaveLoadOpen] = useState(false);
   const [expandedCampusId, setExpandedCampusId] = useState<string | null>(null);
 
   const handleExportExcel = () => {
@@ -63,6 +66,10 @@ const Index = () => {
               <Button variant="ghost" size="sm" onClick={() => setIsSettingsOpen(true)}>
                 <Settings className="w-4 h-4 mr-2" />
                 Settings
+              </Button>
+              <Button variant="outline" size="sm" onClick={() => setIsSaveLoadOpen(true)}>
+                <Save className="w-4 h-4 mr-2" />
+                Save/Load
               </Button>
               <Button variant="ghost" size="sm" onClick={resetToDefaults}>
                 <RotateCcw className="w-4 h-4 mr-2" />
@@ -253,6 +260,16 @@ const Index = () => {
         campuses={campuses}
         onUpdateCampus={updateCampus}
         onUpdateCampusClass={updateCampusClass}
+      />
+
+      {/* Save/Load Modal */}
+      <SaveLoadModal
+        isOpen={isSaveLoadOpen}
+        onClose={() => setIsSaveLoadOpen(false)}
+        campuses={campuses}
+        hostels={hostels}
+        globalSettings={globalSettings}
+        onLoad={loadSimulationState}
       />
     </div>
   );
