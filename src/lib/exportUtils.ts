@@ -62,13 +62,15 @@ export function generateExcelExport(
   // ========== CAMPUS BREAKDOWN SHEETS ==========
   campuses.forEach((campus, campusIndex) => {
     const calc = calculateCampusRevenue(campus, globalSettings);
-    const effectiveFeeHike = campus.feeHike + globalSettings.globalFeeHike;
-    const effectiveGrowth = campus.studentGrowth + globalSettings.globalStudentGrowth;
+    const effectiveNewFeeHike = campus.newAdmissionFeeHike + globalSettings.globalFeeHike;
+    const effectiveRenewalFeeHike = campus.renewalFeeHike + globalSettings.globalFeeHike;
+    const effectiveNewGrowth = campus.newStudentGrowth + globalSettings.globalStudentGrowth;
+    const effectiveRenewalGrowth = campus.renewalGrowth + globalSettings.globalStudentGrowth;
 
     const campusData: (string | number)[][] = [
       [BRAND_NAME],
       [`Campus: ${campus.name}`],
-      [`Fee Hike: ${effectiveFeeHike}% | Student Growth: ${effectiveGrowth}% | Discount: ${campus.discountRate}%`],
+      [`New Adm Fee: ${effectiveNewFeeHike}% | Renewal Fee: ${effectiveRenewalFeeHike}% | New Growth: ${effectiveNewGrowth}% | Renewal Growth: ${effectiveRenewalGrowth}% | Discount: ${campus.discountRate}%`],
       [''],
       // Header rows
       [
@@ -88,8 +90,10 @@ export function generateExcelExport(
     campus.classes
       .filter(cls => cls.renewalCount > 0 || cls.newAdmissionCount > 0)
       .forEach(cls => {
-        const growthMultiplier = 1 + (effectiveGrowth / 100);
-        const feeMultiplier = 1 + (effectiveFeeHike / 100);
+        const newGrowthMultiplier = 1 + (effectiveNewGrowth / 100);
+        const renewalGrowthMultiplier = 1 + (effectiveRenewalGrowth / 100);
+        const newFeeMultiplier = 1 + (effectiveNewFeeHike / 100);
+        const renewalFeeMultiplier = 1 + (effectiveRenewalFeeHike / 100);
 
         const currentNewAdm = cls.newAdmissionCount;
         const currentNewFee = cls.newAdmissionFee;
@@ -98,11 +102,11 @@ export function generateExcelExport(
         const currentRenewalFee = cls.renewalFee;
         const currentRenewalTotal = currentRenewal * currentRenewalFee;
 
-        const forecastNewAdm = Math.round(currentNewAdm * growthMultiplier);
-        const forecastNewFee = Math.round(currentNewFee * feeMultiplier);
+        const forecastNewAdm = Math.round(currentNewAdm * newGrowthMultiplier);
+        const forecastNewFee = Math.round(currentNewFee * newFeeMultiplier);
         const forecastNewTotal = forecastNewAdm * forecastNewFee;
-        const forecastRenewal = Math.round(currentRenewal * growthMultiplier);
-        const forecastRenewalFee = Math.round(currentRenewalFee * feeMultiplier);
+        const forecastRenewal = Math.round(currentRenewal * renewalGrowthMultiplier);
+        const forecastRenewalFee = Math.round(currentRenewalFee * renewalFeeMultiplier);
         const forecastRenewalTotal = forecastRenewal * forecastRenewalFee;
 
         totalCurrentNewAdm += currentNewAdm;
