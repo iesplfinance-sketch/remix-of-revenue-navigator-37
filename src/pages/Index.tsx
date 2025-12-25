@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Download, Settings, RotateCcw, TrendingUp, Building, LayoutDashboard, DollarSign, FileSpreadsheet, FileText, Save, FolderOpen } from 'lucide-react';
+import { Download, Settings, RotateCcw, TrendingUp, Building, LayoutDashboard, DollarSign, FileSpreadsheet, FileText } from 'lucide-react';
 import { useSimulationState } from '@/hooks/useSimulationState';
 import { HeaderMetrics } from '@/components/MetricCard';
 import { CampusCard } from '@/components/CampusCard';
@@ -11,13 +11,12 @@ import { SettingsModal } from '@/components/SettingsModal';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { AdditionalFeesTab } from '@/components/AdditionalFeesTab';
 import { CalculationBreakdown } from '@/components/CalculationBreakdown';
-import { SaveLoadModal } from '@/components/SaveLoadModal';
 import { generateExcelExport, generatePDFExport } from '@/lib/exportUtils';
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { CampusData, HostelData, GlobalSettings } from '@/data/schoolData';
+
 const Index = () => {
   const {
     campuses,
@@ -32,12 +31,9 @@ const Index = () => {
     updateGlobalSettings,
     applyGlobalDiscount,
     resetToDefaults,
-    setCampuses,
-    setHostels,
-    setGlobalSettings,
   } = useSimulationState();
+
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
-  const [isSaveLoadOpen, setIsSaveLoadOpen] = useState(false);
   const [expandedCampusId, setExpandedCampusId] = useState<string | null>(null);
 
   const handleExportExcel = () => {
@@ -52,12 +48,6 @@ const Index = () => {
     setExpandedCampusId(prev => prev === campusId ? null : campusId);
   };
 
-  const handleLoadSimulation = (loadedCampuses: CampusData[], loadedHostels: HostelData[], loadedGlobalSettings: GlobalSettings) => {
-    setCampuses(loadedCampuses);
-    setHostels(loadedHostels);
-    setGlobalSettings(loadedGlobalSettings);
-  };
-
   return (
     <div className="min-h-screen bg-surface-0">
       {/* Sticky Header */}
@@ -70,10 +60,6 @@ const Index = () => {
             </div>
             <div className="flex items-center gap-2">
               <ThemeToggle />
-              <Button variant="outline" size="sm" onClick={() => setIsSaveLoadOpen(true)}>
-                <Save className="w-4 h-4 mr-2" />
-                Save / Load
-              </Button>
               <Button variant="ghost" size="sm" onClick={() => setIsSettingsOpen(true)}>
                 <Settings className="w-4 h-4 mr-2" />
                 Settings
@@ -144,78 +130,36 @@ const Index = () => {
             {/* Global Controls */}
             <div className="campus-card p-5">
               <h2 className="text-sm font-medium text-foreground mb-4">Master Control Panel</h2>
-              <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div>
                   <div className="flex justify-between mb-2">
-                    <label className="text-xs text-muted-foreground uppercase tracking-wide">New Admission Fee Hike</label>
-                    <span className="font-mono text-sm text-primary">{globalSettings.globalNewAdmissionFeeHike > 0 ? '+' : ''}{globalSettings.globalNewAdmissionFeeHike}%</span>
+                    <label className="text-xs text-muted-foreground uppercase tracking-wide">Global Fee Hike</label>
+                    <span className="font-mono text-sm text-primary">+{globalSettings.globalFeeHike}%</span>
                   </div>
                   <Slider
-                    value={[globalSettings.globalNewAdmissionFeeHike]}
-                    onValueChange={([value]) => updateGlobalSettings({ globalNewAdmissionFeeHike: value })}
+                    value={[globalSettings.globalFeeHike]}
+                    onValueChange={([value]) => updateGlobalSettings({ globalFeeHike: value })}
+                    min={0}
+                    max={50}
+                    step={1}
+                  />
+                </div>
+                <div>
+                  <div className="flex justify-between mb-2">
+                    <label className="text-xs text-muted-foreground uppercase tracking-wide">Global Student Growth</label>
+                    <span className="font-mono text-sm text-primary">{globalSettings.globalStudentGrowth > 0 ? '+' : ''}{globalSettings.globalStudentGrowth}%</span>
+                  </div>
+                  <Slider
+                    value={[globalSettings.globalStudentGrowth]}
+                    onValueChange={([value]) => updateGlobalSettings({ globalStudentGrowth: value })}
                     min={-20}
                     max={50}
                     step={1}
                   />
-                  <div className="flex justify-between mt-1 text-xs text-muted-foreground">
-                    <span>-20%</span>
-                    <span>+50%</span>
-                  </div>
                 </div>
                 <div>
                   <div className="flex justify-between mb-2">
-                    <label className="text-xs text-muted-foreground uppercase tracking-wide">Renewal Fee Hike</label>
-                    <span className="font-mono text-sm text-primary">{globalSettings.globalRenewalFeeHike > 0 ? '+' : ''}{globalSettings.globalRenewalFeeHike}%</span>
-                  </div>
-                  <Slider
-                    value={[globalSettings.globalRenewalFeeHike]}
-                    onValueChange={([value]) => updateGlobalSettings({ globalRenewalFeeHike: value })}
-                    min={-20}
-                    max={50}
-                    step={1}
-                  />
-                  <div className="flex justify-between mt-1 text-xs text-muted-foreground">
-                    <span>-20%</span>
-                    <span>+50%</span>
-                  </div>
-                </div>
-                <div>
-                  <div className="flex justify-between mb-2">
-                    <label className="text-xs text-muted-foreground uppercase tracking-wide">New Student Growth</label>
-                    <span className="font-mono text-sm text-primary">{globalSettings.globalNewStudentGrowth > 0 ? '+' : ''}{globalSettings.globalNewStudentGrowth}%</span>
-                  </div>
-                  <Slider
-                    value={[globalSettings.globalNewStudentGrowth]}
-                    onValueChange={([value]) => updateGlobalSettings({ globalNewStudentGrowth: value })}
-                    min={-20}
-                    max={50}
-                    step={1}
-                  />
-                  <div className="flex justify-between mt-1 text-xs text-muted-foreground">
-                    <span>-20%</span>
-                    <span>+50%</span>
-                  </div>
-                </div>
-                <div>
-                  <div className="flex justify-between mb-2">
-                    <label className="text-xs text-muted-foreground uppercase tracking-wide">Renewal Growth</label>
-                    <span className="font-mono text-sm text-primary">{globalSettings.globalRenewalGrowth > 0 ? '+' : ''}{globalSettings.globalRenewalGrowth}%</span>
-                  </div>
-                  <Slider
-                    value={[globalSettings.globalRenewalGrowth]}
-                    onValueChange={([value]) => updateGlobalSettings({ globalRenewalGrowth: value })}
-                    min={-20}
-                    max={50}
-                    step={1}
-                  />
-                  <div className="flex justify-between mt-1 text-xs text-muted-foreground">
-                    <span>-20%</span>
-                    <span>+50%</span>
-                  </div>
-                </div>
-                <div>
-                  <div className="flex justify-between mb-2">
-                    <label className="text-xs text-muted-foreground uppercase tracking-wide">Global Discount</label>
+                    <label className="text-xs text-muted-foreground uppercase tracking-wide">Global Discount (All Campuses)</label>
                     <span className="font-mono text-sm text-warning">{globalSettings.globalDiscount}%</span>
                   </div>
                   <Slider
@@ -225,10 +169,6 @@ const Index = () => {
                     max={40}
                     step={1}
                   />
-                  <div className="flex justify-between mt-1 text-xs text-muted-foreground">
-                    <span>0%</span>
-                    <span>40%</span>
-                  </div>
                 </div>
               </div>
             </div>
@@ -258,10 +198,8 @@ const Index = () => {
 
             {/* Fee Calculation Explainer */}
             <FeeExplainer 
-              globalNewAdmissionFeeHike={globalSettings.globalNewAdmissionFeeHike}
-              globalRenewalFeeHike={globalSettings.globalRenewalFeeHike}
-              globalNewStudentGrowth={globalSettings.globalNewStudentGrowth}
-              globalRenewalGrowth={globalSettings.globalRenewalGrowth}
+              globalFeeHike={globalSettings.globalFeeHike}
+              globalStudentGrowth={globalSettings.globalStudentGrowth}
               globalDiscount={globalSettings.globalDiscount}
             />
           </TabsContent>
@@ -302,7 +240,6 @@ const Index = () => {
               globalSettings={globalSettings}
               schoolStudents={totals.schoolStudents}
               hostelStudents={totals.hostelStudents}
-              newStudents={totals.totalNewStudents}
               onUpdateGlobalSettings={updateGlobalSettings}
             />
           </TabsContent>
@@ -316,16 +253,6 @@ const Index = () => {
         campuses={campuses}
         onUpdateCampus={updateCampus}
         onUpdateCampusClass={updateCampusClass}
-      />
-
-      {/* Save/Load Modal */}
-      <SaveLoadModal
-        isOpen={isSaveLoadOpen}
-        onClose={() => setIsSaveLoadOpen(false)}
-        campuses={campuses}
-        hostels={hostels}
-        globalSettings={globalSettings}
-        onLoadSimulation={handleLoadSimulation}
       />
     </div>
   );

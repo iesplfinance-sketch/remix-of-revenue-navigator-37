@@ -16,10 +16,8 @@ export interface CampusData {
   classes: ClassData[];
   maxCapacity: number;
   discountRate: number; // Default 15%
-  newStudentGrowth: number; // Default 0% - Growth rate for new admissions
-  renewalGrowth: number; // Default 0% - Growth rate for renewals
-  newAdmissionFeeHike: number; // Default 0% - Fee hike for new admission students
-  renewalFeeHike: number; // Default 0% - Fee hike for renewal students
+  studentGrowth: number; // Default 0%
+  feeHike: number; // Default 0%
 }
 
 export interface HostelData {
@@ -45,13 +43,10 @@ export const initialCampusData: CampusData[] = [
     shortName: 'ISB Chak Shahzad',
     maxCapacity: 1180,
     discountRate: 15,
-    newStudentGrowth: 0,
-    renewalGrowth: 0,
-    newAdmissionFeeHike: 0,
-    renewalFeeHike: 0,
+    studentGrowth: 0,
+    feeHike: 0,
     classes: [
-      // Excel: New=319, Renewal=779, Total=1098
-      { className: 'PN', renewalCount: 0, renewalFee: 344497, newAdmissionCount: 28, newAdmissionFee: 391474 },
+      { className: 'PN', renewalCount: 0, renewalFee: 344497, newAdmissionCount: 20, newAdmissionFee: 391474 },
       { className: 'Nursery', renewalCount: 9, renewalFee: 344497, newAdmissionCount: 18, newAdmissionFee: 391474 },
       { className: 'KG', renewalCount: 30, renewalFee: 344497, newAdmissionCount: 7, newAdmissionFee: 391474 },
       { className: '1', renewalCount: 33, renewalFee: 344497, newAdmissionCount: 9, newAdmissionFee: 391474 },
@@ -67,9 +62,9 @@ export const initialCampusData: CampusData[] = [
       { className: 'IGCSE-I', renewalCount: 29, renewalFee: 409115, newAdmissionCount: 17, newAdmissionFee: 426903 },
       { className: 'IGCSE-II', renewalCount: 19, renewalFee: 409115, newAdmissionCount: 2, newAdmissionFee: 426903 },
       { className: 'IGCSE-III', renewalCount: 34, renewalFee: 409115, newAdmissionCount: 1, newAdmissionFee: 426903 },
-      { className: 'HSSC-I', renewalCount: 50, renewalFee: 244861, newAdmissionCount: 84, newAdmissionFee: 266153 },
-      { className: 'HSSC-II', renewalCount: 116, renewalFee: 244861, newAdmissionCount: 0, newAdmissionFee: 266153 },
-      { className: 'AS', renewalCount: 20, renewalFee: 565766, newAdmissionCount: 12, newAdmissionFee: 614963 },
+      { className: 'HSSC-I', renewalCount: 46, renewalFee: 244861, newAdmissionCount: 101, newAdmissionFee: 266153 },
+      { className: 'HSSC-II', renewalCount: 112, renewalFee: 244861, newAdmissionCount: 0, newAdmissionFee: 266153 },
+      { className: 'AS', renewalCount: 16, renewalFee: 565766, newAdmissionCount: 12, newAdmissionFee: 614963 },
       { className: 'A2', renewalCount: 12, renewalFee: 565766, newAdmissionCount: 2, newAdmissionFee: 614963 },
       { className: 'BTEC-I', renewalCount: 6, renewalFee: 565766, newAdmissionCount: 5, newAdmissionFee: 614963 },
       { className: 'BTEC-II', renewalCount: 5, renewalFee: 565766, newAdmissionCount: 0, newAdmissionFee: 614963 },
@@ -81,12 +76,9 @@ export const initialCampusData: CampusData[] = [
     shortName: 'Intl Maarif H-8',
     maxCapacity: 1146,
     discountRate: 15,
-    newStudentGrowth: 0,
-    renewalGrowth: 0,
-    newAdmissionFeeHike: 0,
-    renewalFeeHike: 0,
+    studentGrowth: 0,
+    feeHike: 0,
     classes: [
-      // Excel: New=323, Renewal=902, Total=1225
       { className: 'PN', renewalCount: 0, renewalFee: 400032, newAdmissionCount: 22, newAdmissionFee: 350028 },
       { className: 'Nursery', renewalCount: 11, renewalFee: 460080, newAdmissionCount: 12, newAdmissionFee: 500040 },
       { className: 'KG', renewalCount: 46, renewalFee: 460080, newAdmissionCount: 3, newAdmissionFee: 550044 },
@@ -106,9 +98,9 @@ export const initialCampusData: CampusData[] = [
       { className: 'HSSC-I', renewalCount: 48, renewalFee: 244944, newAdmissionCount: 84, newAdmissionFee: 266220 },
       { className: 'HSSC-II', renewalCount: 127, renewalFee: 244944, newAdmissionCount: 2, newAdmissionFee: 266220 },
       { className: 'AS', renewalCount: 19, renewalFee: 565812, newAdmissionCount: 31, newAdmissionFee: 615060 },
-      { className: 'A2', renewalCount: 36, renewalFee: 565812, newAdmissionCount: 7, newAdmissionFee: 615060 },
-      { className: 'BTEC-I', renewalCount: 7, renewalFee: 565812, newAdmissionCount: 7, newAdmissionFee: 615060 },
-      { className: 'BTEC-II', renewalCount: 7, renewalFee: 565812, newAdmissionCount: 0, newAdmissionFee: 615060 },
+      { className: 'A2', renewalCount: 36, renewalFee: 565812, newAdmissionCount: 6, newAdmissionFee: 615060 },
+      { className: 'BTEC-I', renewalCount: 7, renewalFee: 565812, newAdmissionCount: 0, newAdmissionFee: 615060 },
+      { className: 'BTEC-II', renewalCount: 0, renewalFee: 565812, newAdmissionCount: 0, newAdmissionFee: 615060 },
     ]
   },
   {
@@ -117,10 +109,8 @@ export const initialCampusData: CampusData[] = [
     shortName: 'ISB F-11',
     maxCapacity: 132,
     discountRate: 15,
-    newStudentGrowth: 0,
-    renewalGrowth: 0,
-    newAdmissionFeeHike: 0,
-    renewalFeeHike: 0,
+    studentGrowth: 0,
+    feeHike: 0,
     classes: [
       { className: 'PN', renewalCount: 2, renewalFee: 243007, newAdmissionCount: 6, newAdmissionFee: 268813 },
       { className: 'Nursery', renewalCount: 10, renewalFee: 243007, newAdmissionCount: 3, newAdmissionFee: 268813 },
@@ -152,10 +142,8 @@ export const initialCampusData: CampusData[] = [
     shortName: 'ISB G-10',
     maxCapacity: 440,
     discountRate: 15,
-    newStudentGrowth: 0,
-    renewalGrowth: 0,
-    newAdmissionFeeHike: 0,
-    renewalFeeHike: 0,
+    studentGrowth: 0,
+    feeHike: 0,
     classes: [
       { className: 'PN', renewalCount: 1, renewalFee: 243007, newAdmissionCount: 20, newAdmissionFee: 268813 },
       { className: 'Nursery', renewalCount: 12, renewalFee: 243007, newAdmissionCount: 13, newAdmissionFee: 268813 },
@@ -187,10 +175,8 @@ export const initialCampusData: CampusData[] = [
     shortName: 'LHR Raiwind Boys',
     maxCapacity: 1196,
     discountRate: 15,
-    newStudentGrowth: 0,
-    renewalGrowth: 0,
-    newAdmissionFeeHike: 0,
-    renewalFeeHike: 0,
+    studentGrowth: 0,
+    feeHike: 0,
     classes: [
       { className: 'PN', renewalCount: 2, renewalFee: 369601, newAdmissionCount: 14, newAdmissionFee: 401740 },
       { className: 'Nursery', renewalCount: 23, renewalFee: 369601, newAdmissionCount: 17, newAdmissionFee: 430182 },
@@ -222,10 +208,8 @@ export const initialCampusData: CampusData[] = [
     shortName: 'LHR Asifa Girls',
     maxCapacity: 1070,
     discountRate: 15,
-    newStudentGrowth: 0,
-    renewalGrowth: 0,
-    newAdmissionFeeHike: 0,
-    renewalFeeHike: 0,
+    studentGrowth: 0,
+    feeHike: 0,
     classes: [
       { className: 'PN', renewalCount: 3, renewalFee: 395768, newAdmissionCount: 10, newAdmissionFee: 430182 },
       { className: 'Nursery', renewalCount: 14, renewalFee: 395768, newAdmissionCount: 7, newAdmissionFee: 430182 },
@@ -257,10 +241,8 @@ export const initialCampusData: CampusData[] = [
     shortName: 'LHR Dream Gardens',
     maxCapacity: 672,
     discountRate: 15,
-    newStudentGrowth: 0,
-    renewalGrowth: 0,
-    newAdmissionFeeHike: 0,
-    renewalFeeHike: 0,
+    studentGrowth: 0,
+    feeHike: 0,
     classes: [
       { className: 'PN', renewalCount: 0, renewalFee: 278734, newAdmissionCount: 16, newAdmissionFee: 302972 },
       { className: 'Nursery', renewalCount: 22, renewalFee: 278734, newAdmissionCount: 31, newAdmissionFee: 302972 },
@@ -292,10 +274,8 @@ export const initialCampusData: CampusData[] = [
     shortName: 'LHR Islampura',
     maxCapacity: 662,
     discountRate: 15,
-    newStudentGrowth: 0,
-    renewalGrowth: 0,
-    newAdmissionFeeHike: 0,
-    renewalFeeHike: 0,
+    studentGrowth: 0,
+    feeHike: 0,
     classes: [
       { className: 'PN', renewalCount: 0, renewalFee: 128990, newAdmissionCount: 68, newAdmissionFee: 136484 },
       { className: 'Nursery', renewalCount: 69, renewalFee: 128990, newAdmissionCount: 29, newAdmissionFee: 136484 },
@@ -327,12 +307,9 @@ export const initialCampusData: CampusData[] = [
     shortName: 'LHR Khayaban',
     maxCapacity: 564,
     discountRate: 15,
-    newStudentGrowth: 0,
-    renewalGrowth: 0,
-    newAdmissionFeeHike: 0,
-    renewalFeeHike: 0,
+    studentGrowth: 0,
+    feeHike: 0,
     classes: [
-      // Excel: New=103, Renewal=521, Total=624
       { className: 'PN', renewalCount: 1, renewalFee: 222943, newAdmissionCount: 21, newAdmissionFee: 242330 },
       { className: 'Nursery', renewalCount: 30, renewalFee: 222943, newAdmissionCount: 24, newAdmissionFee: 242330 },
       { className: 'KG', renewalCount: 35, renewalFee: 222943, newAdmissionCount: 12, newAdmissionFee: 242330 },
@@ -344,17 +321,17 @@ export const initialCampusData: CampusData[] = [
       { className: '6', renewalCount: 28, renewalFee: 222943, newAdmissionCount: 6, newAdmissionFee: 276143 },
       { className: '7', renewalCount: 33, renewalFee: 254052, newAdmissionCount: 5, newAdmissionFee: 276143 },
       { className: '8', renewalCount: 25, renewalFee: 254052, newAdmissionCount: 6, newAdmissionFee: 276143 },
-      { className: 'SSC-I', renewalCount: 9, renewalFee: 169500, newAdmissionCount: 0, newAdmissionFee: 194101 },
-      { className: 'SSC-II', renewalCount: 13, renewalFee: 169500, newAdmissionCount: 0, newAdmissionFee: 194101 },
-      { className: 'IGCSE-I', renewalCount: 0, renewalFee: 385000, newAdmissionCount: 0, newAdmissionFee: 495000 },
-      { className: 'IGCSE-II', renewalCount: 0, renewalFee: 385000, newAdmissionCount: 0, newAdmissionFee: 495000 },
+      { className: 'SSC-I', renewalCount: 9, renewalFee: 169500, newAdmissionCount: 22, newAdmissionFee: 194101 },
+      { className: 'SSC-II', renewalCount: 13, renewalFee: 169500, newAdmissionCount: 3, newAdmissionFee: 194101 },
+      { className: 'IGCSE-I', renewalCount: 9, renewalFee: 385000, newAdmissionCount: 0, newAdmissionFee: 495000 },
+      { className: 'IGCSE-II', renewalCount: 22, renewalFee: 385000, newAdmissionCount: 0, newAdmissionFee: 495000 },
       { className: 'IGCSE-III', renewalCount: 0, renewalFee: 385000, newAdmissionCount: 0, newAdmissionFee: 495000 },
-      { className: 'HSSC-I', renewalCount: 0, renewalFee: 169500, newAdmissionCount: 0, newAdmissionFee: 275000 },
-      { className: 'HSSC-II', renewalCount: 0, renewalFee: 169500, newAdmissionCount: 0, newAdmissionFee: 275000 },
-      { className: 'AS', renewalCount: 0, renewalFee: 550000, newAdmissionCount: 0, newAdmissionFee: 550000 },
-      { className: 'A2', renewalCount: 0, renewalFee: 550000, newAdmissionCount: 0, newAdmissionFee: 550000 },
-      { className: 'BTEC-I', renewalCount: 0, renewalFee: 550000, newAdmissionCount: 0, newAdmissionFee: 550000 },
-      { className: 'BTEC-II', renewalCount: 0, renewalFee: 550000, newAdmissionCount: 0, newAdmissionFee: 550000 },
+      { className: 'HSSC-I', renewalCount: 7, renewalFee: 169500, newAdmissionCount: 49, newAdmissionFee: 275000 },
+      { className: 'HSSC-II', renewalCount: 49, renewalFee: 169500, newAdmissionCount: 2, newAdmissionFee: 275000 },
+      { className: 'AS', renewalCount: 2, renewalFee: 550000, newAdmissionCount: 12, newAdmissionFee: 550000 },
+      { className: 'A2', renewalCount: 12, renewalFee: 550000, newAdmissionCount: 1, newAdmissionFee: 550000 },
+      { className: 'BTEC-I', renewalCount: 1, renewalFee: 550000, newAdmissionCount: 1, newAdmissionFee: 550000 },
+      { className: 'BTEC-II', renewalCount: 11, renewalFee: 550000, newAdmissionCount: 0, newAdmissionFee: 550000 },
     ]
   },
   {
@@ -363,25 +340,22 @@ export const initialCampusData: CampusData[] = [
     shortName: 'Multan Ali Chowk',
     maxCapacity: 280,
     discountRate: 15,
-    newStudentGrowth: 0,
-    renewalGrowth: 0,
-    newAdmissionFeeHike: 0,
-    renewalFeeHike: 0,
+    studentGrowth: 0,
+    feeHike: 0,
     classes: [
-      // Excel: New=46, Renewal=204, Total=250
       { className: 'PN', renewalCount: 0, renewalFee: 91340, newAdmissionCount: 12, newAdmissionFee: 113000 },
-      { className: 'Nursery', renewalCount: 16, renewalFee: 91340, newAdmissionCount: 11, newAdmissionFee: 113000 },
-      { className: 'KG', renewalCount: 21, renewalFee: 91340, newAdmissionCount: 3, newAdmissionFee: 113000 },
-      { className: '1', renewalCount: 35, renewalFee: 91340, newAdmissionCount: 5, newAdmissionFee: 113000 },
-      { className: '2', renewalCount: 30, renewalFee: 91340, newAdmissionCount: 2, newAdmissionFee: 113000 },
-      { className: '3', renewalCount: 30, renewalFee: 91340, newAdmissionCount: 2, newAdmissionFee: 113000 },
-      { className: '4', renewalCount: 16, renewalFee: 91340, newAdmissionCount: 2, newAdmissionFee: 113000 },
-      { className: '5', renewalCount: 16, renewalFee: 91340, newAdmissionCount: 3, newAdmissionFee: 113000 },
-      { className: '6', renewalCount: 15, renewalFee: 91340, newAdmissionCount: 1, newAdmissionFee: 113000 },
-      { className: '7', renewalCount: 12, renewalFee: 91340, newAdmissionCount: 4, newAdmissionFee: 113000 },
-      { className: '8', renewalCount: 13, renewalFee: 91340, newAdmissionCount: 0, newAdmissionFee: 113000 },
-      { className: 'SSC-I', renewalCount: 0, renewalFee: 0, newAdmissionCount: 0, newAdmissionFee: 0 },
-      { className: 'SSC-II', renewalCount: 0, renewalFee: 0, newAdmissionCount: 0, newAdmissionFee: 0 },
+      { className: 'Nursery', renewalCount: 8, renewalFee: 91340, newAdmissionCount: 11, newAdmissionFee: 113000 },
+      { className: 'KG', renewalCount: 9, renewalFee: 91340, newAdmissionCount: 3, newAdmissionFee: 113000 },
+      { className: '1', renewalCount: 15, renewalFee: 91340, newAdmissionCount: 5, newAdmissionFee: 113000 },
+      { className: '2', renewalCount: 11, renewalFee: 91340, newAdmissionCount: 2, newAdmissionFee: 113000 },
+      { className: '3', renewalCount: 4, renewalFee: 91340, newAdmissionCount: 2, newAdmissionFee: 113000 },
+      { className: '4', renewalCount: 5, renewalFee: 91340, newAdmissionCount: 3, newAdmissionFee: 113000 },
+      { className: '5', renewalCount: 6, renewalFee: 91340, newAdmissionCount: 1, newAdmissionFee: 113000 },
+      { className: '6', renewalCount: 8, renewalFee: 91340, newAdmissionCount: 4, newAdmissionFee: 113000 },
+      { className: '7', renewalCount: 20, renewalFee: 91340, newAdmissionCount: 0, newAdmissionFee: 113000 },
+      { className: '8', renewalCount: 9, renewalFee: 91340, newAdmissionCount: 3, newAdmissionFee: 113000 },
+      { className: 'SSC-I', renewalCount: 9, renewalFee: 91340, newAdmissionCount: 6, newAdmissionFee: 113000 },
+      { className: 'SSC-II', renewalCount: 13, renewalFee: 91340, newAdmissionCount: 0, newAdmissionFee: 113000 },
       { className: 'IGCSE-I', renewalCount: 0, renewalFee: 0, newAdmissionCount: 0, newAdmissionFee: 0 },
       { className: 'IGCSE-II', renewalCount: 0, renewalFee: 0, newAdmissionCount: 0, newAdmissionFee: 0 },
       { className: 'IGCSE-III', renewalCount: 0, renewalFee: 0, newAdmissionCount: 0, newAdmissionFee: 0 },
@@ -399,12 +373,9 @@ export const initialCampusData: CampusData[] = [
     shortName: 'Multan Model Town',
     maxCapacity: 716,
     discountRate: 15,
-    newStudentGrowth: 0,
-    renewalGrowth: 0,
-    newAdmissionFeeHike: 0,
-    renewalFeeHike: 0,
+    studentGrowth: 0,
+    feeHike: 0,
     classes: [
-      // Excel: New=187, Renewal=230, Total=417
       { className: 'PN', renewalCount: 0, renewalFee: 385000, newAdmissionCount: 16, newAdmissionFee: 495000 },
       { className: 'Nursery', renewalCount: 8, renewalFee: 385000, newAdmissionCount: 16, newAdmissionFee: 495000 },
       { className: 'KG', renewalCount: 9, renewalFee: 385000, newAdmissionCount: 8, newAdmissionFee: 495000 },
@@ -416,17 +387,17 @@ export const initialCampusData: CampusData[] = [
       { className: '6', renewalCount: 8, renewalFee: 385000, newAdmissionCount: 14, newAdmissionFee: 495000 },
       { className: '7', renewalCount: 20, renewalFee: 385000, newAdmissionCount: 17, newAdmissionFee: 495000 },
       { className: '8', renewalCount: 9, renewalFee: 385000, newAdmissionCount: 15, newAdmissionFee: 495000 },
-      { className: 'SSC-I', renewalCount: 9, renewalFee: 169500, newAdmissionCount: 48, newAdmissionFee: 275000 },
-      { className: 'SSC-II', renewalCount: 13, renewalFee: 240438, newAdmissionCount: 6, newAdmissionFee: 275000 },
-      { className: 'IGCSE-I', renewalCount: 9, renewalFee: 412170, newAdmissionCount: 22, newAdmissionFee: 495000 },
-      { className: 'IGCSE-II', renewalCount: 22, renewalFee: 412170, newAdmissionCount: 0, newAdmissionFee: 495000 },
-      { className: 'IGCSE-III', renewalCount: 0, renewalFee: 412170, newAdmissionCount: 0, newAdmissionFee: 495000 },
-      { className: 'HSSC-I', renewalCount: 7, renewalFee: 260640, newAdmissionCount: 49, newAdmissionFee: 275000 },
-      { className: 'HSSC-II', renewalCount: 49, renewalFee: 260640, newAdmissionCount: 2, newAdmissionFee: 275000 },
-      { className: 'AS', renewalCount: 2, renewalFee: 517638, newAdmissionCount: 12, newAdmissionFee: 550000 },
-      { className: 'A2', renewalCount: 12, renewalFee: 517638, newAdmissionCount: 1, newAdmissionFee: 550000 },
-      { className: 'BTEC-I', renewalCount: 1, renewalFee: 517638, newAdmissionCount: 1, newAdmissionFee: 550000 },
-      { className: 'BTEC-II', renewalCount: 11, renewalFee: 517638, newAdmissionCount: 0, newAdmissionFee: 550000 },
+      { className: 'SSC-I', renewalCount: 385, renewalFee: 169500, newAdmissionCount: 48, newAdmissionFee: 275000 },
+      { className: 'SSC-II', renewalCount: 65, renewalFee: 240438, newAdmissionCount: 6, newAdmissionFee: 275000 },
+      { className: 'IGCSE-I', renewalCount: 10, renewalFee: 412170, newAdmissionCount: 22, newAdmissionFee: 495000 },
+      { className: 'IGCSE-II', renewalCount: 16, renewalFee: 412170, newAdmissionCount: 4, newAdmissionFee: 495000 },
+      { className: 'IGCSE-III', renewalCount: 14, renewalFee: 412170, newAdmissionCount: 0, newAdmissionFee: 495000 },
+      { className: 'HSSC-I', renewalCount: 30, renewalFee: 260640, newAdmissionCount: 118, newAdmissionFee: 275000 },
+      { className: 'HSSC-II', renewalCount: 86, renewalFee: 260640, newAdmissionCount: 4, newAdmissionFee: 275000 },
+      { className: 'AS', renewalCount: 14, renewalFee: 517638, newAdmissionCount: 17, newAdmissionFee: 550000 },
+      { className: 'A2', renewalCount: 0, renewalFee: 517638, newAdmissionCount: 1, newAdmissionFee: 550000 },
+      { className: 'BTEC-I', renewalCount: 0, renewalFee: 517638, newAdmissionCount: 24, newAdmissionFee: 550000 },
+      { className: 'BTEC-II', renewalCount: 0, renewalFee: 517638, newAdmissionCount: 0, newAdmissionFee: 550000 },
     ]
   },
   {
@@ -435,10 +406,8 @@ export const initialCampusData: CampusData[] = [
     shortName: 'PSH Hayatabad',
     maxCapacity: 892,
     discountRate: 15,
-    newStudentGrowth: 0,
-    renewalGrowth: 0,
-    newAdmissionFeeHike: 0,
-    renewalFeeHike: 0,
+    studentGrowth: 0,
+    feeHike: 0,
     classes: [
       { className: 'PN', renewalCount: 0, renewalFee: 319242, newAdmissionCount: 25, newAdmissionFee: 319242 },
       { className: 'Nursery', renewalCount: 19, renewalFee: 319242, newAdmissionCount: 18, newAdmissionFee: 319242 },
@@ -470,10 +439,8 @@ export const initialCampusData: CampusData[] = [
     shortName: 'PSH Uni Town Girls',
     maxCapacity: 350,
     discountRate: 15,
-    newStudentGrowth: 0,
-    renewalGrowth: 0,
-    newAdmissionFeeHike: 0,
-    renewalFeeHike: 0,
+    studentGrowth: 0,
+    feeHike: 0,
     classes: [
       { className: 'PN', renewalCount: 0, renewalFee: 280843, newAdmissionCount: 16, newAdmissionFee: 280843 },
       { className: 'Nursery', renewalCount: 12, renewalFee: 280843, newAdmissionCount: 2, newAdmissionFee: 280843 },
@@ -505,10 +472,8 @@ export const initialCampusData: CampusData[] = [
     shortName: 'Jamshoro LUMHS',
     maxCapacity: 584,
     discountRate: 15,
-    newStudentGrowth: 0,
-    renewalGrowth: 0,
-    newAdmissionFeeHike: 0,
-    renewalFeeHike: 0,
+    studentGrowth: 0,
+    feeHike: 0,
     classes: [
       { className: 'PN', renewalCount: 0, renewalFee: 209325, newAdmissionCount: 37, newAdmissionFee: 231554 },
       { className: 'Nursery', renewalCount: 35, renewalFee: 209325, newAdmissionCount: 9, newAdmissionFee: 231554 },
@@ -540,10 +505,8 @@ export const initialCampusData: CampusData[] = [
     shortName: 'HYD Isra',
     maxCapacity: 652,
     discountRate: 15,
-    newStudentGrowth: 0,
-    renewalGrowth: 0,
-    newAdmissionFeeHike: 0,
-    renewalFeeHike: 0,
+    studentGrowth: 0,
+    feeHike: 0,
     classes: [
       { className: 'PN', renewalCount: 0, renewalFee: 254539, newAdmissionCount: 30, newAdmissionFee: 281570 },
       { className: 'Nursery', renewalCount: 30, renewalFee: 254539, newAdmissionCount: 13, newAdmissionFee: 281570 },
@@ -575,10 +538,8 @@ export const initialCampusData: CampusData[] = [
     shortName: 'KHI Johar Boys',
     maxCapacity: 408,
     discountRate: 15,
-    newStudentGrowth: 0,
-    renewalGrowth: 0,
-    newAdmissionFeeHike: 0,
-    renewalFeeHike: 0,
+    studentGrowth: 0,
+    feeHike: 0,
     classes: [
       { className: 'PN', renewalCount: 3, renewalFee: 270075, newAdmissionCount: 7, newAdmissionFee: 286805 },
       { className: 'Nursery', renewalCount: 10, renewalFee: 270075, newAdmissionCount: 5, newAdmissionFee: 286805 },
@@ -610,10 +571,8 @@ export const initialCampusData: CampusData[] = [
     shortName: 'KHI Gulshan Girls',
     maxCapacity: 450,
     discountRate: 15,
-    newStudentGrowth: 0,
-    renewalGrowth: 0,
-    newAdmissionFeeHike: 0,
-    renewalFeeHike: 0,
+    studentGrowth: 0,
+    feeHike: 0,
     classes: [
       { className: 'PN', renewalCount: 1, renewalFee: 270075, newAdmissionCount: 9, newAdmissionFee: 298755 },
       { className: 'Nursery', renewalCount: 8, renewalFee: 270075, newAdmissionCount: 7, newAdmissionFee: 298755 },
@@ -645,12 +604,9 @@ export const initialCampusData: CampusData[] = [
     shortName: 'Quetta Boys',
     maxCapacity: 774,
     discountRate: 15,
-    newStudentGrowth: 0,
-    renewalGrowth: 0,
-    newAdmissionFeeHike: 0,
-    renewalFeeHike: 0,
+    studentGrowth: 0,
+    feeHike: 0,
     classes: [
-      // Excel: New=165, Renewal=366, Total=531
       { className: 'PN', renewalCount: 0, renewalFee: 200000, newAdmissionCount: 20, newAdmissionFee: 200000 },
       { className: 'Nursery', renewalCount: 5, renewalFee: 200000, newAdmissionCount: 10, newAdmissionFee: 200000 },
       { className: 'KG', renewalCount: 10, renewalFee: 200000, newAdmissionCount: 12, newAdmissionFee: 200000 },
@@ -664,13 +620,13 @@ export const initialCampusData: CampusData[] = [
       { className: '8', renewalCount: 44, renewalFee: 228346, newAdmissionCount: 6, newAdmissionFee: 242000 },
       { className: 'SSC-I', renewalCount: 54, renewalFee: 202199, newAdmissionCount: 21, newAdmissionFee: 214500 },
       { className: 'SSC-II', renewalCount: 51, renewalFee: 202199, newAdmissionCount: 3, newAdmissionFee: 214500 },
-      { className: 'IGCSE-I', renewalCount: 0, renewalFee: 0, newAdmissionCount: 0, newAdmissionFee: 0 },
-      { className: 'IGCSE-II', renewalCount: 0, renewalFee: 0, newAdmissionCount: 0, newAdmissionFee: 0 },
+      { className: 'IGCSE-I', renewalCount: 29, renewalFee: 0, newAdmissionCount: 0, newAdmissionFee: 0 },
+      { className: 'IGCSE-II', renewalCount: 24, renewalFee: 0, newAdmissionCount: 0, newAdmissionFee: 0 },
       { className: 'IGCSE-III', renewalCount: 0, renewalFee: 0, newAdmissionCount: 0, newAdmissionFee: 0 },
       { className: 'HSSC-I', renewalCount: 33, renewalFee: 202199, newAdmissionCount: 22, newAdmissionFee: 214500 },
       { className: 'HSSC-II', renewalCount: 31, renewalFee: 202199, newAdmissionCount: 0, newAdmissionFee: 214500 },
-      { className: 'AS', renewalCount: 0, renewalFee: 0, newAdmissionCount: 0, newAdmissionFee: 0 },
-      { className: 'A2', renewalCount: 0, renewalFee: 0, newAdmissionCount: 0, newAdmissionFee: 0 },
+      { className: 'AS', renewalCount: 18, renewalFee: 0, newAdmissionCount: 0, newAdmissionFee: 0 },
+      { className: 'A2', renewalCount: 18, renewalFee: 0, newAdmissionCount: 0, newAdmissionFee: 0 },
       { className: 'BTEC-I', renewalCount: 0, renewalFee: 0, newAdmissionCount: 0, newAdmissionFee: 0 },
       { className: 'BTEC-II', renewalCount: 0, renewalFee: 0, newAdmissionCount: 0, newAdmissionFee: 0 },
     ]
@@ -681,12 +637,9 @@ export const initialCampusData: CampusData[] = [
     shortName: 'Quetta Girls',
     maxCapacity: 766,
     discountRate: 15,
-    newStudentGrowth: 0,
-    renewalGrowth: 0,
-    newAdmissionFeeHike: 0,
-    renewalFeeHike: 0,
+    studentGrowth: 0,
+    feeHike: 0,
     classes: [
-      // Excel: New=96, Renewal=542, Total=638
       { className: 'PN', renewalCount: 1, renewalFee: 228346, newAdmissionCount: 30, newAdmissionFee: 242000 },
       { className: 'Nursery', renewalCount: 29, renewalFee: 228346, newAdmissionCount: 12, newAdmissionFee: 242000 },
       { className: 'KG', renewalCount: 50, renewalFee: 228346, newAdmissionCount: 6, newAdmissionFee: 242000 },
@@ -703,8 +656,8 @@ export const initialCampusData: CampusData[] = [
       { className: 'IGCSE-I', renewalCount: 0, renewalFee: 0, newAdmissionCount: 0, newAdmissionFee: 0 },
       { className: 'IGCSE-II', renewalCount: 0, renewalFee: 0, newAdmissionCount: 0, newAdmissionFee: 0 },
       { className: 'IGCSE-III', renewalCount: 0, renewalFee: 0, newAdmissionCount: 0, newAdmissionFee: 0 },
-      { className: 'HSSC-I', renewalCount: 18, renewalFee: 202199, newAdmissionCount: 7, newAdmissionFee: 214500 },
-      { className: 'HSSC-II', renewalCount: 18, renewalFee: 202199, newAdmissionCount: 0, newAdmissionFee: 214500 },
+      { className: 'HSSC-I', renewalCount: 7, renewalFee: 202199, newAdmissionCount: 7, newAdmissionFee: 214500 },
+      { className: 'HSSC-II', renewalCount: 0, renewalFee: 202199, newAdmissionCount: 0, newAdmissionFee: 214500 },
       { className: 'AS', renewalCount: 0, renewalFee: 0, newAdmissionCount: 0, newAdmissionFee: 0 },
       { className: 'A2', renewalCount: 0, renewalFee: 0, newAdmissionCount: 0, newAdmissionFee: 0 },
       { className: 'BTEC-I', renewalCount: 0, renewalFee: 0, newAdmissionCount: 0, newAdmissionFee: 0 },
@@ -717,10 +670,8 @@ export const initialCampusData: CampusData[] = [
     shortName: 'Quetta Jinnah Town',
     maxCapacity: 440,
     discountRate: 15,
-    newStudentGrowth: 0,
-    renewalGrowth: 0,
-    newAdmissionFeeHike: 0,
-    renewalFeeHike: 0,
+    studentGrowth: 0,
+    feeHike: 0,
     classes: [
       { className: 'PN', renewalCount: 0, renewalFee: 241063, newAdmissionCount: 25, newAdmissionFee: 255200 },
       { className: 'Nursery', renewalCount: 27, renewalFee: 241063, newAdmissionCount: 16, newAdmissionFee: 255200 },
@@ -752,10 +703,8 @@ export const initialCampusData: CampusData[] = [
     shortName: 'Khairpur',
     maxCapacity: 1065,
     discountRate: 15,
-    newStudentGrowth: 0,
-    renewalGrowth: 0,
-    newAdmissionFeeHike: 0,
-    renewalFeeHike: 0,
+    studentGrowth: 0,
+    feeHike: 0,
     classes: [
       { className: 'PN', renewalCount: 4, renewalFee: 120854, newAdmissionCount: 48, newAdmissionFee: 120854 },
       { className: 'Nursery', renewalCount: 34, renewalFee: 120854, newAdmissionCount: 16, newAdmissionFee: 120854 },
@@ -794,30 +743,23 @@ export const initialHostelData: HostelData[] = [
 
 // Global settings
 export interface GlobalSettings {
-  globalNewAdmissionFeeHike: number;
-  globalRenewalFeeHike: number;
-  globalNewStudentGrowth: number; // Growth rate for new admissions
-  globalRenewalGrowth: number; // Growth rate for renewals
+  globalFeeHike: number;
+  globalStudentGrowth: number;
   globalDiscount: number;
   // Annual fees charged to all students
   schoolAnnualFee: number;
   hostelAnnualFee: number;
-  // DCP (Digital Companion Pack) charged to all students
+  // DCP (Development Charges) charged to all students
   schoolDCP: number;
   hostelDCP: number;
-  // Admission fee for new students (one-time charge)
-  admissionFee: number;
 }
 
 export const initialGlobalSettings: GlobalSettings = {
-  globalNewAdmissionFeeHike: 0,
-  globalRenewalFeeHike: 0,
-  globalNewStudentGrowth: 0,
-  globalRenewalGrowth: 0,
-  globalDiscount: 15, // Last year discount was 15%
+  globalFeeHike: 0,
+  globalStudentGrowth: 0,
+  globalDiscount: 15,
   schoolAnnualFee: 25000,
   hostelAnnualFee: 15000,
   schoolDCP: 10000,
-  hostelDCP: 0, // No DCP for hostel students
-  admissionFee: 50000, // Default admission fee per new student
+  hostelDCP: 5000,
 };

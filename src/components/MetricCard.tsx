@@ -135,7 +135,7 @@ export function HeaderMetrics({
         <MetricCard
           title="DCP Revenue"
           value={formatCurrency(dcpRevenue)}
-          subtitle="Digital Companion Pack"
+          subtitle="Development Charges"
         />
         <MetricCard
           title="Grand Total"
