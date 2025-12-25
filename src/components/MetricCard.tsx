@@ -47,13 +47,13 @@ export function MetricCard({
 
   return (
     <div className={`metric-card ${getVariantStyles()}`}>
-      <div className="metric-label mb-1">{title}</div>
+      <div className="metric-label">{title}</div>
       <div className="metric-value text-foreground">{value}</div>
       {subtitle && (
-        <div className="text-xs text-muted-foreground mt-1">{subtitle}</div>
+        <div className="text-[10px] text-muted-foreground">{subtitle}</div>
       )}
       {trend !== undefined && (
-        <div className={`flex items-center gap-1 mt-2 text-xs ${getTrendColor()}`}>
+        <div className={`flex items-center gap-1 text-[10px] ${getTrendColor()}`}>
           {getTrendIcon()}
           <span className="font-mono">{formatPercent(trend)}</span>
           {trendLabel && <span className="text-muted-foreground">{trendLabel}</span>}
@@ -92,9 +92,9 @@ export function HeaderMetrics({
   const revenueChange = ((totalRevenue - currentTotalRevenue) / currentTotalRevenue) * 100;
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-2">
       {/* Main Revenue Row */}
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2">
         <MetricCard
           title="School Revenue"
           value={formatCurrency(schoolRevenue)}
@@ -126,7 +126,7 @@ export function HeaderMetrics({
       </div>
       
       {/* Additional Fees Row */}
-      <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+      <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
         <MetricCard
           title="Annual Fee"
           value={formatCurrency(annualFeeRevenue)}
