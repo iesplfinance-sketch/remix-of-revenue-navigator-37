@@ -184,18 +184,20 @@ export function CampusCard({ campus, calculation, globalSettings, onUpdate, isEx
                 <thead>
                   <tr>
                     <th rowSpan={2} className="align-bottom">Class</th>
-                    <th colSpan={4} className="text-center bg-muted/30 border-b border-border">Current Year</th>
-                    <th colSpan={4} className="text-center bg-primary/10 border-b border-border">Forecasted Year</th>
+                    <th colSpan={5} className="text-center bg-muted/30 border-b border-border">Current Year</th>
+                    <th colSpan={5} className="text-center bg-primary/10 border-b border-border">Forecasted Year</th>
                     <th rowSpan={2} className="text-right align-bottom">Delta</th>
                   </tr>
                   <tr>
-                    <th className="text-right bg-muted/30">Students</th>
-                    <th className="text-right bg-muted/30">Renewal Fee</th>
-                    <th className="text-right bg-muted/30">New Adm. Fee</th>
+                    <th className="text-right bg-muted/30">Renewal</th>
+                    <th className="text-right bg-muted/30">New Adm.</th>
+                    <th className="text-right bg-muted/30">Ren. Fee</th>
+                    <th className="text-right bg-muted/30">New Fee</th>
                     <th className="text-right bg-muted/30">Revenue</th>
-                    <th className="text-right bg-primary/10">Students</th>
-                    <th className="text-right bg-primary/10">Renewal Fee</th>
-                    <th className="text-right bg-primary/10">New Adm. Fee</th>
+                    <th className="text-right bg-primary/10">Renewal</th>
+                    <th className="text-right bg-primary/10">New Adm.</th>
+                    <th className="text-right bg-primary/10">Ren. Fee</th>
+                    <th className="text-right bg-primary/10">New Fee</th>
                     <th className="text-right bg-primary/10">Revenue</th>
                   </tr>
                 </thead>
@@ -211,12 +213,14 @@ export function CampusCard({ campus, calculation, globalSettings, onUpdate, isEx
                       <tr key={cls.className}>
                         <td className="font-medium">{cls.className}</td>
                         {/* Current Year - muted background */}
-                        <td className="text-right font-mono bg-muted/20">{cls.currentTotalStudents}</td>
+                        <td className="text-right font-mono bg-muted/20">{cls.currentRenewalStudents}</td>
+                        <td className="text-right font-mono bg-muted/20">{cls.currentNewStudents}</td>
                         <td className="text-right font-mono bg-muted/20">{formatCurrency(currentRenewalFee)}</td>
                         <td className="text-right font-mono bg-muted/20">{formatCurrency(currentNewAdmFee)}</td>
                         <td className="text-right font-mono bg-muted/20">{formatCurrency(cls.currentRevenue)}</td>
                         {/* Forecasted Year - primary tint */}
-                        <td className="text-right font-mono bg-primary/5">{cls.projectedTotalStudents}</td>
+                        <td className="text-right font-mono bg-primary/5">{cls.projectedRenewalStudents}</td>
+                        <td className="text-right font-mono bg-primary/5">{cls.projectedNewStudents}</td>
                         <td className="text-right font-mono bg-primary/5">{formatCurrency(projectedRenewalFee)}</td>
                         <td className="text-right font-mono bg-primary/5">{formatCurrency(projectedNewAdmFee)}</td>
                         <td className="text-right font-mono bg-primary/5">{formatCurrency(cls.projectedRevenue)}</td>
