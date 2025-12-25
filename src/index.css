@@ -162,16 +162,16 @@
 @layer components {
   /* Bloomberg-style metric cards */
   .metric-card {
-    @apply bg-card border border-border rounded-lg p-4 transition-all duration-200;
+    @apply bg-card border border-border rounded-lg px-3 py-2 transition-all duration-200;
     @apply hover:border-primary/50 hover:shadow-lg hover:shadow-primary/5;
   }
 
   .metric-value {
-    @apply font-mono text-2xl font-semibold tracking-tight;
+    @apply font-mono text-lg font-semibold tracking-tight;
   }
 
   .metric-label {
-    @apply text-xs uppercase tracking-widest text-muted-foreground;
+    @apply text-[10px] uppercase tracking-widest text-muted-foreground;
   }
 
   /* Delta indicators */
