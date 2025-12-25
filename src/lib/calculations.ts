@@ -211,13 +211,15 @@ export function calculateTotals(
   hostels: HostelData[],
   globalSettings: GlobalSettings
 ): TotalCalculation {
-  let schoolStudents = 0;
+  let currentSchoolStudents = 0;
+  let projectedSchoolStudents = 0;
   let schoolRevenue = 0;
   let currentSchoolRevenue = 0;
 
   campuses.forEach(campus => {
     const calc = calculateCampusRevenue(campus, globalSettings);
-    schoolStudents += calc.projectedTotalStudents;
+    currentSchoolStudents += calc.currentTotalStudents;
+    projectedSchoolStudents += calc.projectedTotalStudents;
     schoolRevenue += calc.projectedNetRevenue;
     currentSchoolRevenue += calc.currentNetRevenue;
   });
@@ -232,16 +234,20 @@ export function calculateTotals(
     currentHostelRevenue += hostel.currentOccupancy * hostel.feePerStudent;
   });
 
-  // Calculate additional fees
-  const annualFeeRevenue = (schoolStudents * globalSettings.schoolAnnualFee) + (hostelStudents * globalSettings.hostelAnnualFee);
-  const dcpRevenue = (schoolStudents * globalSettings.schoolDCP) + (hostelStudents * globalSettings.hostelDCP);
+  // Use current students for student breakdown display (consistent)
+  const schoolStudents = currentSchoolStudents;
+  const totalStudents = schoolStudents + hostelStudents;
+
+  // Calculate additional fees based on projected students for revenue
+  const annualFeeRevenue = (projectedSchoolStudents * globalSettings.schoolAnnualFee) + (hostelStudents * globalSettings.hostelAnnualFee);
+  const dcpRevenue = (projectedSchoolStudents * globalSettings.schoolDCP) + (hostelStudents * globalSettings.hostelDCP);
   const tuitionRevenue = schoolRevenue + hostelRevenue;
   const grandTotalRevenue = tuitionRevenue + annualFeeRevenue + dcpRevenue;
 
   return {
     schoolStudents,
     hostelStudents,
-    totalStudents: schoolStudents + hostelStudents,
+    totalStudents,
     schoolRevenue,
     hostelRevenue,
     totalRevenue: tuitionRevenue,
