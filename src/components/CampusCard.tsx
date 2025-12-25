@@ -4,6 +4,7 @@ import { CampusCalculation, calculateClassBreakdown, formatCurrency, formatNumbe
 import { GlobalSettings } from '@/data/schoolData';
 import { Slider } from '@/components/ui/slider';
 import { Badge } from '@/components/ui/badge';
+import { Switch } from '@/components/ui/switch';
 
 interface CampusCardProps {
   campus: CampusData;
@@ -43,7 +44,7 @@ export function CampusCard({ campus, calculation, globalSettings, onUpdate, isEx
 
     const tuitionNet = projectedTuitionRevenue * (1 - discountRate);
     const newAdmissionFees = projectedNewStudents * 25000;
-    const annualFees = projectedTotalStudents * globalSettings.schoolAnnualFee;
+    const annualFees = campus.annualFeeApplicable ? projectedTotalStudents * globalSettings.schoolAnnualFee : 0;
     const dcp = projectedTotalStudents * globalSettings.schoolDCP;
     
     // Add hostel revenue if this campus has a hostel
@@ -69,7 +70,7 @@ export function CampusCard({ campus, calculation, globalSettings, onUpdate, isEx
 
     const tuitionNet = currentTuitionRevenue * (1 - discountRate);
     const newAdmissionFees = currentNewStudents * 25000;
-    const annualFees = currentTotalStudents * globalSettings.schoolAnnualFee;
+    const annualFees = campus.annualFeeApplicable ? currentTotalStudents * globalSettings.schoolAnnualFee : 0;
     const dcp = currentTotalStudents * globalSettings.schoolDCP;
     
     // Add hostel revenue if this campus has a hostel
@@ -240,6 +241,22 @@ export function CampusCard({ campus, calculation, globalSettings, onUpdate, isEx
                   <span>0%</span>
                   <span>40%</span>
                 </div>
+              </div>
+
+              {/* Annual Fee Toggle */}
+              <div className="pt-2">
+                <div className="flex items-center justify-between">
+                  <label className="text-xs text-muted-foreground uppercase tracking-wide">
+                    Annual Fee Applicable
+                  </label>
+                  <Switch
+                    checked={campus.annualFeeApplicable}
+                    onCheckedChange={(checked) => onUpdate({ annualFeeApplicable: checked })}
+                  />
+                </div>
+                <p className="text-xs text-muted-foreground mt-1">
+                  {campus.annualFeeApplicable ? 'Rs. 25,000 per student' : 'Not charged at this campus'}
+                </p>
               </div>
             </div>
 
