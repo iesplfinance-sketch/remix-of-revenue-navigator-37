@@ -90,6 +90,12 @@ export function HeaderMetrics({
       {/* Main Revenue Row */}
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2">
         <MetricCard
+          title="Grand Total"
+          value={formatCurrency(grandTotalRevenue)}
+          subtitle="Tuition + Annual + DCP + Admission"
+          variant="positive"
+        />
+        <MetricCard
           title="School Revenue"
           value={formatCurrency(schoolRevenue)}
           subtitle="Projected Net Tuition"
@@ -110,15 +116,15 @@ export function HeaderMetrics({
           value={formatNumber(hostelStudents)}
           subtitle="All Hostels"
         />
+      </div>
+      
+      {/* Additional Fees Row */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
         <MetricCard
           title="Admission Fees"
           value={formatCurrency(newAdmissionFeeRevenue)}
           subtitle="New Students Only"
         />
-      </div>
-      
-      {/* Additional Fees Row */}
-      <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
         <MetricCard
           title="Annual Fee"
           value={formatCurrency(annualFeeRevenue)}
@@ -128,12 +134,6 @@ export function HeaderMetrics({
           title="DCP Revenue"
           value={formatCurrency(dcpRevenue)}
           subtitle="Development Charges"
-        />
-        <MetricCard
-          title="Grand Total"
-          value={formatCurrency(grandTotalRevenue)}
-          subtitle="Tuition + Annual + DCP"
-          variant="positive"
         />
       </div>
     </div>
