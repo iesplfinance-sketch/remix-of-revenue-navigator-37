@@ -51,7 +51,7 @@ export const initialCampusData: CampusData[] = [
     renewalFeeHike: 0,
     classes: [
       // Excel: New=319, Renewal=779, Total=1098
-      { className: 'PN', renewalCount: 0, renewalFee: 344497, newAdmissionCount: 20, newAdmissionFee: 391474 },
+      { className: 'PN', renewalCount: 0, renewalFee: 344497, newAdmissionCount: 28, newAdmissionFee: 391474 },
       { className: 'Nursery', renewalCount: 9, renewalFee: 344497, newAdmissionCount: 18, newAdmissionFee: 391474 },
       { className: 'KG', renewalCount: 30, renewalFee: 344497, newAdmissionCount: 7, newAdmissionFee: 391474 },
       { className: '1', renewalCount: 33, renewalFee: 344497, newAdmissionCount: 9, newAdmissionFee: 391474 },
@@ -67,9 +67,9 @@ export const initialCampusData: CampusData[] = [
       { className: 'IGCSE-I', renewalCount: 29, renewalFee: 409115, newAdmissionCount: 17, newAdmissionFee: 426903 },
       { className: 'IGCSE-II', renewalCount: 19, renewalFee: 409115, newAdmissionCount: 2, newAdmissionFee: 426903 },
       { className: 'IGCSE-III', renewalCount: 34, renewalFee: 409115, newAdmissionCount: 1, newAdmissionFee: 426903 },
-      { className: 'HSSC-I', renewalCount: 46, renewalFee: 244861, newAdmissionCount: 84, newAdmissionFee: 266153 },
-      { className: 'HSSC-II', renewalCount: 112, renewalFee: 244861, newAdmissionCount: 0, newAdmissionFee: 266153 },
-      { className: 'AS', renewalCount: 16, renewalFee: 565766, newAdmissionCount: 12, newAdmissionFee: 614963 },
+      { className: 'HSSC-I', renewalCount: 50, renewalFee: 244861, newAdmissionCount: 84, newAdmissionFee: 266153 },
+      { className: 'HSSC-II', renewalCount: 116, renewalFee: 244861, newAdmissionCount: 0, newAdmissionFee: 266153 },
+      { className: 'AS', renewalCount: 20, renewalFee: 565766, newAdmissionCount: 12, newAdmissionFee: 614963 },
       { className: 'A2', renewalCount: 12, renewalFee: 565766, newAdmissionCount: 2, newAdmissionFee: 614963 },
       { className: 'BTEC-I', renewalCount: 6, renewalFee: 565766, newAdmissionCount: 5, newAdmissionFee: 614963 },
       { className: 'BTEC-II', renewalCount: 5, renewalFee: 565766, newAdmissionCount: 0, newAdmissionFee: 614963 },
@@ -814,10 +814,10 @@ export const initialGlobalSettings: GlobalSettings = {
   globalRenewalFeeHike: 0,
   globalNewStudentGrowth: 0,
   globalRenewalGrowth: 0,
-  globalDiscount: 15,
+  globalDiscount: 15, // Last year discount was 15%
   schoolAnnualFee: 25000,
   hostelAnnualFee: 15000,
   schoolDCP: 10000,
-  hostelDCP: 5000,
+  hostelDCP: 0, // No DCP for hostel students
   admissionFee: 50000, // Default admission fee per new student
 };
