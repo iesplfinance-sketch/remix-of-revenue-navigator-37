@@ -243,7 +243,16 @@ export function calculateTotals(
   const totalStudents = schoolStudents;
 
   // Calculate additional fees based on projected students for revenue
-  const annualFeeRevenue = (projectedSchoolStudents * globalSettings.schoolAnnualFee) + (hostelStudents * globalSettings.hostelAnnualFee);
+  // Only include annual fee for campuses where annualFeeApplicable is true
+  const studentsWithAnnualFee = campuses.reduce((sum, campus) => {
+    if (campus.annualFeeApplicable) {
+      const calc = calculateCampusRevenue(campus, globalSettings);
+      return sum + calc.projectedTotalStudents;
+    }
+    return sum;
+  }, 0);
+  
+  const annualFeeRevenue = (studentsWithAnnualFee * globalSettings.schoolAnnualFee) + (hostelStudents * globalSettings.hostelAnnualFee);
   const dcpRevenue = (projectedSchoolStudents * globalSettings.schoolDCP) + (hostelStudents * globalSettings.hostelDCP);
   const newAdmissionFeeRevenue = projectedNewStudents * 25000; // New admission fee per student
   const tuitionRevenue = schoolRevenue + hostelRevenue;

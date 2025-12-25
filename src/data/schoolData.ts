@@ -20,6 +20,7 @@ export interface CampusData {
   renewalGrowth: number; // Default 0%
   newAdmissionFeeHike: number; // Default 0%
   renewalFeeHike: number; // Default 0%
+  annualFeeApplicable: boolean; // Whether annual fee applies to this campus
 }
 
 export interface HostelData {
@@ -49,6 +50,7 @@ export const initialCampusData: CampusData[] = [
     renewalGrowth: 0,
     newAdmissionFeeHike: 0,
     renewalFeeHike: 0,
+    annualFeeApplicable: true,
     classes: [
       { className: 'PN', renewalCount: 0, renewalFee: 344497, newAdmissionCount: 20, newAdmissionFee: 391474 },
       { className: 'Nursery', renewalCount: 9, renewalFee: 344497, newAdmissionCount: 18, newAdmissionFee: 391474 },
@@ -84,6 +86,7 @@ export const initialCampusData: CampusData[] = [
     renewalGrowth: 0,
     newAdmissionFeeHike: 0,
     renewalFeeHike: 0,
+    annualFeeApplicable: true,
     classes: [
       { className: 'PN', renewalCount: 0, renewalFee: 400032, newAdmissionCount: 22, newAdmissionFee: 350028 },
       { className: 'Nursery', renewalCount: 11, renewalFee: 460080, newAdmissionCount: 12, newAdmissionFee: 500040 },
@@ -119,6 +122,7 @@ export const initialCampusData: CampusData[] = [
     renewalGrowth: 0,
     newAdmissionFeeHike: 0,
     renewalFeeHike: 0,
+    annualFeeApplicable: true,
     classes: [
       { className: 'PN', renewalCount: 2, renewalFee: 243007, newAdmissionCount: 6, newAdmissionFee: 268813 },
       { className: 'Nursery', renewalCount: 10, renewalFee: 243007, newAdmissionCount: 3, newAdmissionFee: 268813 },
@@ -154,6 +158,7 @@ export const initialCampusData: CampusData[] = [
     renewalGrowth: 0,
     newAdmissionFeeHike: 0,
     renewalFeeHike: 0,
+    annualFeeApplicable: true,
     classes: [
       { className: 'PN', renewalCount: 1, renewalFee: 243007, newAdmissionCount: 20, newAdmissionFee: 268813 },
       { className: 'Nursery', renewalCount: 12, renewalFee: 243007, newAdmissionCount: 13, newAdmissionFee: 268813 },
@@ -189,6 +194,7 @@ export const initialCampusData: CampusData[] = [
     renewalGrowth: 0,
     newAdmissionFeeHike: 0,
     renewalFeeHike: 0,
+    annualFeeApplicable: false, // Lahore Boys - no annual fee
     classes: [
       { className: 'PN', renewalCount: 2, renewalFee: 369601, newAdmissionCount: 14, newAdmissionFee: 401740 },
       { className: 'Nursery', renewalCount: 23, renewalFee: 369601, newAdmissionCount: 17, newAdmissionFee: 430182 },
@@ -224,6 +230,7 @@ export const initialCampusData: CampusData[] = [
     renewalGrowth: 0,
     newAdmissionFeeHike: 0,
     renewalFeeHike: 0,
+    annualFeeApplicable: false, // Lahore Girls - no annual fee
     classes: [
       { className: 'PN', renewalCount: 3, renewalFee: 395768, newAdmissionCount: 10, newAdmissionFee: 430182 },
       { className: 'Nursery', renewalCount: 14, renewalFee: 395768, newAdmissionCount: 7, newAdmissionFee: 430182 },
@@ -259,6 +266,7 @@ export const initialCampusData: CampusData[] = [
     renewalGrowth: 0,
     newAdmissionFeeHike: 0,
     renewalFeeHike: 0,
+    annualFeeApplicable: false, // Dream Garden - no annual fee
     classes: [
       { className: 'PN', renewalCount: 0, renewalFee: 278734, newAdmissionCount: 16, newAdmissionFee: 302972 },
       { className: 'Nursery', renewalCount: 22, renewalFee: 278734, newAdmissionCount: 31, newAdmissionFee: 302972 },
@@ -294,6 +302,7 @@ export const initialCampusData: CampusData[] = [
     renewalGrowth: 0,
     newAdmissionFeeHike: 0,
     renewalFeeHike: 0,
+    annualFeeApplicable: false, // Islampura - no annual fee
     classes: [
       { className: 'PN', renewalCount: 0, renewalFee: 128990, newAdmissionCount: 68, newAdmissionFee: 136484 },
       { className: 'Nursery', renewalCount: 69, renewalFee: 128990, newAdmissionCount: 29, newAdmissionFee: 136484 },
@@ -329,6 +338,7 @@ export const initialCampusData: CampusData[] = [
     renewalGrowth: 0,
     newAdmissionFeeHike: 0,
     renewalFeeHike: 0,
+    annualFeeApplicable: false, // Khayaban e Ameen - no annual fee
     classes: [
       { className: 'PN', renewalCount: 1, renewalFee: 222943, newAdmissionCount: 21, newAdmissionFee: 242330 },
       { className: 'Nursery', renewalCount: 30, renewalFee: 222943, newAdmissionCount: 24, newAdmissionFee: 242330 },
@@ -364,6 +374,7 @@ export const initialCampusData: CampusData[] = [
     renewalGrowth: 0,
     newAdmissionFeeHike: 0,
     renewalFeeHike: 0,
+    annualFeeApplicable: false, // Multan Ali Chowk - no annual fee
     classes: [
       { className: 'PN', renewalCount: 0, renewalFee: 91340, newAdmissionCount: 12, newAdmissionFee: 113000 },
       { className: 'Nursery', renewalCount: 16, renewalFee: 91340, newAdmissionCount: 11, newAdmissionFee: 113000 },
@@ -399,6 +410,7 @@ export const initialCampusData: CampusData[] = [
     renewalGrowth: 0,
     newAdmissionFeeHike: 0,
     renewalFeeHike: 0,
+    annualFeeApplicable: false, // Multan Model Town - no annual fee
     classes: [
       { className: 'PN', renewalCount: 0, renewalFee: 385000, newAdmissionCount: 16, newAdmissionFee: 495000 },
       { className: 'Nursery', renewalCount: 8, renewalFee: 385000, newAdmissionCount: 16, newAdmissionFee: 495000 },
@@ -434,6 +446,7 @@ export const initialCampusData: CampusData[] = [
     renewalGrowth: 0,
     newAdmissionFeeHike: 0,
     renewalFeeHike: 0,
+    annualFeeApplicable: false, // Peshawar Main - no annual fee
     classes: [
       { className: 'PN', renewalCount: 0, renewalFee: 319242, newAdmissionCount: 25, newAdmissionFee: 319242 },
       { className: 'Nursery', renewalCount: 19, renewalFee: 319242, newAdmissionCount: 18, newAdmissionFee: 319242 },
@@ -469,6 +482,7 @@ export const initialCampusData: CampusData[] = [
     renewalGrowth: 0,
     newAdmissionFeeHike: 0,
     renewalFeeHike: 0,
+    annualFeeApplicable: false, // Peshawar Town - no annual fee
     classes: [
       { className: 'PN', renewalCount: 0, renewalFee: 280843, newAdmissionCount: 16, newAdmissionFee: 280843 },
       { className: 'Nursery', renewalCount: 12, renewalFee: 280843, newAdmissionCount: 2, newAdmissionFee: 280843 },
@@ -504,6 +518,7 @@ export const initialCampusData: CampusData[] = [
     renewalGrowth: 0,
     newAdmissionFeeHike: 0,
     renewalFeeHike: 0,
+    annualFeeApplicable: false, // Jamshoro - no annual fee
     classes: [
       { className: 'PN', renewalCount: 0, renewalFee: 209325, newAdmissionCount: 37, newAdmissionFee: 231554 },
       { className: 'Nursery', renewalCount: 35, renewalFee: 209325, newAdmissionCount: 9, newAdmissionFee: 231554 },
@@ -539,6 +554,7 @@ export const initialCampusData: CampusData[] = [
     renewalGrowth: 0,
     newAdmissionFeeHike: 0,
     renewalFeeHike: 0,
+    annualFeeApplicable: false, // Hyderabad - no annual fee
     classes: [
       { className: 'PN', renewalCount: 0, renewalFee: 254539, newAdmissionCount: 30, newAdmissionFee: 281570 },
       { className: 'Nursery', renewalCount: 30, renewalFee: 254539, newAdmissionCount: 13, newAdmissionFee: 281570 },
@@ -574,6 +590,7 @@ export const initialCampusData: CampusData[] = [
     renewalGrowth: 0,
     newAdmissionFeeHike: 0,
     renewalFeeHike: 0,
+    annualFeeApplicable: true,
     classes: [
       { className: 'PN', renewalCount: 3, renewalFee: 270075, newAdmissionCount: 7, newAdmissionFee: 286805 },
       { className: 'Nursery', renewalCount: 10, renewalFee: 270075, newAdmissionCount: 5, newAdmissionFee: 286805 },
@@ -609,6 +626,7 @@ export const initialCampusData: CampusData[] = [
     renewalGrowth: 0,
     newAdmissionFeeHike: 0,
     renewalFeeHike: 0,
+    annualFeeApplicable: true,
     classes: [
       { className: 'PN', renewalCount: 1, renewalFee: 270075, newAdmissionCount: 9, newAdmissionFee: 298755 },
       { className: 'Nursery', renewalCount: 8, renewalFee: 270075, newAdmissionCount: 7, newAdmissionFee: 298755 },
@@ -644,6 +662,7 @@ export const initialCampusData: CampusData[] = [
     renewalGrowth: 0,
     newAdmissionFeeHike: 0,
     renewalFeeHike: 0,
+    annualFeeApplicable: true,
     classes: [
       { className: 'PN', renewalCount: 0, renewalFee: 200000, newAdmissionCount: 20, newAdmissionFee: 200000 },
       { className: 'Nursery', renewalCount: 5, renewalFee: 200000, newAdmissionCount: 10, newAdmissionFee: 200000 },
@@ -679,6 +698,7 @@ export const initialCampusData: CampusData[] = [
     renewalGrowth: 0,
     newAdmissionFeeHike: 0,
     renewalFeeHike: 0,
+    annualFeeApplicable: true,
     classes: [
       { className: 'PN', renewalCount: 1, renewalFee: 228346, newAdmissionCount: 30, newAdmissionFee: 242000 },
       { className: 'Nursery', renewalCount: 29, renewalFee: 228346, newAdmissionCount: 12, newAdmissionFee: 242000 },
@@ -714,6 +734,7 @@ export const initialCampusData: CampusData[] = [
     renewalGrowth: 0,
     newAdmissionFeeHike: 0,
     renewalFeeHike: 0,
+    annualFeeApplicable: true,
     classes: [
       { className: 'PN', renewalCount: 0, renewalFee: 241063, newAdmissionCount: 25, newAdmissionFee: 255200 },
       { className: 'Nursery', renewalCount: 27, renewalFee: 241063, newAdmissionCount: 16, newAdmissionFee: 255200 },
@@ -749,6 +770,7 @@ export const initialCampusData: CampusData[] = [
     renewalGrowth: 0,
     newAdmissionFeeHike: 0,
     renewalFeeHike: 0,
+    annualFeeApplicable: true,
     classes: [
       { className: 'PN', renewalCount: 4, renewalFee: 120854, newAdmissionCount: 48, newAdmissionFee: 120854 },
       { className: 'Nursery', renewalCount: 34, renewalFee: 120854, newAdmissionCount: 16, newAdmissionFee: 120854 },
