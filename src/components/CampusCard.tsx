@@ -178,21 +178,25 @@ export function CampusCard({ campus, calculation, globalSettings, onUpdate, isEx
               </div>
             </div>
 
-            {/* Data Table with Fee Columns */}
+            {/* Data Table - Current vs Forecasted */}
             <div className="overflow-x-auto">
               <table className="data-grid w-full text-xs">
                 <thead>
                   <tr>
-                    <th>Class</th>
-                    <th className="text-right">Current</th>
-                    <th className="text-right">Projected</th>
-                    <th className="text-right">Renewal Fee</th>
-                    <th className="text-right">Proj. Renewal Fee</th>
-                    <th className="text-right">New Adm. Fee</th>
-                    <th className="text-right">Proj. New Adm. Fee</th>
-                    <th className="text-right">Current Rev</th>
-                    <th className="text-right">Proj. Rev</th>
-                    <th className="text-right">Delta</th>
+                    <th rowSpan={2} className="align-bottom">Class</th>
+                    <th colSpan={4} className="text-center bg-muted/30 border-b border-border">Current Year</th>
+                    <th colSpan={4} className="text-center bg-primary/10 border-b border-border">Forecasted Year</th>
+                    <th rowSpan={2} className="text-right align-bottom">Delta</th>
+                  </tr>
+                  <tr>
+                    <th className="text-right bg-muted/30">Students</th>
+                    <th className="text-right bg-muted/30">Renewal Fee</th>
+                    <th className="text-right bg-muted/30">New Adm. Fee</th>
+                    <th className="text-right bg-muted/30">Revenue</th>
+                    <th className="text-right bg-primary/10">Students</th>
+                    <th className="text-right bg-primary/10">Renewal Fee</th>
+                    <th className="text-right bg-primary/10">New Adm. Fee</th>
+                    <th className="text-right bg-primary/10">Revenue</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -202,35 +206,22 @@ export function CampusCard({ campus, calculation, globalSettings, onUpdate, isEx
                     const currentNewAdmFee = classData?.newAdmissionFee || 0;
                     const projectedRenewalFee = currentRenewalFee * (1 + campus.renewalFeeHike / 100);
                     const projectedNewAdmFee = currentNewAdmFee * (1 + campus.newAdmissionFeeHike / 100);
-                    const renewalFeeChange = projectedRenewalFee - currentRenewalFee;
-                    const newAdmFeeChange = projectedNewAdmFee - currentNewAdmFee;
                     
                     return (
                       <tr key={cls.className}>
                         <td className="font-medium">{cls.className}</td>
-                        <td className="text-right font-mono">{cls.currentTotalStudents}</td>
-                        <td className="text-right font-mono">{cls.projectedTotalStudents}</td>
-                        <td className="text-right font-mono">{formatCurrency(currentRenewalFee)}</td>
-                        <td className="text-right font-mono">
-                          <span>{formatCurrency(projectedRenewalFee)}</span>
-                          {renewalFeeChange !== 0 && (
-                            <span className={`ml-1 text-xs ${renewalFeeChange >= 0 ? 'text-positive' : 'text-negative'}`}>
-                              ({renewalFeeChange >= 0 ? '+' : ''}{formatCurrency(renewalFeeChange)})
-                            </span>
-                          )}
-                        </td>
-                        <td className="text-right font-mono">{formatCurrency(currentNewAdmFee)}</td>
-                        <td className="text-right font-mono">
-                          <span>{formatCurrency(projectedNewAdmFee)}</span>
-                          {newAdmFeeChange !== 0 && (
-                            <span className={`ml-1 text-xs ${newAdmFeeChange >= 0 ? 'text-positive' : 'text-negative'}`}>
-                              ({newAdmFeeChange >= 0 ? '+' : ''}{formatCurrency(newAdmFeeChange)})
-                            </span>
-                          )}
-                        </td>
-                        <td className="text-right font-mono">{formatCurrency(cls.currentRevenue)}</td>
-                        <td className="text-right font-mono">{formatCurrency(cls.projectedRevenue)}</td>
-                        <td className={`text-right font-mono ${cls.revenueChange >= 0 ? 'text-positive' : 'text-negative'}`}>
+                        {/* Current Year - muted background */}
+                        <td className="text-right font-mono bg-muted/20">{cls.currentTotalStudents}</td>
+                        <td className="text-right font-mono bg-muted/20">{formatCurrency(currentRenewalFee)}</td>
+                        <td className="text-right font-mono bg-muted/20">{formatCurrency(currentNewAdmFee)}</td>
+                        <td className="text-right font-mono bg-muted/20">{formatCurrency(cls.currentRevenue)}</td>
+                        {/* Forecasted Year - primary tint */}
+                        <td className="text-right font-mono bg-primary/5">{cls.projectedTotalStudents}</td>
+                        <td className="text-right font-mono bg-primary/5">{formatCurrency(projectedRenewalFee)}</td>
+                        <td className="text-right font-mono bg-primary/5">{formatCurrency(projectedNewAdmFee)}</td>
+                        <td className="text-right font-mono bg-primary/5">{formatCurrency(cls.projectedRevenue)}</td>
+                        {/* Delta */}
+                        <td className={`text-right font-mono font-semibold ${cls.revenueChange >= 0 ? 'text-positive' : 'text-negative'}`}>
                           {cls.revenueChange >= 0 ? '+' : ''}{formatCurrency(cls.revenueChange)}
                         </td>
                       </tr>
