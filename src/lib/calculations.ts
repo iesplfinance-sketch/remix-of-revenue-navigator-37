@@ -62,6 +62,8 @@ export interface TotalCalculation {
   annualFeeRevenue: number;
   dcpRevenue: number;
   grandTotalRevenue: number;
+  newAdmissionFeeRevenue: number;
+  projectedNewStudents: number;
 }
 
 // Calculate revenue for a single campus
@@ -213,6 +215,7 @@ export function calculateTotals(
 ): TotalCalculation {
   let currentSchoolStudents = 0;
   let projectedSchoolStudents = 0;
+  let projectedNewStudents = 0;
   let schoolRevenue = 0;
   let currentSchoolRevenue = 0;
 
@@ -220,6 +223,7 @@ export function calculateTotals(
     const calc = calculateCampusRevenue(campus, globalSettings);
     currentSchoolStudents += calc.currentTotalStudents;
     projectedSchoolStudents += calc.projectedTotalStudents;
+    projectedNewStudents += calc.projectedNewStudents;
     schoolRevenue += calc.projectedNetRevenue;
     currentSchoolRevenue += calc.currentNetRevenue;
   });
@@ -236,13 +240,14 @@ export function calculateTotals(
 
   // Use current students for student breakdown display (consistent)
   const schoolStudents = currentSchoolStudents;
-  const totalStudents = schoolStudents + hostelStudents;
+  const totalStudents = schoolStudents;
 
   // Calculate additional fees based on projected students for revenue
   const annualFeeRevenue = (projectedSchoolStudents * globalSettings.schoolAnnualFee) + (hostelStudents * globalSettings.hostelAnnualFee);
   const dcpRevenue = (projectedSchoolStudents * globalSettings.schoolDCP) + (hostelStudents * globalSettings.hostelDCP);
+  const newAdmissionFeeRevenue = projectedNewStudents * 25000; // New admission fee per student
   const tuitionRevenue = schoolRevenue + hostelRevenue;
-  const grandTotalRevenue = tuitionRevenue + annualFeeRevenue + dcpRevenue;
+  const grandTotalRevenue = tuitionRevenue + annualFeeRevenue + dcpRevenue + newAdmissionFeeRevenue;
 
   return {
     schoolStudents,
@@ -257,6 +262,8 @@ export function calculateTotals(
     annualFeeRevenue,
     dcpRevenue,
     grandTotalRevenue,
+    newAdmissionFeeRevenue,
+    projectedNewStudents,
   };
 }
 

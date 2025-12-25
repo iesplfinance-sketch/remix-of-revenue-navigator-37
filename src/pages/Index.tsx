@@ -99,13 +99,12 @@ const Index = () => {
             schoolRevenue={totals.schoolRevenue}
             hostelRevenue={totals.hostelRevenue}
             totalRevenue={totals.totalRevenue}
-            schoolStudents={totals.schoolStudents}
-            hostelStudents={totals.hostelStudents}
             totalStudents={totals.totalStudents}
             currentTotalRevenue={totals.currentTotalRevenue}
             annualFeeRevenue={totals.annualFeeRevenue}
             dcpRevenue={totals.dcpRevenue}
             grandTotalRevenue={totals.grandTotalRevenue}
+            newAdmissionFeeRevenue={totals.newAdmissionFeeRevenue}
           />
         </div>
       </header>
