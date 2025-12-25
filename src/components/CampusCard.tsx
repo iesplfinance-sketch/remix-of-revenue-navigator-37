@@ -17,6 +17,64 @@ interface CampusCardProps {
 export function CampusCard({ campus, calculation, globalSettings, onUpdate, isExpanded, onToggleExpand }: CampusCardProps) {
   const classBreakdown = calculateClassBreakdown(campus, globalSettings);
 
+  // Calculate grand total for header display
+  const calculateGrandTotal = () => {
+    const discountRate = campus.discountRate / 100;
+    const effectiveRenewalFeeHike = (campus.renewalFeeHike + globalSettings.globalFeeHike) / 100;
+    const effectiveNewFeeHike = (campus.newAdmissionFeeHike + globalSettings.globalFeeHike) / 100;
+    const effectiveRenewalGrowth = (campus.renewalGrowth + globalSettings.globalStudentGrowth) / 100;
+    const effectiveNewGrowth = (campus.newStudentGrowth + globalSettings.globalStudentGrowth) / 100;
+
+    let projectedTotalStudents = 0;
+    let projectedNewStudents = 0;
+    let projectedTuitionRevenue = 0;
+
+    campus.classes.forEach(cls => {
+      const projRenewal = Math.round(cls.renewalCount * (1 + effectiveRenewalGrowth));
+      const projNew = Math.round(cls.newAdmissionCount * (1 + effectiveNewGrowth));
+      const hikedRenewalFee = cls.renewalFee * (1 + effectiveRenewalFeeHike);
+      const hikedNewFee = cls.newAdmissionFee * (1 + effectiveNewFeeHike);
+      
+      projectedTuitionRevenue += (projRenewal * hikedRenewalFee + projNew * hikedNewFee);
+      projectedTotalStudents += projRenewal + projNew;
+      projectedNewStudents += projNew;
+    });
+
+    const tuitionNet = projectedTuitionRevenue * (1 - discountRate);
+    const newAdmissionFees = projectedNewStudents * 25000;
+    const annualFees = projectedTotalStudents * globalSettings.schoolAnnualFee;
+    const dcp = projectedTotalStudents * globalSettings.schoolDCP;
+
+    return tuitionNet + newAdmissionFees + annualFees + dcp;
+  };
+
+  const projectedGrandTotal = calculateGrandTotal();
+
+  // Calculate current grand total for comparison
+  const calculateCurrentGrandTotal = () => {
+    const discountRate = campus.discountRate / 100;
+    let currentTotalStudents = 0;
+    let currentNewStudents = 0;
+    let currentTuitionRevenue = 0;
+
+    campus.classes.forEach(cls => {
+      currentTuitionRevenue += (cls.renewalCount * cls.renewalFee + cls.newAdmissionCount * cls.newAdmissionFee);
+      currentTotalStudents += cls.renewalCount + cls.newAdmissionCount;
+      currentNewStudents += cls.newAdmissionCount;
+    });
+
+    const tuitionNet = currentTuitionRevenue * (1 - discountRate);
+    const newAdmissionFees = currentNewStudents * 25000;
+    const annualFees = currentTotalStudents * globalSettings.schoolAnnualFee;
+    const dcp = currentTotalStudents * globalSettings.schoolDCP;
+
+    return tuitionNet + newAdmissionFees + annualFees + dcp;
+  };
+
+  const currentGrandTotal = calculateCurrentGrandTotal();
+  const grandTotalChange = projectedGrandTotal - currentGrandTotal;
+  const grandTotalChangePercent = currentGrandTotal > 0 ? ((grandTotalChange / currentGrandTotal) * 100) : 0;
+
   const cardClasses = `campus-card transition-all duration-300 ${isExpanded ? 'campus-card-expanded col-span-1 lg:col-span-2 xl:col-span-3' : ''} ${calculation.isOverCapacity ? 'campus-card-warning' : ''}`;
 
   return (
@@ -43,9 +101,9 @@ export function CampusCard({ campus, calculation, globalSettings, onUpdate, isEx
         </div>
         <div className="flex items-center gap-4">
           <div className="text-right">
-            <div className="font-mono text-sm text-foreground">{formatCurrency(calculation.projectedNetRevenue)}</div>
-            <div className={`font-mono text-xs ${calculation.revenueChange >= 0 ? 'text-positive' : 'text-negative'}`}>
-              {formatPercent(calculation.revenueChangePercent)}
+            <div className="font-mono text-sm text-foreground">{formatCurrency(projectedGrandTotal)}</div>
+            <div className={`font-mono text-xs ${grandTotalChange >= 0 ? 'text-positive' : 'text-negative'}`}>
+              {formatPercent(grandTotalChangePercent)}
             </div>
           </div>
           {isExpanded ? (
