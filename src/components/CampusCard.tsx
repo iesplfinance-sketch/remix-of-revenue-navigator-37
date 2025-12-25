@@ -59,13 +59,13 @@ export function CampusCard({ campus, calculation, globalSettings, onUpdate, isEx
       {/* Expanded Content */}
       {isExpanded && (
         <div className="border-t border-border animate-fade-in">
-          <div className="p-4 grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {/* Left: Controls */}
-            <div className="space-y-4">
+          <div className="p-4 space-y-6">
+            {/* Top: Fee Hike Sliders - Horizontal Layout */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
               <div>
                 <div className="flex justify-between mb-2">
                   <label className="text-xs text-muted-foreground uppercase tracking-wide">
-                    New Student Growth %
+                    New Student Growth
                   </label>
                   <span className="font-mono text-sm text-primary">
                     {campus.newStudentGrowth > 0 ? '+' : ''}{campus.newStudentGrowth}%
@@ -88,7 +88,7 @@ export function CampusCard({ campus, calculation, globalSettings, onUpdate, isEx
               <div>
                 <div className="flex justify-between mb-2">
                   <label className="text-xs text-muted-foreground uppercase tracking-wide">
-                    Renewal Growth %
+                    Renewal Growth
                   </label>
                   <span className="font-mono text-sm text-primary">
                     {campus.renewalGrowth > 0 ? '+' : ''}{campus.renewalGrowth}%
@@ -111,7 +111,7 @@ export function CampusCard({ campus, calculation, globalSettings, onUpdate, isEx
               <div>
                 <div className="flex justify-between mb-2">
                   <label className="text-xs text-muted-foreground uppercase tracking-wide">
-                    New Admission Fee Hike %
+                    New Adm. Fee Hike
                   </label>
                   <span className="font-mono text-sm text-primary">
                     {campus.newAdmissionFeeHike > 0 ? '+' : ''}{campus.newAdmissionFeeHike}%
@@ -134,7 +134,7 @@ export function CampusCard({ campus, calculation, globalSettings, onUpdate, isEx
               <div>
                 <div className="flex justify-between mb-2">
                   <label className="text-xs text-muted-foreground uppercase tracking-wide">
-                    Renewal Fee Hike %
+                    Renewal Fee Hike
                   </label>
                   <span className="font-mono text-sm text-primary">
                     {campus.renewalFeeHike > 0 ? '+' : ''}{campus.renewalFeeHike}%
@@ -157,7 +157,7 @@ export function CampusCard({ campus, calculation, globalSettings, onUpdate, isEx
               <div>
                 <div className="flex justify-between mb-2">
                   <label className="text-xs text-muted-foreground uppercase tracking-wide">
-                    Effective Discount (Society Logic)
+                    Discount Rate
                   </label>
                   <span className="font-mono text-sm text-warning">
                     {campus.discountRate}%
@@ -178,32 +178,64 @@ export function CampusCard({ campus, calculation, globalSettings, onUpdate, isEx
               </div>
             </div>
 
-            {/* Right: Data Table - spans 2 columns */}
-            <div className="lg:col-span-2 overflow-x-auto">
+            {/* Data Table with Fee Columns */}
+            <div className="overflow-x-auto">
               <table className="data-grid w-full text-xs">
                 <thead>
                   <tr>
                     <th>Class</th>
                     <th className="text-right">Current</th>
                     <th className="text-right">Projected</th>
+                    <th className="text-right">Renewal Fee</th>
+                    <th className="text-right">Proj. Renewal Fee</th>
+                    <th className="text-right">New Adm. Fee</th>
+                    <th className="text-right">Proj. New Adm. Fee</th>
                     <th className="text-right">Current Rev</th>
                     <th className="text-right">Proj. Rev</th>
                     <th className="text-right">Delta</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {classBreakdown.map(cls => (
-                    <tr key={cls.className}>
-                      <td className="font-medium">{cls.className}</td>
-                      <td className="text-right font-mono">{cls.currentTotalStudents}</td>
-                      <td className="text-right font-mono">{cls.projectedTotalStudents}</td>
-                      <td className="text-right font-mono">{formatCurrency(cls.currentRevenue)}</td>
-                      <td className="text-right font-mono">{formatCurrency(cls.projectedRevenue)}</td>
-                      <td className={`text-right font-mono ${cls.revenueChange >= 0 ? 'text-positive' : 'text-negative'}`}>
-                        {cls.revenueChange >= 0 ? '+' : ''}{formatCurrency(cls.revenueChange)}
-                      </td>
-                    </tr>
-                  ))}
+                  {classBreakdown.map(cls => {
+                    const classData = campus.classes.find(c => c.className === cls.className);
+                    const currentRenewalFee = classData?.renewalFee || 0;
+                    const currentNewAdmFee = classData?.newAdmissionFee || 0;
+                    const projectedRenewalFee = currentRenewalFee * (1 + campus.renewalFeeHike / 100);
+                    const projectedNewAdmFee = currentNewAdmFee * (1 + campus.newAdmissionFeeHike / 100);
+                    const renewalFeeChange = projectedRenewalFee - currentRenewalFee;
+                    const newAdmFeeChange = projectedNewAdmFee - currentNewAdmFee;
+                    
+                    return (
+                      <tr key={cls.className}>
+                        <td className="font-medium">{cls.className}</td>
+                        <td className="text-right font-mono">{cls.currentTotalStudents}</td>
+                        <td className="text-right font-mono">{cls.projectedTotalStudents}</td>
+                        <td className="text-right font-mono">{formatCurrency(currentRenewalFee)}</td>
+                        <td className="text-right font-mono">
+                          <span>{formatCurrency(projectedRenewalFee)}</span>
+                          {renewalFeeChange !== 0 && (
+                            <span className={`ml-1 text-xs ${renewalFeeChange >= 0 ? 'text-positive' : 'text-negative'}`}>
+                              ({renewalFeeChange >= 0 ? '+' : ''}{formatCurrency(renewalFeeChange)})
+                            </span>
+                          )}
+                        </td>
+                        <td className="text-right font-mono">{formatCurrency(currentNewAdmFee)}</td>
+                        <td className="text-right font-mono">
+                          <span>{formatCurrency(projectedNewAdmFee)}</span>
+                          {newAdmFeeChange !== 0 && (
+                            <span className={`ml-1 text-xs ${newAdmFeeChange >= 0 ? 'text-positive' : 'text-negative'}`}>
+                              ({newAdmFeeChange >= 0 ? '+' : ''}{formatCurrency(newAdmFeeChange)})
+                            </span>
+                          )}
+                        </td>
+                        <td className="text-right font-mono">{formatCurrency(cls.currentRevenue)}</td>
+                        <td className="text-right font-mono">{formatCurrency(cls.projectedRevenue)}</td>
+                        <td className={`text-right font-mono ${cls.revenueChange >= 0 ? 'text-positive' : 'text-negative'}`}>
+                          {cls.revenueChange >= 0 ? '+' : ''}{formatCurrency(cls.revenueChange)}
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>
