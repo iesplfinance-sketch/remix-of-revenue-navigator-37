@@ -68,26 +68,24 @@ interface HeaderMetricsProps {
   schoolRevenue: number;
   hostelRevenue: number;
   totalRevenue: number;
-  schoolStudents: number;
-  hostelStudents: number;
   totalStudents: number;
   currentTotalRevenue: number;
   annualFeeRevenue: number;
   dcpRevenue: number;
   grandTotalRevenue: number;
+  newAdmissionFeeRevenue: number;
 }
 
 export function HeaderMetrics({
   schoolRevenue,
   hostelRevenue,
   totalRevenue,
-  schoolStudents,
-  hostelStudents,
   totalStudents,
   currentTotalRevenue,
   annualFeeRevenue,
   dcpRevenue,
   grandTotalRevenue,
+  newAdmissionFeeRevenue,
 }: HeaderMetricsProps) {
   const revenueChange = ((totalRevenue - currentTotalRevenue) / currentTotalRevenue) * 100;
 
@@ -114,14 +112,14 @@ export function HeaderMetrics({
           variant={revenueChange > 0 ? 'positive' : 'default'}
         />
         <MetricCard
-          title="Student Breakdown"
-          value={`${formatNumber(schoolStudents)} | ${formatNumber(hostelStudents)}`}
-          subtitle="School | Hostel"
-        />
-        <MetricCard
           title="Total Students"
           value={formatNumber(totalStudents)}
           subtitle="All Campuses"
+        />
+        <MetricCard
+          title="Admission Fees"
+          value={formatCurrency(newAdmissionFeeRevenue)}
+          subtitle="New Students Only"
         />
       </div>
       
