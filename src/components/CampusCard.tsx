@@ -74,14 +74,14 @@ export function CampusCard({ campus, calculation, globalSettings, onUpdate, isEx
                 <Slider
                   value={[campus.newStudentGrowth]}
                   onValueChange={([value]) => onUpdate({ newStudentGrowth: value })}
-                  min={-20}
-                  max={50}
+                  min={-15}
+                  max={40}
                   step={1}
                   className="w-full"
                 />
                 <div className="flex justify-between mt-1 text-xs text-muted-foreground">
-                  <span>-20%</span>
-                  <span>+50%</span>
+                  <span>-15%</span>
+                  <span>+40%</span>
                 </div>
               </div>
 
@@ -97,14 +97,14 @@ export function CampusCard({ campus, calculation, globalSettings, onUpdate, isEx
                 <Slider
                   value={[campus.renewalGrowth]}
                   onValueChange={([value]) => onUpdate({ renewalGrowth: value })}
-                  min={-20}
-                  max={50}
+                  min={-15}
+                  max={40}
                   step={1}
                   className="w-full"
                 />
                 <div className="flex justify-between mt-1 text-xs text-muted-foreground">
-                  <span>-20%</span>
-                  <span>+50%</span>
+                  <span>-15%</span>
+                  <span>+40%</span>
                 </div>
               </div>
 
@@ -114,20 +114,20 @@ export function CampusCard({ campus, calculation, globalSettings, onUpdate, isEx
                     New Admission Fee Hike %
                   </label>
                   <span className="font-mono text-sm text-primary">
-                    +{campus.newAdmissionFeeHike}%
+                    {campus.newAdmissionFeeHike > 0 ? '+' : ''}{campus.newAdmissionFeeHike}%
                   </span>
                 </div>
                 <Slider
                   value={[campus.newAdmissionFeeHike]}
                   onValueChange={([value]) => onUpdate({ newAdmissionFeeHike: value })}
-                  min={0}
-                  max={50}
+                  min={-15}
+                  max={40}
                   step={1}
                   className="w-full"
                 />
                 <div className="flex justify-between mt-1 text-xs text-muted-foreground">
-                  <span>0%</span>
-                  <span>+50%</span>
+                  <span>-15%</span>
+                  <span>+40%</span>
                 </div>
               </div>
 
@@ -137,20 +137,20 @@ export function CampusCard({ campus, calculation, globalSettings, onUpdate, isEx
                     Renewal Fee Hike %
                   </label>
                   <span className="font-mono text-sm text-primary">
-                    +{campus.renewalFeeHike}%
+                    {campus.renewalFeeHike > 0 ? '+' : ''}{campus.renewalFeeHike}%
                   </span>
                 </div>
                 <Slider
                   value={[campus.renewalFeeHike]}
                   onValueChange={([value]) => onUpdate({ renewalFeeHike: value })}
-                  min={0}
-                  max={50}
+                  min={-15}
+                  max={40}
                   step={1}
                   className="w-full"
                 />
                 <div className="flex justify-between mt-1 text-xs text-muted-foreground">
-                  <span>0%</span>
-                  <span>+50%</span>
+                  <span>-15%</span>
+                  <span>+40%</span>
                 </div>
               </div>
 
