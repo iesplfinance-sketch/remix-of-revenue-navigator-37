@@ -67,9 +67,8 @@ export function MetricCard({
 interface HeaderMetricsProps {
   schoolRevenue: number;
   hostelRevenue: number;
-  totalRevenue: number;
   totalStudents: number;
-  currentTotalRevenue: number;
+  hostelStudents: number;
   annualFeeRevenue: number;
   dcpRevenue: number;
   grandTotalRevenue: number;
@@ -79,16 +78,13 @@ interface HeaderMetricsProps {
 export function HeaderMetrics({
   schoolRevenue,
   hostelRevenue,
-  totalRevenue,
   totalStudents,
-  currentTotalRevenue,
+  hostelStudents,
   annualFeeRevenue,
   dcpRevenue,
   grandTotalRevenue,
   newAdmissionFeeRevenue,
 }: HeaderMetricsProps) {
-  const revenueChange = ((totalRevenue - currentTotalRevenue) / currentTotalRevenue) * 100;
-
   return (
     <div className="space-y-2">
       {/* Main Revenue Row */}
@@ -105,16 +101,14 @@ export function HeaderMetrics({
           subtitle="Residential Revenue"
         />
         <MetricCard
-          title="Tuition Revenue"
-          value={formatCurrency(totalRevenue)}
-          trend={revenueChange}
-          trendLabel="vs current"
-          variant={revenueChange > 0 ? 'positive' : 'default'}
-        />
-        <MetricCard
-          title="Total Students"
+          title="School Students"
           value={formatNumber(totalStudents)}
           subtitle="All Campuses"
+        />
+        <MetricCard
+          title="Hostel Students"
+          value={formatNumber(hostelStudents)}
+          subtitle="All Hostels"
         />
         <MetricCard
           title="Admission Fees"

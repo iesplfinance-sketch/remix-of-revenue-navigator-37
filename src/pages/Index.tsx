@@ -98,9 +98,8 @@ const Index = () => {
           <HeaderMetrics
             schoolRevenue={totals.schoolRevenue}
             hostelRevenue={totals.hostelRevenue}
-            totalRevenue={totals.totalRevenue}
-            totalStudents={totals.totalStudents}
-            currentTotalRevenue={totals.currentTotalRevenue}
+            totalStudents={totals.schoolStudents}
+            hostelStudents={totals.hostelStudents}
             annualFeeRevenue={totals.annualFeeRevenue}
             dcpRevenue={totals.dcpRevenue}
             grandTotalRevenue={totals.grandTotalRevenue}
