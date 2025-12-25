@@ -1,5 +1,5 @@
 import { ChevronDown, ChevronUp, AlertTriangle, Users } from 'lucide-react';
-import { CampusData } from '@/data/schoolData';
+import { CampusData, HostelData } from '@/data/schoolData';
 import { CampusCalculation, calculateClassBreakdown, formatCurrency, formatNumber, formatPercent } from '@/lib/calculations';
 import { GlobalSettings } from '@/data/schoolData';
 import { Slider } from '@/components/ui/slider';
@@ -12,12 +12,13 @@ interface CampusCardProps {
   onUpdate: (updates: Partial<CampusData>) => void;
   isExpanded: boolean;
   onToggleExpand: () => void;
+  hostel?: HostelData; // Optional hostel linked to this campus
 }
 
-export function CampusCard({ campus, calculation, globalSettings, onUpdate, isExpanded, onToggleExpand }: CampusCardProps) {
+export function CampusCard({ campus, calculation, globalSettings, onUpdate, isExpanded, onToggleExpand, hostel }: CampusCardProps) {
   const classBreakdown = calculateClassBreakdown(campus, globalSettings);
 
-  // Calculate grand total for header display
+  // Calculate grand total for header display (including hostel if applicable)
   const calculateGrandTotal = () => {
     const discountRate = campus.discountRate / 100;
     const effectiveRenewalFeeHike = (campus.renewalFeeHike + globalSettings.globalFeeHike) / 100;
@@ -44,13 +45,16 @@ export function CampusCard({ campus, calculation, globalSettings, onUpdate, isEx
     const newAdmissionFees = projectedNewStudents * 25000;
     const annualFees = projectedTotalStudents * globalSettings.schoolAnnualFee;
     const dcp = projectedTotalStudents * globalSettings.schoolDCP;
+    
+    // Add hostel revenue if this campus has a hostel
+    const hostelRevenue = hostel ? hostel.currentOccupancy * hostel.feePerStudent : 0;
 
-    return tuitionNet + newAdmissionFees + annualFees + dcp;
+    return tuitionNet + newAdmissionFees + annualFees + dcp + hostelRevenue;
   };
 
   const projectedGrandTotal = calculateGrandTotal();
 
-  // Calculate current grand total for comparison
+  // Calculate current grand total for comparison (including hostel if applicable)
   const calculateCurrentGrandTotal = () => {
     const discountRate = campus.discountRate / 100;
     let currentTotalStudents = 0;
@@ -67,8 +71,11 @@ export function CampusCard({ campus, calculation, globalSettings, onUpdate, isEx
     const newAdmissionFees = currentNewStudents * 25000;
     const annualFees = currentTotalStudents * globalSettings.schoolAnnualFee;
     const dcp = currentTotalStudents * globalSettings.schoolDCP;
+    
+    // Add hostel revenue if this campus has a hostel
+    const hostelRevenue = hostel ? hostel.currentOccupancy * hostel.feePerStudent : 0;
 
-    return tuitionNet + newAdmissionFees + annualFees + dcp;
+    return tuitionNet + newAdmissionFees + annualFees + dcp + hostelRevenue;
   };
 
   const currentGrandTotal = calculateCurrentGrandTotal();
@@ -369,9 +376,12 @@ export function CampusCard({ campus, calculation, globalSettings, onUpdate, isEx
                       const currentDCP = currentTotalStudents * globalSettings.schoolDCP;
                       const projectedDCP = projectedTotalStudents * globalSettings.schoolDCP;
 
-                      // Grand Total
-                      const currentGrandTotal = currentTuitionSubtotal + currentNewAdmissionFees + currentAnnualFees + currentDCP;
-                      const projectedGrandTotal = projectedTuitionSubtotal + projectedNewAdmissionFees + projectedAnnualFees + projectedDCP;
+                      // Hostel Revenue (if applicable)
+                      const hostelRevenue = hostel ? hostel.currentOccupancy * hostel.feePerStudent : 0;
+
+                      // Grand Total (including hostel)
+                      const currentGrandTotal = currentTuitionSubtotal + currentNewAdmissionFees + currentAnnualFees + currentDCP + hostelRevenue;
+                      const projectedGrandTotal = projectedTuitionSubtotal + projectedNewAdmissionFees + projectedAnnualFees + projectedDCP + hostelRevenue;
 
                       const renewalDelta = projectedRenewalNet - currentRenewalNet;
                       const newAdmDelta = projectedNewAdmNet - currentNewAdmNet;
@@ -431,6 +441,14 @@ export function CampusCard({ campus, calculation, globalSettings, onUpdate, isEx
                               {dcpDelta >= 0 ? '+' : ''}{formatCurrency(dcpDelta)}
                             </td>
                           </tr>
+                          {hostel && (
+                            <tr className="border-b border-border/50">
+                              <td className="py-2 pl-2 text-muted-foreground">Hostel Fees ({hostel.currentOccupancy} students)</td>
+                              <td className="text-right py-2 font-mono bg-muted/10">{formatCurrency(hostelRevenue)}</td>
+                              <td className="text-right py-2 font-mono bg-primary/5">{formatCurrency(hostelRevenue)}</td>
+                              <td className="text-right py-2 font-mono text-muted-foreground">₨0</td>
+                            </tr>
+                          )}
                           <tr className="bg-primary/10 font-bold">
                             <td className="py-3 pl-2 text-foreground">GRAND TOTAL</td>
                             <td className="text-right py-3 font-mono">{formatCurrency(currentGrandTotal)}</td>
