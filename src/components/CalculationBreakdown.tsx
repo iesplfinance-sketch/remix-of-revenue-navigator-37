@@ -36,15 +36,19 @@ interface ClassRowData {
 function CampusBreakdownRow({ campus, calculation, globalSettings }: CampusBreakdownRowProps) {
   const [isExpanded, setIsExpanded] = useState(false);
 
-  const effectiveFeeHike = campus.feeHike + globalSettings.globalFeeHike;
-  const effectiveGrowth = campus.studentGrowth + globalSettings.globalStudentGrowth;
+  const effectiveNewFeeHike = campus.newAdmissionFeeHike + globalSettings.globalFeeHike;
+  const effectiveRenewalFeeHike = campus.renewalFeeHike + globalSettings.globalFeeHike;
+  const effectiveNewGrowth = campus.newStudentGrowth + globalSettings.globalStudentGrowth;
+  const effectiveRenewalGrowth = campus.renewalGrowth + globalSettings.globalStudentGrowth;
 
   // Calculate class-level breakdown matching Excel format
   const classRows: ClassRowData[] = campus.classes
     .filter(cls => cls.renewalCount > 0 || cls.newAdmissionCount > 0 || cls.renewalFee > 0 || cls.newAdmissionFee > 0)
     .map(cls => {
-      const growthMultiplier = 1 + (effectiveGrowth / 100);
-      const feeMultiplier = 1 + (effectiveFeeHike / 100);
+      const newGrowthMultiplier = 1 + (effectiveNewGrowth / 100);
+      const renewalGrowthMultiplier = 1 + (effectiveRenewalGrowth / 100);
+      const newFeeMultiplier = 1 + (effectiveNewFeeHike / 100);
+      const renewalFeeMultiplier = 1 + (effectiveRenewalFeeHike / 100);
 
       // Current values
       const currentNewAdmission = cls.newAdmissionCount;
@@ -54,12 +58,12 @@ function CampusBreakdownRow({ campus, calculation, globalSettings }: CampusBreak
       const currentRenewalFee = cls.renewalFee;
       const currentRenewalTotal = currentRenewal * currentRenewalFee;
 
-      // Forecasted values
-      const forecastedNewAdmission = Math.round(currentNewAdmission * growthMultiplier);
-      const forecastedNewFee = Math.round(currentNewFee * feeMultiplier);
+      // Forecasted values with separate growth and fee hike rates
+      const forecastedNewAdmission = Math.round(currentNewAdmission * newGrowthMultiplier);
+      const forecastedNewFee = Math.round(currentNewFee * newFeeMultiplier);
       const forecastedNewTotal = forecastedNewAdmission * forecastedNewFee;
-      const forecastedRenewal = Math.round(currentRenewal * growthMultiplier);
-      const forecastedRenewalFee = Math.round(currentRenewalFee * feeMultiplier);
+      const forecastedRenewal = Math.round(currentRenewal * renewalGrowthMultiplier);
+      const forecastedRenewalFee = Math.round(currentRenewalFee * renewalFeeMultiplier);
       const forecastedRenewalTotal = forecastedRenewal * forecastedRenewalFee;
 
       return {
@@ -111,7 +115,7 @@ function CampusBreakdownRow({ campus, calculation, globalSettings }: CampusBreak
               {/* Fee Hike Info */}
               <div className="mb-4 p-3 bg-primary/10 rounded-lg border border-primary/20">
                 <p className="text-sm font-medium text-foreground">
-                  {effectiveFeeHike}% Increase in Fees | {effectiveGrowth}% Student Growth | {campus.discountRate}% Discount
+                  New Adm Fee: {effectiveNewFeeHike}% | Renewal Fee: {effectiveRenewalFeeHike}% | New Growth: {effectiveNewGrowth}% | Renewal Growth: {effectiveRenewalGrowth}% | Discount: {campus.discountRate}%
                 </p>
               </div>
 

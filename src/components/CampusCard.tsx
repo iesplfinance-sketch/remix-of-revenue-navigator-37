@@ -61,19 +61,19 @@ export function CampusCard({ campus, calculation, globalSettings, onUpdate, isEx
         <div className="border-t border-border animate-fade-in">
           <div className="p-4 grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* Left: Controls */}
-            <div className="space-y-5">
+            <div className="space-y-4">
               <div>
                 <div className="flex justify-between mb-2">
                   <label className="text-xs text-muted-foreground uppercase tracking-wide">
-                    Student Growth %
+                    New Student Growth %
                   </label>
                   <span className="font-mono text-sm text-primary">
-                    {campus.studentGrowth > 0 ? '+' : ''}{campus.studentGrowth}%
+                    {campus.newStudentGrowth > 0 ? '+' : ''}{campus.newStudentGrowth}%
                   </span>
                 </div>
                 <Slider
-                  value={[campus.studentGrowth]}
-                  onValueChange={([value]) => onUpdate({ studentGrowth: value })}
+                  value={[campus.newStudentGrowth]}
+                  onValueChange={([value]) => onUpdate({ newStudentGrowth: value })}
                   min={-20}
                   max={50}
                   step={1}
@@ -88,15 +88,61 @@ export function CampusCard({ campus, calculation, globalSettings, onUpdate, isEx
               <div>
                 <div className="flex justify-between mb-2">
                   <label className="text-xs text-muted-foreground uppercase tracking-wide">
-                    Fee Hike %
+                    Renewal Growth %
                   </label>
                   <span className="font-mono text-sm text-primary">
-                    +{campus.feeHike}%
+                    {campus.renewalGrowth > 0 ? '+' : ''}{campus.renewalGrowth}%
                   </span>
                 </div>
                 <Slider
-                  value={[campus.feeHike]}
-                  onValueChange={([value]) => onUpdate({ feeHike: value })}
+                  value={[campus.renewalGrowth]}
+                  onValueChange={([value]) => onUpdate({ renewalGrowth: value })}
+                  min={-20}
+                  max={50}
+                  step={1}
+                  className="w-full"
+                />
+                <div className="flex justify-between mt-1 text-xs text-muted-foreground">
+                  <span>-20%</span>
+                  <span>+50%</span>
+                </div>
+              </div>
+
+              <div>
+                <div className="flex justify-between mb-2">
+                  <label className="text-xs text-muted-foreground uppercase tracking-wide">
+                    New Admission Fee Hike %
+                  </label>
+                  <span className="font-mono text-sm text-primary">
+                    +{campus.newAdmissionFeeHike}%
+                  </span>
+                </div>
+                <Slider
+                  value={[campus.newAdmissionFeeHike]}
+                  onValueChange={([value]) => onUpdate({ newAdmissionFeeHike: value })}
+                  min={0}
+                  max={50}
+                  step={1}
+                  className="w-full"
+                />
+                <div className="flex justify-between mt-1 text-xs text-muted-foreground">
+                  <span>0%</span>
+                  <span>+50%</span>
+                </div>
+              </div>
+
+              <div>
+                <div className="flex justify-between mb-2">
+                  <label className="text-xs text-muted-foreground uppercase tracking-wide">
+                    Renewal Fee Hike %
+                  </label>
+                  <span className="font-mono text-sm text-primary">
+                    +{campus.renewalFeeHike}%
+                  </span>
+                </div>
+                <Slider
+                  value={[campus.renewalFeeHike]}
+                  onValueChange={([value]) => onUpdate({ renewalFeeHike: value })}
                   min={0}
                   max={50}
                   step={1}

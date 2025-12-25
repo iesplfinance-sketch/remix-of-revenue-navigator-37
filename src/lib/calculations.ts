@@ -69,8 +69,10 @@ export function calculateCampusRevenue(
   campus: CampusData,
   globalSettings: GlobalSettings
 ): CampusCalculation {
-  const effectiveStudentGrowth = (campus.studentGrowth + globalSettings.globalStudentGrowth) / 100;
-  const effectiveFeeHike = (campus.feeHike + globalSettings.globalFeeHike) / 100;
+  const effectiveNewStudentGrowth = (campus.newStudentGrowth + globalSettings.globalStudentGrowth) / 100;
+  const effectiveRenewalGrowth = (campus.renewalGrowth + globalSettings.globalStudentGrowth) / 100;
+  const effectiveNewFeeHike = (campus.newAdmissionFeeHike + globalSettings.globalFeeHike) / 100;
+  const effectiveRenewalFeeHike = (campus.renewalFeeHike + globalSettings.globalFeeHike) / 100;
   const discountRate = campus.discountRate / 100;
 
   let currentRenewalStudents = 0;
@@ -89,21 +91,21 @@ export function calculateCampusRevenue(
     currentRenewalRevenue += cls.renewalCount * cls.renewalFee;
     currentNewRevenue += cls.newAdmissionCount * cls.newAdmissionFee;
 
-    // Projected counts with growth
-    const projRenewal = Math.round(cls.renewalCount * (1 + effectiveStudentGrowth));
-    const projNew = Math.round(cls.newAdmissionCount * (1 + effectiveStudentGrowth));
+    // Projected counts with separate growth rates
+    const projRenewal = Math.round(cls.renewalCount * (1 + effectiveRenewalGrowth));
+    const projNew = Math.round(cls.newAdmissionCount * (1 + effectiveNewStudentGrowth));
 
-    // Projected revenue with fee hike
-    const hikedRenewalFee = cls.renewalFee * (1 + effectiveFeeHike);
-    const hikedNewFee = cls.newAdmissionFee * (1 + effectiveFeeHike);
+    // Projected revenue with separate fee hikes
+    const hikedRenewalFee = cls.renewalFee * (1 + effectiveRenewalFeeHike);
+    const hikedNewFee = cls.newAdmissionFee * (1 + effectiveNewFeeHike);
 
     projectedRenewalRevenue += projRenewal * hikedRenewalFee;
     projectedNewRevenue += projNew * hikedNewFee;
   });
 
   const currentTotalStudents = currentRenewalStudents + currentNewStudents;
-  const projectedRenewalStudents = Math.round(currentRenewalStudents * (1 + effectiveStudentGrowth));
-  const projectedNewStudents = Math.round(currentNewStudents * (1 + effectiveStudentGrowth));
+  const projectedRenewalStudents = Math.round(currentRenewalStudents * (1 + effectiveRenewalGrowth));
+  const projectedNewStudents = Math.round(currentNewStudents * (1 + effectiveNewStudentGrowth));
   const projectedTotalStudents = projectedRenewalStudents + projectedNewStudents;
 
   const currentGrossRevenue = currentRenewalRevenue + currentNewRevenue;
@@ -146,8 +148,10 @@ export function calculateClassBreakdown(
   campus: CampusData,
   globalSettings: GlobalSettings
 ): ClassCalculation[] {
-  const effectiveStudentGrowth = (campus.studentGrowth + globalSettings.globalStudentGrowth) / 100;
-  const effectiveFeeHike = (campus.feeHike + globalSettings.globalFeeHike) / 100;
+  const effectiveNewStudentGrowth = (campus.newStudentGrowth + globalSettings.globalStudentGrowth) / 100;
+  const effectiveRenewalGrowth = (campus.renewalGrowth + globalSettings.globalStudentGrowth) / 100;
+  const effectiveNewFeeHike = (campus.newAdmissionFeeHike + globalSettings.globalFeeHike) / 100;
+  const effectiveRenewalFeeHike = (campus.renewalFeeHike + globalSettings.globalFeeHike) / 100;
   const discountRate = campus.discountRate / 100;
 
   return campus.classes
@@ -157,14 +161,14 @@ export function calculateClassBreakdown(
       const currentNewStudents = cls.newAdmissionCount;
       const currentTotalStudents = currentRenewalStudents + currentNewStudents;
 
-      const projectedRenewalStudents = Math.round(currentRenewalStudents * (1 + effectiveStudentGrowth));
-      const projectedNewStudents = Math.round(currentNewStudents * (1 + effectiveStudentGrowth));
+      const projectedRenewalStudents = Math.round(currentRenewalStudents * (1 + effectiveRenewalGrowth));
+      const projectedNewStudents = Math.round(currentNewStudents * (1 + effectiveNewStudentGrowth));
       const projectedTotalStudents = projectedRenewalStudents + projectedNewStudents;
 
       const currentRevenue = (currentRenewalStudents * cls.renewalFee + currentNewStudents * cls.newAdmissionFee) * (1 - discountRate);
 
-      const hikedRenewalFee = cls.renewalFee * (1 + effectiveFeeHike);
-      const hikedNewFee = cls.newAdmissionFee * (1 + effectiveFeeHike);
+      const hikedRenewalFee = cls.renewalFee * (1 + effectiveRenewalFeeHike);
+      const hikedNewFee = cls.newAdmissionFee * (1 + effectiveNewFeeHike);
       const projectedRevenue = (projectedRenewalStudents * hikedRenewalFee + projectedNewStudents * hikedNewFee) * (1 - discountRate);
 
       const revenueChange = projectedRevenue - currentRevenue;
