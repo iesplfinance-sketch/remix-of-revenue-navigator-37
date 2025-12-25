@@ -79,6 +79,17 @@ export function useSimulationState() {
     setGlobalSettings(initialGlobalSettings);
   }, []);
 
+  // Load a saved simulation state
+  const loadSimulationState = useCallback((
+    loadedCampuses: CampusData[],
+    loadedHostels: HostelData[],
+    loadedGlobalSettings: GlobalSettings
+  ) => {
+    setCampuses(loadedCampuses);
+    setHostels(loadedHostels);
+    setGlobalSettings(loadedGlobalSettings);
+  }, []);
+
   return {
     campuses,
     hostels,
@@ -94,5 +105,6 @@ export function useSimulationState() {
     resetToDefaults,
     setCampuses,
     setHostels,
+    loadSimulationState,
   };
 }
