@@ -92,8 +92,9 @@ export function SettingsModal({ isOpen, onClose, campuses, onUpdateCampus, onUpd
                     </TabsList>
                   </div>
 
-                  <ScrollArea className="flex-1 p-4">
-                    <TabsContent value="students" className="mt-0">
+                  <ScrollArea className="flex-1">
+                    <div className="p-4">
+                    <TabsContent value="students" className="mt-0 data-[state=inactive]:hidden">
                       <table className="data-grid w-full text-xs">
                         <thead>
                           <tr>
@@ -229,6 +230,7 @@ export function SettingsModal({ isOpen, onClose, campuses, onUpdateCampus, onUpd
                         </div>
                       </div>
                     </TabsContent>
+                    </div>
                   </ScrollArea>
                 </Tabs>
               </>
