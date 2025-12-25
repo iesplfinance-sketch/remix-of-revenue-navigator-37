@@ -213,17 +213,22 @@ const Index = () => {
           {/* Campuses Tab */}
           <TabsContent value="campuses" className="animate-fade-in">
             <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
-              {campuses.map((campus, index) => (
-                <CampusCard
-                  key={campus.id}
-                  campus={campus}
-                  calculation={campusCalculations[index]}
-                  globalSettings={globalSettings}
-                  onUpdate={(updates) => updateCampus(campus.id, updates)}
-                  isExpanded={expandedCampusId === campus.id}
-                  onToggleExpand={() => handleToggleCampusExpand(campus.id)}
-                />
-              ))}
+              {campuses.map((campus, index) => {
+                // Find hostel linked to this campus
+                const linkedHostel = hostels.find(h => h.campusId === campus.id);
+                return (
+                  <CampusCard
+                    key={campus.id}
+                    campus={campus}
+                    calculation={campusCalculations[index]}
+                    globalSettings={globalSettings}
+                    onUpdate={(updates) => updateCampus(campus.id, updates)}
+                    isExpanded={expandedCampusId === campus.id}
+                    onToggleExpand={() => handleToggleCampusExpand(campus.id)}
+                    hostel={linkedHostel}
+                  />
+                );
+              })}
             </div>
           </TabsContent>
 
