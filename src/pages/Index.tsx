@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Download, Settings, RotateCcw, TrendingUp, Building, LayoutDashboard, DollarSign, FileSpreadsheet, FileText, Save, FileBarChart } from 'lucide-react';
+import { Download, Settings, RotateCcw, TrendingUp, Building, LayoutDashboard, DollarSign, FileSpreadsheet, FileText, Save } from 'lucide-react';
 import { useSimulationState } from '@/hooks/useSimulationState';
 import { HeaderMetrics } from '@/components/MetricCard';
 import { CampusCard } from '@/components/CampusCard';
@@ -12,7 +12,6 @@ import { SaveLoadModal } from '@/components/SaveLoadModal';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { AdditionalFeesTab } from '@/components/AdditionalFeesTab';
 import { CalculationBreakdown } from '@/components/CalculationBreakdown';
-import { ExecutiveSummary } from '@/components/ExecutiveSummary';
 import { generateExcelExport, generatePDFExport } from '@/lib/exportUtils';
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
@@ -111,12 +110,8 @@ const Index = () => {
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 py-6">
-        <Tabs defaultValue="executive" className="w-full">
+        <Tabs defaultValue="dashboard" className="w-full">
           <TabsList className="bg-surface-1 border border-border mb-6 flex-wrap">
-            <TabsTrigger value="executive" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
-              <FileBarChart className="w-4 h-4 mr-2" />
-              Executive
-            </TabsTrigger>
             <TabsTrigger value="dashboard" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
               <LayoutDashboard className="w-4 h-4 mr-2" />
               Dashboard
@@ -135,22 +130,11 @@ const Index = () => {
             </TabsTrigger>
           </TabsList>
 
-          {/* Executive Summary Tab */}
-          <TabsContent value="executive">
-            <ExecutiveSummary
-              campuses={campuses}
-              hostels={hostels}
-              globalSettings={globalSettings}
-              totals={totals}
-              campusCalculations={campusCalculations}
-            />
-          </TabsContent>
-
-          {/* Dashboard Tab - Simplified */}
+          {/* Dashboard Tab */}
           <TabsContent value="dashboard" className="animate-fade-in space-y-6">
             {/* Global Controls */}
             <div className="campus-card p-5">
-              <h2 className="text-sm font-medium text-foreground mb-4">Quick Controls</h2>
+              <h2 className="text-sm font-medium text-foreground mb-4">Master Control Panel</h2>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div>
                   <div className="flex justify-between mb-2">
@@ -167,7 +151,7 @@ const Index = () => {
                 </div>
                 <div>
                   <div className="flex justify-between mb-2">
-                    <label className="text-xs text-muted-foreground uppercase tracking-wide">Student Growth</label>
+                    <label className="text-xs text-muted-foreground uppercase tracking-wide">Global Student Growth</label>
                     <span className="font-mono text-sm text-primary">{globalSettings.globalStudentGrowth > 0 ? '+' : ''}{globalSettings.globalStudentGrowth}%</span>
                   </div>
                   <Slider
@@ -180,7 +164,7 @@ const Index = () => {
                 </div>
                 <div>
                   <div className="flex justify-between mb-2">
-                    <label className="text-xs text-muted-foreground uppercase tracking-wide">Global Discount</label>
+                    <label className="text-xs text-muted-foreground uppercase tracking-wide">Global Discount (All Campuses)</label>
                     <span className="font-mono text-sm text-warning">{globalSettings.globalDiscount}%</span>
                   </div>
                   <Slider
@@ -194,14 +178,18 @@ const Index = () => {
               </div>
             </div>
 
-            {/* Charts Row - Simplified to 2 key charts */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Charts Row */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div className="campus-card p-5">
                 <h3 className="text-sm font-medium text-foreground mb-4">Revenue Mix</h3>
                 <RevenuePieChart schoolRevenue={totals.schoolRevenue} hostelRevenue={totals.hostelRevenue} />
               </div>
               <div className="campus-card p-5">
-                <h3 className="text-sm font-medium text-foreground mb-4">Current vs Projected</h3>
+                <h3 className="text-sm font-medium text-foreground mb-4">Top 5 Campuses</h3>
+                <TopCampusesChart campuses={topCampuses} />
+              </div>
+              <div className="campus-card p-5">
+                <h3 className="text-sm font-medium text-foreground mb-4">Revenue Comparison</h3>
                 <RevenueComparison currentRevenue={totals.currentTotalRevenue} projectedRevenue={totals.totalRevenue} />
               </div>
             </div>
@@ -211,6 +199,13 @@ const Index = () => {
               campuses={campuses}
               calculations={campusCalculations}
               globalSettings={globalSettings}
+            />
+
+            {/* Fee Calculation Explainer */}
+            <FeeExplainer 
+              globalFeeHike={globalSettings.globalFeeHike}
+              globalStudentGrowth={globalSettings.globalStudentGrowth}
+              globalDiscount={globalSettings.globalDiscount}
             />
           </TabsContent>
 

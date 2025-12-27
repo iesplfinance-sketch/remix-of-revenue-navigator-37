@@ -63,7 +63,7 @@ export function MetricCard({
   );
 }
 
-// Simplified Header metrics row - fewer, more impactful KPIs
+// Header metrics row
 interface HeaderMetricsProps {
   schoolRevenue: number;
   hostelRevenue: number;
@@ -80,37 +80,62 @@ export function HeaderMetrics({
   hostelRevenue,
   totalStudents,
   hostelStudents,
+  annualFeeRevenue,
+  dcpRevenue,
   grandTotalRevenue,
+  newAdmissionFeeRevenue,
 }: HeaderMetricsProps) {
   return (
-    <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
-      <MetricCard
-        title="Grand Total"
-        value={formatCurrency(grandTotalRevenue)}
-        subtitle="All Revenue Streams"
-        variant="positive"
-      />
-      <MetricCard
-        title="Tuition (Net)"
-        value={formatCurrency(schoolRevenue)}
-        subtitle="After Discounts"
-        variant="primary"
-      />
-      <MetricCard
-        title="Hostel"
-        value={formatCurrency(hostelRevenue)}
-        subtitle="Residential"
-      />
-      <MetricCard
-        title="School"
-        value={formatNumber(totalStudents)}
-        subtitle="Total Students"
-      />
-      <MetricCard
-        title="Hostel"
-        value={formatNumber(hostelStudents)}
-        subtitle="Boarders"
-      />
+    <div className="space-y-2">
+      {/* Main Revenue Row */}
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2">
+        <MetricCard
+          title="Grand Total"
+          value={formatCurrency(grandTotalRevenue)}
+          subtitle="Tuition + Annual + DCP + Admission"
+          variant="positive"
+        />
+        <MetricCard
+          title="School Revenue"
+          value={formatCurrency(schoolRevenue)}
+          subtitle="Projected Net Tuition"
+          variant="primary"
+        />
+        <MetricCard
+          title="Hostel Revenue"
+          value={formatCurrency(hostelRevenue)}
+          subtitle="Residential Revenue"
+        />
+        <MetricCard
+          title="School Students"
+          value={formatNumber(totalStudents)}
+          subtitle="All Campuses"
+        />
+        <MetricCard
+          title="Hostel Students"
+          value={formatNumber(hostelStudents)}
+          subtitle="All Hostels"
+        />
+      </div>
+      
+      {/* Additional Fees Row */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+        <MetricCard
+          title="Admission Fees"
+          value={formatCurrency(newAdmissionFeeRevenue)}
+          subtitle="New Students Only"
+        />
+        <MetricCard
+          title="Annual Fee"
+          value={formatCurrency(annualFeeRevenue)}
+          subtitle="All Students"
+        />
+        <MetricCard
+          title="DCP Revenue"
+          value={formatCurrency(dcpRevenue)}
+          subtitle="Development Charges"
+        />
+      </div>
     </div>
   );
 }
