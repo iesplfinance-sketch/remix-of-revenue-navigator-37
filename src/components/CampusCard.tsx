@@ -261,61 +261,127 @@ export function CampusCard({ campus, calculation, globalSettings, onUpdate, isEx
             </div>
 
             {/* Data Table - Current vs Forecasted */}
-            <div className="overflow-x-auto">
-              <table className="data-grid w-full text-xs">
-                <thead>
-                  <tr>
-                    <th rowSpan={2} className="align-bottom">Class</th>
-                    <th colSpan={5} className="text-center bg-muted/30 border-b border-border">Academic Session 25-26</th>
-                    <th colSpan={5} className="text-center bg-primary/10 border-b border-border">Forecast Session 26-27</th>
-                    <th rowSpan={2} className="text-right align-bottom">Delta</th>
-                  </tr>
-                  <tr>
-                    <th className="text-right bg-muted/30">Renewal</th>
-                    <th className="text-right bg-muted/30">New Adm.</th>
-                    <th className="text-right bg-muted/30">Ren. Fee</th>
-                    <th className="text-right bg-muted/30">New Fee</th>
-                    <th className="text-right bg-muted/30">Revenue</th>
-                    <th className="text-right bg-primary/10">Renewal</th>
-                    <th className="text-right bg-primary/10">New Adm.</th>
-                    <th className="text-right bg-primary/10">Ren. Fee</th>
-                    <th className="text-right bg-primary/10">New Fee</th>
-                    <th className="text-right bg-primary/10">Revenue</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {classBreakdown.map(cls => {
-                    const classData = campus.classes.find(c => c.className === cls.className);
-                    const currentRenewalFee = classData?.renewalFee || 0;
-                    const currentNewAdmFee = classData?.newAdmissionFee || 0;
-                    const projectedRenewalFee = currentRenewalFee * (1 + campus.renewalFeeHike / 100);
-                    const projectedNewAdmFee = currentNewAdmFee * (1 + campus.newAdmissionFeeHike / 100);
-                    
-                    return (
-                      <tr key={cls.className}>
-                        <td className="font-medium">{cls.className}</td>
-                        {/* Current Year - muted background */}
-                        <td className="text-right font-mono bg-muted/20">{cls.currentRenewalStudents}</td>
-                        <td className="text-right font-mono bg-muted/20">{cls.currentNewStudents}</td>
-                        <td className="text-right font-mono bg-muted/20">{formatCurrency(currentRenewalFee)}</td>
-                        <td className="text-right font-mono bg-muted/20">{formatCurrency(currentNewAdmFee)}</td>
-                        <td className="text-right font-mono bg-muted/20">{formatCurrency(cls.currentRevenue)}</td>
-                        {/* Forecasted Year - primary tint */}
-                        <td className="text-right font-mono bg-primary/5">{cls.projectedRenewalStudents}</td>
-                        <td className="text-right font-mono bg-primary/5">{cls.projectedNewStudents}</td>
-                        <td className="text-right font-mono bg-primary/5">{formatCurrency(projectedRenewalFee)}</td>
-                        <td className="text-right font-mono bg-primary/5">{formatCurrency(projectedNewAdmFee)}</td>
-                        <td className="text-right font-mono bg-primary/5">{formatCurrency(cls.projectedRevenue)}</td>
-                        {/* Delta */}
-                        <td className={`text-right font-mono font-semibold ${cls.revenueChange >= 0 ? 'text-positive' : 'text-negative'}`}>
-                          {cls.revenueChange >= 0 ? '+' : ''}{formatCurrency(cls.revenueChange)}
-                        </td>
+            {(() => {
+              // Calculate totals for header row
+              const discountRate = campus.discountRate / 100;
+              const effectiveRenewalFeeHike = (campus.renewalFeeHike + globalSettings.globalFeeHike) / 100;
+              const effectiveNewFeeHike = (campus.newAdmissionFeeHike + globalSettings.globalFeeHike) / 100;
+              const effectiveRenewalGrowth = (campus.renewalGrowth + globalSettings.globalStudentGrowth) / 100;
+              const effectiveNewGrowth = (campus.newStudentGrowth + globalSettings.globalStudentGrowth) / 100;
+
+              let currentTotalNew = 0, currentTotalRenewal = 0, currentTotalRevenue = 0;
+              let projectedTotalNew = 0, projectedTotalRenewal = 0, projectedTotalRevenue = 0;
+
+              campus.classes.forEach(cls => {
+                currentTotalNew += cls.newAdmissionCount;
+                currentTotalRenewal += cls.renewalCount;
+                currentTotalRevenue += (cls.renewalCount * cls.renewalFee + cls.newAdmissionCount * cls.newAdmissionFee);
+                
+                const projRenewal = Math.round(cls.renewalCount * (1 + effectiveRenewalGrowth));
+                const projNew = Math.round(cls.newAdmissionCount * (1 + effectiveNewGrowth));
+                const hikedRenewalFee = cls.renewalFee * (1 + effectiveRenewalFeeHike);
+                const hikedNewFee = cls.newAdmissionFee * (1 + effectiveNewFeeHike);
+                
+                projectedTotalRenewal += projRenewal;
+                projectedTotalNew += projNew;
+                projectedTotalRevenue += (projRenewal * hikedRenewalFee + projNew * hikedNewFee);
+              });
+
+              const currentNetRevenue = currentTotalRevenue * (1 - discountRate);
+              const projectedNetRevenue = projectedTotalRevenue * (1 - discountRate);
+              const revenueDelta = projectedNetRevenue - currentNetRevenue;
+
+              return (
+                <div className="overflow-x-auto">
+                  {/* Summary Parameters */}
+                  <div className="text-xs text-muted-foreground mb-2 px-1">
+                    New Adm Fee: {campus.newAdmissionFeeHike}% | Renewal Fee: {campus.renewalFeeHike}% | New Growth: {campus.newStudentGrowth}% | Renewal Growth: {campus.renewalGrowth}% | Discount: {campus.discountRate}%
+                  </div>
+                  
+                  <table className="data-grid w-full text-xs">
+                    <thead>
+                      <tr>
+                        <th rowSpan={2} className="align-bottom">{campus.shortName || campus.name}</th>
+                        <th colSpan={5} className="text-center bg-muted/30 border-b border-border">Current</th>
+                        <th colSpan={5} className="text-center bg-primary/10 border-b border-border">Forecasted</th>
+                        <th rowSpan={2} className="text-right align-bottom">Delta</th>
                       </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
+                      <tr>
+                        <th className="text-right bg-muted/30">New Adm (A)</th>
+                        <th className="text-right bg-muted/30">Fees (B)</th>
+                        <th className="text-right bg-muted/30">Total (A×B)</th>
+                        <th className="text-right bg-muted/30">Renewal (C)</th>
+                        <th className="text-right bg-muted/30">Fees (D)</th>
+                        <th className="text-right bg-muted/30">Total (C×D)</th>
+                        <th className="text-right bg-primary/10">New Adm (A)</th>
+                        <th className="text-right bg-primary/10">Fees (B)</th>
+                        <th className="text-right bg-primary/10">Total (A×B)</th>
+                        <th className="text-right bg-primary/10">Renewal (C)</th>
+                        <th className="text-right bg-primary/10">Fees (D)</th>
+                        <th className="text-right bg-primary/10">Total (C×D)</th>
+                      </tr>
+                      {/* Summary Row in Header */}
+                      <tr className="bg-surface-2 border-b-2 border-primary/30">
+                        <th className="text-left font-bold py-2">TOTALS</th>
+                        <th className="text-right font-mono bg-muted/30 py-2">{formatNumber(currentTotalNew)}</th>
+                        <th className="text-right font-mono bg-muted/30 py-2">-</th>
+                        <th className="text-right font-mono bg-muted/30 py-2">{formatCurrency(currentTotalNew * (campus.classes[0]?.newAdmissionFee || 0))}</th>
+                        <th className="text-right font-mono bg-muted/30 py-2">{formatNumber(currentTotalRenewal)}</th>
+                        <th className="text-right font-mono bg-muted/30 py-2">-</th>
+                        <th className="text-right font-mono bg-muted/30 py-2">{formatCurrency(currentNetRevenue)}</th>
+                        <th className="text-right font-mono bg-primary/10 py-2">{formatNumber(projectedTotalNew)}</th>
+                        <th className="text-right font-mono bg-primary/10 py-2">-</th>
+                        <th className="text-right font-mono bg-primary/10 py-2">{formatCurrency(projectedTotalNew * (campus.classes[0]?.newAdmissionFee || 0) * (1 + effectiveNewFeeHike))}</th>
+                        <th className="text-right font-mono bg-primary/10 py-2">{formatNumber(projectedTotalRenewal)}</th>
+                        <th className="text-right font-mono bg-primary/10 py-2">-</th>
+                        <th className="text-right font-mono bg-primary/10 py-2">{formatCurrency(projectedNetRevenue)}</th>
+                        <th className={`text-right font-mono font-bold py-2 ${revenueDelta >= 0 ? 'text-positive' : 'text-negative'}`}>
+                          {revenueDelta >= 0 ? '+' : ''}{formatCurrency(revenueDelta)}
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {classBreakdown.map(cls => {
+                        const classData = campus.classes.find(c => c.className === cls.className);
+                        const currentRenewalFee = classData?.renewalFee || 0;
+                        const currentNewAdmFee = classData?.newAdmissionFee || 0;
+                        const projectedRenewalFee = currentRenewalFee * (1 + effectiveRenewalFeeHike);
+                        const projectedNewAdmFee = currentNewAdmFee * (1 + effectiveNewFeeHike);
+                        
+                        const currentNewTotal = cls.currentNewStudents * currentNewAdmFee;
+                        const currentRenewalTotal = cls.currentRenewalStudents * currentRenewalFee;
+                        const projectedNewTotal = cls.projectedNewStudents * projectedNewAdmFee;
+                        const projectedRenewalTotal = cls.projectedRenewalStudents * projectedRenewalFee;
+                        
+                        return (
+                          <tr key={cls.className}>
+                            <td className="font-medium">{cls.className}</td>
+                            {/* Current Year */}
+                            <td className="text-right font-mono bg-muted/20">{cls.currentNewStudents}</td>
+                            <td className="text-right font-mono bg-muted/20">{formatNumber(currentNewAdmFee)}</td>
+                            <td className="text-right font-mono bg-muted/20">{formatCurrency(currentNewTotal)}</td>
+                            <td className="text-right font-mono bg-muted/20">{cls.currentRenewalStudents}</td>
+                            <td className="text-right font-mono bg-muted/20">{formatNumber(currentRenewalFee)}</td>
+                            <td className="text-right font-mono bg-muted/20">{formatCurrency(currentRenewalTotal)}</td>
+                            {/* Forecasted Year */}
+                            <td className="text-right font-mono bg-primary/5">{cls.projectedNewStudents}</td>
+                            <td className="text-right font-mono bg-primary/5">{formatNumber(Math.round(projectedNewAdmFee))}</td>
+                            <td className="text-right font-mono bg-primary/5">{formatCurrency(projectedNewTotal)}</td>
+                            <td className="text-right font-mono bg-primary/5">{cls.projectedRenewalStudents}</td>
+                            <td className="text-right font-mono bg-primary/5">{formatNumber(Math.round(projectedRenewalFee))}</td>
+                            <td className="text-right font-mono bg-primary/5">{formatCurrency(projectedRenewalTotal)}</td>
+                            {/* Delta */}
+                            <td className={`text-right font-mono font-semibold ${cls.revenueChange >= 0 ? 'text-positive' : 'text-negative'}`}>
+                              {cls.revenueChange >= 0 ? '+' : ''}{formatCurrency(cls.revenueChange)}
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              );
+            })()}
 
             {/* Revenue Summary Section */}
             <div className="mt-6 p-4 bg-surface-2 rounded-lg border border-border">
