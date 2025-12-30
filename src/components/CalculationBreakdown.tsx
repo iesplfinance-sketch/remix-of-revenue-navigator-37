@@ -14,9 +14,10 @@ interface CampusBreakdownRowProps {
   campus: CampusData;
   calculation: CampusCalculation;
   globalSettings: GlobalSettings;
+  hostel?: HostelData;
 }
 
-function CampusBreakdownRow({ campus, calculation, globalSettings }: CampusBreakdownRowProps) {
+function CampusBreakdownRow({ campus, calculation, globalSettings, hostel }: CampusBreakdownRowProps) {
   const [isExpanded, setIsExpanded] = useState(false);
 
   const lastYearDiscountRate = campus.lastYearDiscount / 100;
@@ -79,9 +80,14 @@ function CampusBreakdownRow({ campus, calculation, globalSettings }: CampusBreak
   const currentDCP = currentTotalStudents * (globalSettings.lastYearSchoolDCP || globalSettings.schoolDCP);
   const projectedDCP = projectedTotalStudents * globalSettings.schoolDCP;
 
-  // Grand Total = Tuition Net (after discount) + Other Fees
-  const currentGrandTotal = currentTuitionNet + currentNewAdmissionFees + currentAnnualFees + currentDCP;
-  const projectedGrandTotal = projectedTuitionNet + projectedNewAdmissionFees + projectedAnnualFees + projectedDCP;
+  // Hostel Revenue (if applicable) - use last year fee for current
+  const currentHostelRevenue = hostel ? hostel.currentOccupancy * (hostel.lastYearFeePerStudent || hostel.feePerStudent) : 0;
+  const projectedHostelRevenue = hostel ? hostel.currentOccupancy * hostel.feePerStudent : 0;
+  const hostelDelta = projectedHostelRevenue - currentHostelRevenue;
+
+  // Grand Total = Tuition Net (after discount) + Other Fees + Hostel
+  const currentGrandTotal = currentTuitionNet + currentNewAdmissionFees + currentAnnualFees + currentDCP + currentHostelRevenue;
+  const projectedGrandTotal = projectedTuitionNet + projectedNewAdmissionFees + projectedAnnualFees + projectedDCP + projectedHostelRevenue;
 
   const grandTotalDelta = projectedGrandTotal - currentGrandTotal;
   const grandTotalChangePercent = currentGrandTotal > 0 ? (grandTotalDelta / currentGrandTotal) * 100 : 0;
@@ -201,6 +207,16 @@ function CampusBreakdownRow({ campus, calculation, globalSettings }: CampusBreak
                         {dcpDelta >= 0 ? '+' : ''}{formatCurrency(dcpDelta)}
                       </td>
                     </tr>
+                    {hostel && (
+                      <tr className="border-b border-border/50">
+                        <td className="py-2 pl-2 text-muted-foreground">Hostel Fees ({hostel.currentOccupancy} students)</td>
+                        <td className="text-right py-2 font-mono bg-muted/10">{formatCurrency(currentHostelRevenue)}</td>
+                        <td className="text-right py-2 font-mono bg-primary/5">{formatCurrency(projectedHostelRevenue)}</td>
+                        <td className={`text-right py-2 font-mono ${hostelDelta >= 0 ? 'text-positive' : 'text-negative'}`}>
+                          {hostelDelta >= 0 ? '+' : ''}{formatCurrency(hostelDelta)}
+                        </td>
+                      </tr>
+                    )}
                     <tr className="bg-primary/10 font-bold">
                       <td className="py-3 pl-2 text-foreground">GRAND TOTAL</td>
                       <td className="text-right py-3 font-mono">{formatCurrency(currentGrandTotal)}</td>
@@ -499,14 +515,18 @@ export function CalculationBreakdown({ campuses, calculations, globalSettings, h
               </tr>
             </thead>
             <tbody className="divide-y divide-border/50">
-              {campuses.map((campus, index) => (
-                <CampusBreakdownRow
-                  key={campus.id}
-                  campus={campus}
-                  calculation={calculations[index]}
-                  globalSettings={globalSettings}
-                />
-              ))}
+              {campuses.map((campus, index) => {
+                const campusHostel = hostels.find(h => h.campusId === campus.id);
+                return (
+                  <CampusBreakdownRow
+                    key={campus.id}
+                    campus={campus}
+                    calculation={calculations[index]}
+                    globalSettings={globalSettings}
+                    hostel={campusHostel}
+                  />
+                );
+              })}
             </tbody>
             <tfoot className="bg-primary/10 border-t-2 border-primary">
               <tr className="font-bold">
