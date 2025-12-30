@@ -1,6 +1,5 @@
-import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Download, Settings, RotateCcw, TrendingUp, Building, LayoutDashboard, DollarSign, FileSpreadsheet, FileText, Save, LogOut } from 'lucide-react';
+import { useState } from 'react';
+import { Download, Settings, RotateCcw, TrendingUp, Building, LayoutDashboard, DollarSign, FileSpreadsheet, FileText, Save } from 'lucide-react';
 import { useSimulationState } from '@/hooks/useSimulationState';
 import { HeaderMetrics } from '@/components/MetricCard';
 import { CampusCard } from '@/components/CampusCard';
@@ -20,20 +19,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 
 const Index = () => {
-  const navigate = useNavigate();
-
-  // Check authentication
-  useEffect(() => {
-    const isAuthenticated = sessionStorage.getItem('isAuthenticated') === 'true';
-    if (!isAuthenticated) {
-      navigate('/login');
-    }
-  }, [navigate]);
-
-  const handleLogout = () => {
-    sessionStorage.removeItem('isAuthenticated');
-    navigate('/login');
-  };
   const {
     campuses,
     hostels,
@@ -102,10 +87,6 @@ const Index = () => {
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
-              <Button variant="ghost" size="sm" onClick={handleLogout} className="text-muted-foreground hover:text-foreground">
-                <LogOut className="w-4 h-4 mr-2" />
-                Logout
-              </Button>
             </div>
           </div>
           <HeaderMetrics 
