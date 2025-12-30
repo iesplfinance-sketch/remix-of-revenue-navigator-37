@@ -4,6 +4,7 @@ import { TrendingUp, TrendingDown, Minus } from 'lucide-react';
 interface MetricCardProps {
   title: string;
   value: string;
+  lastYearValue?: string;
   subtitle?: string;
   trend?: number;
   trendLabel?: string;
@@ -13,7 +14,8 @@ interface MetricCardProps {
 
 export function MetricCard({ 
   title, 
-  value, 
+  value,
+  lastYearValue, 
   subtitle, 
   trend, 
   trendLabel,
@@ -72,7 +74,14 @@ export function MetricCard({
           </div>
         )}
       </div>
-      <div className="metric-value text-foreground">{value}</div>
+      <div className="flex items-baseline gap-2">
+        <div className="metric-value text-foreground">{value}</div>
+        {lastYearValue && (
+          <div className="text-xs text-muted-foreground font-mono">
+            (LY: {lastYearValue})
+          </div>
+        )}
+      </div>
       {subtitle && (
         <div className="text-[10px] text-muted-foreground">{subtitle}</div>
       )}
@@ -100,7 +109,6 @@ interface HeaderMetricsProps {
   newAdmissionFeeRevenue: number;
   currentDiscountAmount: number;
   projectedDiscountAmount: number;
-  lastYearDiscountPercent: number;
   projectedDiscountPercent: number;
   currentSchoolRevenue?: number;
   currentHostelRevenue?: number;
@@ -122,7 +130,6 @@ export function HeaderMetrics({
   newAdmissionFeeRevenue,
   currentDiscountAmount,
   projectedDiscountAmount,
-  lastYearDiscountPercent,
   projectedDiscountPercent,
   currentSchoolRevenue = 0,
   currentHostelRevenue = 0,
@@ -151,6 +158,7 @@ export function HeaderMetrics({
         <MetricCard
           title="Grand Total"
           value={formatCurrency(grandTotalRevenue)}
+          lastYearValue={formatCurrency(currentGrandTotal)}
           subtitle="Tuition + Annual + DCP + Admission"
           changePercent={grandTotalChangePercent}
           variant="positive"
@@ -158,6 +166,7 @@ export function HeaderMetrics({
         <MetricCard
           title="School Revenue"
           value={formatCurrency(schoolRevenue)}
+          lastYearValue={formatCurrency(currentSchoolRevenue)}
           subtitle="Projected Net Tuition"
           changePercent={schoolRevenueChangePercent}
           variant="primary"
@@ -165,12 +174,14 @@ export function HeaderMetrics({
         <MetricCard
           title="Hostel Revenue"
           value={formatCurrency(hostelRevenue)}
+          lastYearValue={formatCurrency(currentHostelRevenue)}
           subtitle="Residential Revenue"
           changePercent={hostelRevenueChangePercent}
         />
         <MetricCard
           title="Forecasted Students"
           value={formatNumber(projectedStudents)}
+          lastYearValue={formatNumber(totalStudents)}
           subtitle={`${studentChange >= 0 ? '+' : ''}${formatNumber(studentChange)} from current`}
           changePercent={studentChangePercent}
           variant="primary"
@@ -183,34 +194,32 @@ export function HeaderMetrics({
       </div>
       
       {/* Additional Fees & Discount Row */}
-      <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
         <MetricCard
           title="Admission Fees"
           value={formatCurrency(newAdmissionFeeRevenue)}
+          lastYearValue={formatCurrency(currentAdmissionFeeRevenue)}
           subtitle="New Students Only"
           changePercent={admissionFeeChangePercent}
         />
         <MetricCard
           title="Annual Fee"
           value={formatCurrency(annualFeeRevenue)}
+          lastYearValue={formatCurrency(currentAnnualFeeRevenue)}
           subtitle="All Students"
           changePercent={annualFeeChangePercent}
         />
         <MetricCard
           title="DCP Revenue"
           value={formatCurrency(dcpRevenue)}
+          lastYearValue={formatCurrency(currentDcpRevenue)}
           subtitle="Digital Companion Pack"
           changePercent={dcpChangePercent}
         />
         <MetricCard
-          title="Last Year Discount"
-          value={formatCurrency(currentDiscountAmount)}
-          subtitle={`${lastYearDiscountPercent.toFixed(1)}% avg rate`}
-          variant="warning"
-        />
-        <MetricCard
-          title="Projected Discount"
+          title="Discount"
           value={formatCurrency(projectedDiscountAmount)}
+          lastYearValue={formatCurrency(currentDiscountAmount)}
           subtitle={`${projectedDiscountPercent.toFixed(1)}% avg rate | Δ ${discountChange >= 0 ? '+' : ''}${formatCurrency(discountChange)}`}
           changePercent={discountChangePercent}
           variant="warning"
