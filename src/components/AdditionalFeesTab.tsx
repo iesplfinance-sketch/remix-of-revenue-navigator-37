@@ -127,8 +127,8 @@ export function AdditionalFeesTab({
         </div>
       </div>
 
-      {/* Fee Configuration */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      {/* Fee Configuration - 3 Column Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Annual Fee Configuration */}
         <div className="campus-card p-5">
           <h3 className="text-sm font-medium text-foreground mb-4 flex items-center gap-2">
@@ -151,7 +151,7 @@ export function AdditionalFeesTab({
                   type="number"
                   value={schoolAnnualFee}
                   onChange={(e) => onUpdateGlobalSettings({ schoolAnnualFee: parseInt(e.target.value) || 0 })}
-                  className="w-32 font-mono bg-surface-1 border-border text-right"
+                  className="w-24 font-mono bg-surface-1 border-border text-right"
                 />
               </div>
             </div>
@@ -167,7 +167,7 @@ export function AdditionalFeesTab({
                   type="number"
                   value={hostelAnnualFee}
                   onChange={(e) => onUpdateGlobalSettings({ hostelAnnualFee: parseInt(e.target.value) || 0 })}
-                  className="w-32 font-mono bg-surface-1 border-border text-right"
+                  className="w-24 font-mono bg-surface-1 border-border text-right"
                 />
               </div>
             </div>
@@ -185,10 +185,10 @@ export function AdditionalFeesTab({
         <div className="campus-card p-5">
           <h3 className="text-sm font-medium text-foreground mb-4 flex items-center gap-2">
             <Package className="w-4 h-4 text-warning" />
-            DCP (Digital Companion Pack) Configuration
+            DCP (Digital Companion Pack)
           </h3>
           <p className="text-xs text-muted-foreground mb-4">
-            DCP provides students with digital learning resources, educational software licenses, and technology support for enhanced learning. 
+            DCP provides students with digital learning resources and technology support.
             <span className="text-warning font-medium"> Note: DCP is only applicable to school students, not hostel students.</span>
           </p>
           
@@ -204,7 +204,7 @@ export function AdditionalFeesTab({
                   type="number"
                   value={schoolDCP}
                   onChange={(e) => onUpdateGlobalSettings({ schoolDCP: parseInt(e.target.value) || 0 })}
-                  className="w-32 font-mono bg-surface-1 border-border text-right"
+                  className="w-24 font-mono bg-surface-1 border-border text-right"
                 />
               </div>
             </div>
@@ -217,40 +217,40 @@ export function AdditionalFeesTab({
             </div>
           </div>
         </div>
-      </div>
 
-      {/* New Admission Fee Configuration */}
-      <div className="campus-card p-5">
-        <h3 className="text-sm font-medium text-foreground mb-4 flex items-center gap-2">
-          <DollarSign className="w-4 h-4 text-info" />
-          New Admission Fee Configuration
-        </h3>
-        <p className="text-xs text-muted-foreground mb-4">
-          One-time fee charged to new students at the time of admission. This is applied only to new admission students, not renewals.
-          <span className="text-info font-medium"> Note: This fee is charged to all new students across school and hostel.</span>
-        </p>
-        
-        <div className="space-y-4">
-          <div className="flex items-center justify-between p-4 bg-surface-2 rounded-lg">
-            <div>
-              <p className="text-sm font-medium text-foreground">Fee Per New Student</p>
-              <p className="text-xs text-muted-foreground">Applied at admission</p>
+        {/* New Admission Fee Configuration */}
+        <div className="campus-card p-5">
+          <h3 className="text-sm font-medium text-foreground mb-4 flex items-center gap-2">
+            <DollarSign className="w-4 h-4 text-info" />
+            New Admission Fee
+          </h3>
+          <p className="text-xs text-muted-foreground mb-4">
+            One-time fee charged to new students at the time of admission.
+            <span className="text-info font-medium"> Note: This fee is charged to all new students across school and hostel.</span>
+          </p>
+          
+          <div className="space-y-4">
+            <div className="flex items-center justify-between p-4 bg-surface-2 rounded-lg">
+              <div>
+                <p className="text-sm font-medium text-foreground">Fee Per New Student</p>
+                <p className="text-xs text-muted-foreground">Applied at admission</p>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-muted-foreground text-sm">₨</span>
+                <Input
+                  type="number"
+                  value={newAdmissionFeePerStudent}
+                  onChange={(e) => onUpdateGlobalSettings({ newAdmissionFeePerStudent: parseInt(e.target.value) || 0 })}
+                  className="w-24 font-mono bg-surface-1 border-border text-right"
+                />
+              </div>
             </div>
-            <div className="flex items-center gap-2">
-              <span className="text-muted-foreground text-sm">₨</span>
-              <Input
-                type="number"
-                value={newAdmissionFeePerStudent}
-                onChange={(e) => onUpdateGlobalSettings({ newAdmissionFeePerStudent: parseInt(e.target.value) || 0 })}
-                className="w-32 font-mono bg-surface-1 border-border text-right"
-              />
-            </div>
-          </div>
 
-          <div className="pt-3 border-t border-border">
-            <div className="flex justify-between text-sm">
-              <span className="text-muted-foreground">Total New Admission Fee Revenue</span>
-              <span className="font-mono text-info font-semibold">Calculated from new students projection</span>
+            <div className="pt-3 border-t border-border">
+              <div className="flex justify-between text-sm">
+                <span className="text-muted-foreground">Total Admission Fee Revenue</span>
+                <span className="font-mono text-info font-semibold">From projection</span>
+              </div>
             </div>
           </div>
         </div>
