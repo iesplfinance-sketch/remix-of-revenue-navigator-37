@@ -849,6 +849,7 @@ export interface GlobalSettings {
   schoolDCP: number;
   // New Admission Fee per student
   newAdmissionFeePerStudent: number;
+  newAdmissionFeeHostelPerStudent: number;
   // Custom fees
   customFees: CustomFee[];
 }
@@ -861,5 +862,6 @@ export const initialGlobalSettings: GlobalSettings = {
   hostelAnnualFee: 15000,
   schoolDCP: 10000,
   newAdmissionFeePerStudent: 25000,
+  newAdmissionFeeHostelPerStudent: 15000,
   customFees: [],
 };

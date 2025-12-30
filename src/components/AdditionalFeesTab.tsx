@@ -27,6 +27,7 @@ export function AdditionalFeesTab({
   const hostelAnnualFee = globalSettings?.hostelAnnualFee ?? 15000;
   const schoolDCP = globalSettings?.schoolDCP ?? 10000;
   const newAdmissionFeePerStudent = globalSettings?.newAdmissionFeePerStudent ?? 25000;
+  const newAdmissionFeeHostelPerStudent = globalSettings?.newAdmissionFeeHostelPerStudent ?? 15000;
   const customFees = globalSettings?.customFees ?? [];
 
   // Calculate totals
@@ -37,6 +38,13 @@ export function AdditionalFeesTab({
   // DCP only applies to school students, not hostels
   const totalDCP = schoolStudents * schoolDCP;
 
+  // New admission fee totals (using new students - estimate 20% of total as new)
+  const estimatedNewSchoolStudents = Math.round(schoolStudents * 0.2);
+  const estimatedNewHostelStudents = Math.round(hostelStudents * 0.2);
+  const schoolAdmissionTotal = estimatedNewSchoolStudents * newAdmissionFeePerStudent;
+  const hostelAdmissionTotal = estimatedNewHostelStudents * newAdmissionFeeHostelPerStudent;
+  const totalAdmissionFee = schoolAdmissionTotal + hostelAdmissionTotal;
+
   // Calculate custom fees totals
   const totalCustomFees = customFees.reduce((sum, fee) => {
     let feeTotal = 0;
@@ -45,7 +53,7 @@ export function AdditionalFeesTab({
     return sum + feeTotal;
   }, 0);
 
-  const grandTotal = totalAnnualFee + totalDCP + totalCustomFees;
+  const grandTotal = totalAnnualFee + totalDCP + totalAdmissionFee + totalCustomFees;
 
   const addCustomFee = () => {
     if (!newFeeName.trim() || newFeeAmount <= 0) return;
@@ -81,7 +89,7 @@ export function AdditionalFeesTab({
   return (
     <div className="space-y-6 animate-fade-in">
       {/* Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
         <div className="campus-card p-5">
           <div className="flex items-center gap-2 mb-3">
             <DollarSign className="w-5 h-5 text-primary" />
@@ -106,10 +114,21 @@ export function AdditionalFeesTab({
 
         <div className="campus-card p-5">
           <div className="flex items-center gap-2 mb-3">
-            <DollarSign className="w-5 h-5 text-info" />
+            <GraduationCap className="w-5 h-5 text-info" />
+            <h3 className="text-sm font-medium text-foreground">New Admission Fee</h3>
+          </div>
+          <div className="font-mono text-2xl text-info">{formatCurrency(totalAdmissionFee)}</div>
+          <div className="text-xs text-muted-foreground mt-1">
+            School: {formatCurrency(schoolAdmissionTotal)} | Hostel: {formatCurrency(hostelAdmissionTotal)}
+          </div>
+        </div>
+
+        <div className="campus-card p-5">
+          <div className="flex items-center gap-2 mb-3">
+            <Plus className="w-5 h-5 text-accent" />
             <h3 className="text-sm font-medium text-foreground">Custom Fees</h3>
           </div>
-          <div className="font-mono text-2xl text-info">{formatCurrency(totalCustomFees)}</div>
+          <div className="font-mono text-2xl text-accent">{formatCurrency(totalCustomFees)}</div>
           <div className="text-xs text-muted-foreground mt-1">
             {customFees.length} custom fee(s) configured
           </div>
@@ -226,14 +245,14 @@ export function AdditionalFeesTab({
           </h3>
           <p className="text-xs text-muted-foreground mb-4">
             One-time fee charged to new students at the time of admission.
-            <span className="text-info font-medium"> Note: This fee is charged to all new students across school and hostel.</span>
+            <span className="text-info font-medium"> Note: Estimated at 20% new students.</span>
           </p>
           
           <div className="space-y-4">
             <div className="flex items-center justify-between p-4 bg-surface-2 rounded-lg">
               <div>
-                <p className="text-sm font-medium text-foreground">Fee Per New Student</p>
-                <p className="text-xs text-muted-foreground">Applied at admission</p>
+                <p className="text-sm font-medium text-foreground">School Students</p>
+                <p className="text-xs text-muted-foreground">~{formatNumber(estimatedNewSchoolStudents)} new students</p>
               </div>
               <div className="flex items-center gap-2">
                 <span className="text-muted-foreground text-sm">₨</span>
@@ -246,10 +265,26 @@ export function AdditionalFeesTab({
               </div>
             </div>
 
+            <div className="flex items-center justify-between p-4 bg-surface-2 rounded-lg">
+              <div>
+                <p className="text-sm font-medium text-foreground">Hostel Students</p>
+                <p className="text-xs text-muted-foreground">~{formatNumber(estimatedNewHostelStudents)} new students</p>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-muted-foreground text-sm">₨</span>
+                <Input
+                  type="number"
+                  value={newAdmissionFeeHostelPerStudent}
+                  onChange={(e) => onUpdateGlobalSettings({ newAdmissionFeeHostelPerStudent: parseInt(e.target.value) || 0 })}
+                  className="w-24 font-mono bg-surface-1 border-border text-right"
+                />
+              </div>
+            </div>
+
             <div className="pt-3 border-t border-border">
               <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">Total Admission Fee Revenue</span>
-                <span className="font-mono text-info font-semibold">From projection</span>
+                <span className="text-muted-foreground">Total New Admission Revenue</span>
+                <span className="font-mono text-info font-semibold">{formatCurrency(totalAdmissionFee)}</span>
               </div>
             </div>
           </div>
@@ -352,6 +387,14 @@ export function AdditionalFeesTab({
                 </div>
               );
             })}
+            
+            {/* Custom Fees Total */}
+            <div className="pt-3 border-t border-border">
+              <div className="flex justify-between text-sm">
+                <span className="text-muted-foreground">Total Custom Fees Revenue</span>
+                <span className="font-mono text-accent font-semibold">{formatCurrency(totalCustomFees)}</span>
+              </div>
+            </div>
           </div>
         ) : (
           <div className="text-center py-8 text-muted-foreground text-sm">
