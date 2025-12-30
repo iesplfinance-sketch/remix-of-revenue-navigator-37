@@ -88,7 +88,7 @@ const Index = () => {
               </DropdownMenu>
             </div>
           </div>
-          <HeaderMetrics schoolRevenue={totals.schoolRevenue} hostelRevenue={totals.hostelRevenue} totalStudents={totals.schoolStudents} hostelStudents={totals.hostelStudents} annualFeeRevenue={totals.annualFeeRevenue} dcpRevenue={totals.dcpRevenue} grandTotalRevenue={totals.grandTotalRevenue} newAdmissionFeeRevenue={totals.newAdmissionFeeRevenue} />
+          <HeaderMetrics schoolRevenue={totals.schoolRevenue} hostelRevenue={totals.hostelRevenue} totalStudents={totals.schoolStudents} projectedStudents={totals.projectedSchoolStudents} hostelStudents={totals.hostelStudents} annualFeeRevenue={totals.annualFeeRevenue} dcpRevenue={totals.dcpRevenue} grandTotalRevenue={totals.grandTotalRevenue} newAdmissionFeeRevenue={totals.newAdmissionFeeRevenue} currentDiscountAmount={totals.currentDiscountAmount} projectedDiscountAmount={totals.projectedDiscountAmount} lastYearDiscountPercent={totals.lastYearDiscountPercent} projectedDiscountPercent={totals.projectedDiscountPercent} />
         </div>
       </header>
 
