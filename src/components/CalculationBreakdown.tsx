@@ -18,13 +18,14 @@ interface CampusBreakdownRowProps {
 function CampusBreakdownRow({ campus, calculation, globalSettings }: CampusBreakdownRowProps) {
   const [isExpanded, setIsExpanded] = useState(false);
 
-  const discountRate = campus.discountRate / 100;
+  const lastYearDiscountRate = campus.lastYearDiscount / 100;
+  const forecastDiscountRate = campus.discountRate / 100;
   const effectiveRenewalFeeHike = (campus.renewalFeeHike + globalSettings.globalFeeHike) / 100;
   const effectiveNewFeeHike = (campus.newAdmissionFeeHike + globalSettings.globalFeeHike) / 100;
   const effectiveRenewalGrowth = (campus.renewalGrowth + globalSettings.globalStudentGrowth) / 100;
   const effectiveNewGrowth = (campus.newStudentGrowth + globalSettings.globalStudentGrowth) / 100;
 
-  // Current Year calculations
+  // Current Year calculations (using last year discount)
   let currentRenewalRevenue = 0;
   let currentNewAdmRevenue = 0;
   let currentTotalStudents = 0;
@@ -37,9 +38,9 @@ function CampusBreakdownRow({ campus, calculation, globalSettings }: CampusBreak
     currentNewStudents += cls.newAdmissionCount;
   });
 
-  // Apply discount
-  const currentRenewalNet = currentRenewalRevenue * (1 - discountRate);
-  const currentNewAdmNet = currentNewAdmRevenue * (1 - discountRate);
+  // Apply last year discount for current calculations
+  const currentRenewalNet = currentRenewalRevenue * (1 - lastYearDiscountRate);
+  const currentNewAdmNet = currentNewAdmRevenue * (1 - lastYearDiscountRate);
   const currentTuitionSubtotal = currentRenewalNet + currentNewAdmNet;
 
   // Forecasted Year calculations
@@ -60,9 +61,9 @@ function CampusBreakdownRow({ campus, calculation, globalSettings }: CampusBreak
     projectedNewStudents += projNew;
   });
 
-  // Apply discount
-  const projectedRenewalNet = projectedRenewalRevenue * (1 - discountRate);
-  const projectedNewAdmNet = projectedNewAdmRevenue * (1 - discountRate);
+  // Apply forecasted discount for projected calculations
+  const projectedRenewalNet = projectedRenewalRevenue * (1 - forecastDiscountRate);
+  const projectedNewAdmNet = projectedNewAdmRevenue * (1 - forecastDiscountRate);
   const projectedTuitionSubtotal = projectedRenewalNet + projectedNewAdmNet;
 
   // New Admission Fees (one-time, only for new students)
@@ -177,7 +178,7 @@ function CampusBreakdownRow({ campus, calculation, globalSettings }: CampusBreak
                       </tr>
                     )}
                     <tr className="border-b border-border/50">
-                      <td className="py-2 pl-2 text-muted-foreground">DCP (All Students)</td>
+                      <td className="py-2 pl-2 text-muted-foreground">Digital Companion Pack (All Students)</td>
                       <td className="text-right py-2 font-mono bg-muted/10">{formatCurrency(currentDCP)}</td>
                       <td className="text-right py-2 font-mono bg-primary/5">{formatCurrency(projectedDCP)}</td>
                       <td className={`text-right py-2 font-mono ${dcpDelta >= 0 ? 'text-positive' : 'text-negative'}`}>
