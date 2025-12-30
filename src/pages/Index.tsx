@@ -52,7 +52,7 @@ const Index = () => {
         <div className="max-w-7xl mx-auto">
           <div className="flex items-center justify-between mb-4">
             <div>
-              <h1 className="text-xl font-semibold text-foreground">SmartAlphaEnterprises </h1>
+              <h1 className="text-xl font-semibold text-foreground">Pak Turk Maarif Schools</h1>
               <p className="text-xs text-muted-foreground">Revenue Forecasting Engine - Real-time What-If Simulation</p>
             </div>
             <div className="flex items-center gap-2">
