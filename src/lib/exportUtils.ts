@@ -45,8 +45,7 @@ export function generateExcelExport(
     ['Global Discount Rate', `${globalSettings.globalDiscount}%`],
     ['School Annual Fee', globalSettings.schoolAnnualFee],
     ['Hostel Annual Fee', globalSettings.hostelAnnualFee],
-    ['School DCP', globalSettings.schoolDCP],
-    ['Hostel DCP', globalSettings.hostelDCP],
+    ['School DCP (School Only)', globalSettings.schoolDCP],
   ];
 
   const summarySheet = XLSX.utils.aoa_to_sheet(summaryData);
@@ -317,7 +316,7 @@ export function generatePDFExport(
   doc.setTextColor(0, 0, 0);
   doc.text(`Fee Hike: ${globalSettings.globalFeeHike}%  |  Student Growth: ${globalSettings.globalStudentGrowth}%  |  Discount: ${globalSettings.globalDiscount}%`, 30, 145);
   doc.text(`School Annual Fee: Rs. ${globalSettings.schoolAnnualFee.toLocaleString()}  |  Hostel Annual Fee: Rs. ${globalSettings.hostelAnnualFee.toLocaleString()}`, 30, 152);
-  doc.text(`School DCP: Rs. ${globalSettings.schoolDCP.toLocaleString()}  |  Hostel DCP: Rs. ${globalSettings.hostelDCP.toLocaleString()}`, 30, 159);
+  doc.text(`School DCP: Rs. ${globalSettings.schoolDCP.toLocaleString()} (School Only)`, 30, 159);
 
   // ========== CAMPUS OVERVIEW PAGE ==========
   doc.addPage();

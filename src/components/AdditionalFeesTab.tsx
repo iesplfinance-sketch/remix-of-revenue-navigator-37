@@ -26,7 +26,6 @@ export function AdditionalFeesTab({
   const schoolAnnualFee = globalSettings?.schoolAnnualFee ?? 25000;
   const hostelAnnualFee = globalSettings?.hostelAnnualFee ?? 15000;
   const schoolDCP = globalSettings?.schoolDCP ?? 10000;
-  const hostelDCP = globalSettings?.hostelDCP ?? 5000;
   const newAdmissionFeePerStudent = globalSettings?.newAdmissionFeePerStudent ?? 25000;
   const customFees = globalSettings?.customFees ?? [];
 
@@ -35,9 +34,8 @@ export function AdditionalFeesTab({
   const hostelAnnualTotal = hostelStudents * hostelAnnualFee;
   const totalAnnualFee = schoolAnnualTotal + hostelAnnualTotal;
 
-  const schoolDCPTotal = schoolStudents * schoolDCP;
-  const hostelDCPTotal = hostelStudents * hostelDCP;
-  const totalDCP = schoolDCPTotal + hostelDCPTotal;
+  // DCP only applies to school students, not hostels
+  const totalDCP = schoolStudents * schoolDCP;
 
   // Calculate custom fees totals
   const totalCustomFees = customFees.reduce((sum, fee) => {
@@ -102,7 +100,7 @@ export function AdditionalFeesTab({
           </div>
           <div className="font-mono text-2xl text-warning">{formatCurrency(totalDCP)}</div>
           <div className="text-xs text-muted-foreground mt-1">
-            School: {formatCurrency(schoolDCPTotal)} | Hostel: {formatCurrency(hostelDCPTotal)}
+            School students only
           </div>
         </div>
 
@@ -190,7 +188,8 @@ export function AdditionalFeesTab({
             DCP (Digital Companion Pack) Configuration
           </h3>
           <p className="text-xs text-muted-foreground mb-4">
-            DCP provides students with digital learning resources, educational software licenses, and technology support for enhanced learning.
+            DCP provides students with digital learning resources, educational software licenses, and technology support for enhanced learning. 
+            <span className="text-warning font-medium"> Note: DCP is only applicable to school students, not hostel students.</span>
           </p>
           
           <div className="space-y-4">
@@ -210,25 +209,9 @@ export function AdditionalFeesTab({
               </div>
             </div>
 
-            <div className="flex items-center justify-between p-4 bg-surface-2 rounded-lg">
-              <div>
-                <p className="text-sm font-medium text-foreground">Hostel Students</p>
-                <p className="text-xs text-muted-foreground">{formatNumber(hostelStudents)} students</p>
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="text-muted-foreground text-sm">₨</span>
-                <Input
-                  type="number"
-                  value={hostelDCP}
-                  onChange={(e) => onUpdateGlobalSettings({ hostelDCP: parseInt(e.target.value) || 0 })}
-                  className="w-32 font-mono bg-surface-1 border-border text-right"
-                />
-              </div>
-            </div>
-
             <div className="pt-3 border-t border-border">
               <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">Total DCP Revenue</span>
+                <span className="text-muted-foreground">Total DCP Revenue (School Only)</span>
                 <span className="font-mono text-warning font-semibold">{formatCurrency(totalDCP)}</span>
               </div>
             </div>
@@ -372,7 +355,7 @@ export function AdditionalFeesTab({
                 Annual Fee: <span className="text-primary">{formatCurrency(schoolAnnualTotal)}</span>
               </p>
               <p className="text-foreground">
-                DCP: <span className="text-warning">{formatCurrency(schoolDCPTotal)}</span>
+                DCP: <span className="text-warning">{formatCurrency(totalDCP)}</span>
               </p>
             </div>
             <div>
@@ -380,8 +363,8 @@ export function AdditionalFeesTab({
               <p className="text-foreground">
                 Annual Fee: <span className="text-primary">{formatCurrency(hostelAnnualTotal)}</span>
               </p>
-              <p className="text-foreground">
-                DCP: <span className="text-warning">{formatCurrency(hostelDCPTotal)}</span>
+              <p className="text-muted-foreground text-xs">
+                (DCP not applicable)
               </p>
             </div>
           </div>
