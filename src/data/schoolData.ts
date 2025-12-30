@@ -7,6 +7,9 @@ export interface ClassData {
   renewalFee: number;
   newAdmissionCount: number;
   newAdmissionFee: number;
+  // Optional: Direct forecasted counts (overrides slider-based growth calculation)
+  forecastedRenewalCount?: number;
+  forecastedNewCount?: number;
 }
 
 export interface CampusData {

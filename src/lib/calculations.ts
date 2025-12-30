@@ -91,6 +91,9 @@ export function calculateCampusRevenue(
   let projectedRenewalRevenue = 0;
   let projectedNewRevenue = 0;
 
+  let projectedRenewalStudentsTotal = 0;
+  let projectedNewStudentsTotal = 0;
+
   campus.classes.forEach(cls => {
     // Current counts
     currentRenewalStudents += cls.renewalCount;
@@ -100,9 +103,16 @@ export function calculateCampusRevenue(
     currentRenewalRevenue += cls.renewalCount * cls.renewalFee;
     currentNewRevenue += cls.newAdmissionCount * cls.newAdmissionFee;
 
-    // Projected counts with separate growth rates
-    const projRenewal = Math.round(cls.renewalCount * (1 + effectiveRenewalGrowth));
-    const projNew = Math.round(cls.newAdmissionCount * (1 + effectiveNewStudentGrowth));
+    // Projected counts: use direct forecast if provided, otherwise calculate
+    const projRenewal = cls.forecastedRenewalCount !== undefined 
+      ? cls.forecastedRenewalCount 
+      : Math.round(cls.renewalCount * (1 + effectiveRenewalGrowth));
+    const projNew = cls.forecastedNewCount !== undefined 
+      ? cls.forecastedNewCount 
+      : Math.round(cls.newAdmissionCount * (1 + effectiveNewStudentGrowth));
+
+    projectedRenewalStudentsTotal += projRenewal;
+    projectedNewStudentsTotal += projNew;
 
     // Projected revenue with separate fee hikes
     const hikedRenewalFee = cls.renewalFee * (1 + effectiveRenewalFeeHike);
@@ -113,8 +123,8 @@ export function calculateCampusRevenue(
   });
 
   const currentTotalStudents = currentRenewalStudents + currentNewStudents;
-  const projectedRenewalStudents = Math.round(currentRenewalStudents * (1 + effectiveRenewalGrowth));
-  const projectedNewStudents = Math.round(currentNewStudents * (1 + effectiveNewStudentGrowth));
+  const projectedRenewalStudents = projectedRenewalStudentsTotal;
+  const projectedNewStudents = projectedNewStudentsTotal;
   const projectedTotalStudents = projectedRenewalStudents + projectedNewStudents;
 
   const currentGrossRevenue = currentRenewalRevenue + currentNewRevenue;
@@ -171,8 +181,13 @@ export function calculateClassBreakdown(
       const currentNewStudents = cls.newAdmissionCount;
       const currentTotalStudents = currentRenewalStudents + currentNewStudents;
 
-      const projectedRenewalStudents = Math.round(currentRenewalStudents * (1 + effectiveRenewalGrowth));
-      const projectedNewStudents = Math.round(currentNewStudents * (1 + effectiveNewStudentGrowth));
+      // Use direct forecast if provided, otherwise calculate based on growth rate
+      const projectedRenewalStudents = cls.forecastedRenewalCount !== undefined 
+        ? cls.forecastedRenewalCount 
+        : Math.round(currentRenewalStudents * (1 + effectiveRenewalGrowth));
+      const projectedNewStudents = cls.forecastedNewCount !== undefined 
+        ? cls.forecastedNewCount 
+        : Math.round(currentNewStudents * (1 + effectiveNewStudentGrowth));
       const projectedTotalStudents = projectedRenewalStudents + projectedNewStudents;
 
       const currentRevenue = (currentRenewalStudents * cls.renewalFee + currentNewStudents * cls.newAdmissionFee) * (1 - discountRate);
