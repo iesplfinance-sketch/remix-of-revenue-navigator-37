@@ -399,29 +399,31 @@ export function CampusCard({ campus, calculation, globalSettings, onUpdate, isEx
                   <tbody>
                     {/* Tuition Fees - Renewal */}
                     {(() => {
-                      const discountRate = campus.discountRate / 100;
+                      const lastYearDiscountRate = (campus.lastYearDiscount || 0) / 100;
+                      const forecastDiscountRate = campus.discountRate / 100;
                       const effectiveRenewalFeeHike = (campus.renewalFeeHike + globalSettings.globalFeeHike) / 100;
                       const effectiveNewFeeHike = (campus.newAdmissionFeeHike + globalSettings.globalFeeHike) / 100;
                       const effectiveRenewalGrowth = (campus.renewalGrowth + globalSettings.globalStudentGrowth) / 100;
                       const effectiveNewGrowth = (campus.newStudentGrowth + globalSettings.globalStudentGrowth) / 100;
 
-                      // Current Year calculations
-                      let currentRenewalRevenue = 0;
-                      let currentNewAdmRevenue = 0;
+                      // Current Year calculations (using last year discount)
+                      let currentRenewalRevenueGross = 0;
+                      let currentNewAdmRevenueGross = 0;
                       let currentTotalStudents = 0;
                       let currentNewStudents = 0;
 
                       campus.classes.forEach(cls => {
-                        currentRenewalRevenue += cls.renewalCount * cls.renewalFee;
-                        currentNewAdmRevenue += cls.newAdmissionCount * cls.newAdmissionFee;
+                        currentRenewalRevenueGross += cls.renewalCount * cls.renewalFee;
+                        currentNewAdmRevenueGross += cls.newAdmissionCount * cls.newAdmissionFee;
                         currentTotalStudents += cls.renewalCount + cls.newAdmissionCount;
                         currentNewStudents += cls.newAdmissionCount;
                       });
 
-                      // Apply discount
-                      const currentRenewalNet = currentRenewalRevenue * (1 - discountRate);
-                      const currentNewAdmNet = currentNewAdmRevenue * (1 - discountRate);
+                      // Apply last year discount for current
+                      const currentRenewalNet = currentRenewalRevenueGross * (1 - lastYearDiscountRate);
+                      const currentNewAdmNet = currentNewAdmRevenueGross * (1 - lastYearDiscountRate);
                       const currentTuitionSubtotal = currentRenewalNet + currentNewAdmNet;
+                      const currentDiscountAmount = (currentRenewalRevenueGross + currentNewAdmRevenueGross) * lastYearDiscountRate;
 
                       // Forecasted Year calculations
                       let projectedRenewalRevenue = 0;
@@ -441,10 +443,12 @@ export function CampusCard({ campus, calculation, globalSettings, onUpdate, isEx
                         projectedNewStudents += projNew;
                       });
 
-                      // Apply discount
-                      const projectedRenewalNet = projectedRenewalRevenue * (1 - discountRate);
-                      const projectedNewAdmNet = projectedNewAdmRevenue * (1 - discountRate);
+                      // Apply forecast discount
+                      const projectedRenewalNet = projectedRenewalRevenue * (1 - forecastDiscountRate);
+                      const projectedNewAdmNet = projectedNewAdmRevenue * (1 - forecastDiscountRate);
                       const projectedTuitionSubtotal = projectedRenewalNet + projectedNewAdmNet;
+                      const projectedDiscountAmount = (projectedRenewalRevenue + projectedNewAdmRevenue) * forecastDiscountRate;
+                      const discountDelta = projectedDiscountAmount - currentDiscountAmount;
 
                       // New Admission Fees (one-time, only for new students)
                       const newAdmFeePerStudent = 25000; // Placeholder - this could be a global setting
@@ -498,6 +502,21 @@ export function CampusCard({ campus, calculation, globalSettings, onUpdate, isEx
                             <td className="text-right py-2 font-mono font-semibold">{formatCurrency(projectedTuitionSubtotal)}</td>
                             <td className={`text-right py-2 font-mono font-semibold ${tuitionDelta >= 0 ? 'text-positive' : 'text-negative'}`}>
                               {tuitionDelta >= 0 ? '+' : ''}{formatCurrency(tuitionDelta)}
+                            </td>
+                          </tr>
+                          {/* Discount Row */}
+                          <tr className="border-b border-border/50 bg-warning/5">
+                            <td className="py-2 pl-2 text-warning">
+                              Discount Applied ({(campus.lastYearDiscount || 0)}% last year → {campus.discountRate}% forecast)
+                            </td>
+                            <td className="text-right py-2 font-mono bg-muted/10 text-warning">
+                              -{formatCurrency(currentDiscountAmount)}
+                            </td>
+                            <td className="text-right py-2 font-mono bg-primary/5 text-warning">
+                              -{formatCurrency(projectedDiscountAmount)}
+                            </td>
+                            <td className={`text-right py-2 font-mono ${discountDelta <= 0 ? 'text-positive' : 'text-negative'}`}>
+                              {discountDelta <= 0 ? '-' : '+'}{formatCurrency(Math.abs(discountDelta))}
                             </td>
                           </tr>
                           <tr className="border-b border-border/50">

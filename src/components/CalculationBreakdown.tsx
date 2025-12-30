@@ -159,6 +159,22 @@ function CampusBreakdownRow({ campus, calculation, globalSettings }: CampusBreak
                         {tuitionDelta >= 0 ? '+' : ''}{formatCurrency(tuitionDelta)}
                       </td>
                     </tr>
+                    {/* Discount Row */}
+                    <tr className="border-b border-border/50 bg-warning/5">
+                      <td className="py-2 pl-2 text-warning">
+                        Discount Applied ({campus.lastYearDiscount}% last year → {campus.discountRate}% forecast)
+                      </td>
+                      <td className="text-right py-2 font-mono bg-muted/10 text-warning">
+                        -{formatCurrency(currentRenewalRevenue * lastYearDiscountRate + currentNewAdmRevenue * lastYearDiscountRate)}
+                      </td>
+                      <td className="text-right py-2 font-mono bg-primary/5 text-warning">
+                        -{formatCurrency(projectedRenewalRevenue * forecastDiscountRate + projectedNewAdmRevenue * forecastDiscountRate)}
+                      </td>
+                      <td className={`text-right py-2 font-mono ${(projectedRenewalRevenue * forecastDiscountRate + projectedNewAdmRevenue * forecastDiscountRate) <= (currentRenewalRevenue * lastYearDiscountRate + currentNewAdmRevenue * lastYearDiscountRate) ? 'text-positive' : 'text-negative'}`}>
+                        {(projectedRenewalRevenue * forecastDiscountRate + projectedNewAdmRevenue * forecastDiscountRate) <= (currentRenewalRevenue * lastYearDiscountRate + currentNewAdmRevenue * lastYearDiscountRate) ? '-' : '+'}
+                        {formatCurrency(Math.abs((projectedRenewalRevenue * forecastDiscountRate + projectedNewAdmRevenue * forecastDiscountRate) - (currentRenewalRevenue * lastYearDiscountRate + currentNewAdmRevenue * lastYearDiscountRate)))}
+                      </td>
+                    </tr>
                     <tr className="border-b border-border/50">
                       <td className="py-2 pl-2 text-muted-foreground">New Admission Fees (New Students Only)</td>
                       <td className="text-right py-2 font-mono bg-muted/10">{formatCurrency(currentNewAdmissionFees)}</td>
