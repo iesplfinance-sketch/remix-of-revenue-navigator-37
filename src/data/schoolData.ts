@@ -41,7 +41,8 @@ export interface HostelData {
   campusId: string;
   currentOccupancy: number;
   maxCapacity: number;
-  feePerStudent: number; // Default 375,000
+  feePerStudent: number; // Forecasted hostel fee per student
+  lastYearFeePerStudent: number; // Last year hostel fee (default 375,000)
 }
 
 export const CLASS_NAMES = [
@@ -833,11 +834,11 @@ export const initialCampusData: CampusData[] = [
 
 // Hostel data
 export const initialHostelData: HostelData[] = [
-  { id: 'hostel-intl-maarif', name: 'International Maarif H-8 Hostel', campusId: 'intl-maarif-h8', currentOccupancy: 45, maxCapacity: 56, feePerStudent: 375000 },
-  { id: 'hostel-isb-chak', name: 'Islamabad Chak Shahzad Hostel', campusId: 'isb-chak-shahzad', currentOccupancy: 120, maxCapacity: 158, feePerStudent: 375000 },
-  { id: 'hostel-lhr-raiwind', name: 'Lahore Raiwind Boys Hostel', campusId: 'lhr-raiwind', currentOccupancy: 95, maxCapacity: 120, feePerStudent: 375000 },
-  { id: 'hostel-psh-hayatabad', name: 'Peshawar Hayatabad Hostel', campusId: 'psh-hayatabad', currentOccupancy: 110, maxCapacity: 150, feePerStudent: 375000 },
-  { id: 'hostel-quetta-boys', name: 'Quetta Boys Hostel', campusId: 'quetta-boys', currentOccupancy: 38, maxCapacity: 48, feePerStudent: 375000 },
+  { id: 'hostel-intl-maarif', name: 'International Maarif H-8 Hostel', campusId: 'intl-maarif-h8', currentOccupancy: 45, maxCapacity: 56, feePerStudent: 375000, lastYearFeePerStudent: 375000 },
+  { id: 'hostel-isb-chak', name: 'Islamabad Chak Shahzad Hostel', campusId: 'isb-chak-shahzad', currentOccupancy: 120, maxCapacity: 158, feePerStudent: 375000, lastYearFeePerStudent: 375000 },
+  { id: 'hostel-lhr-raiwind', name: 'Lahore Raiwind Boys Hostel', campusId: 'lhr-raiwind', currentOccupancy: 95, maxCapacity: 120, feePerStudent: 375000, lastYearFeePerStudent: 375000 },
+  { id: 'hostel-psh-hayatabad', name: 'Peshawar Hayatabad Hostel', campusId: 'psh-hayatabad', currentOccupancy: 110, maxCapacity: 150, feePerStudent: 375000, lastYearFeePerStudent: 375000 },
+  { id: 'hostel-quetta-boys', name: 'Quetta Boys Hostel', campusId: 'quetta-boys', currentOccupancy: 38, maxCapacity: 48, feePerStudent: 375000, lastYearFeePerStudent: 375000 },
 ];
 
 // Global settings
@@ -845,14 +846,19 @@ export interface GlobalSettings {
   globalFeeHike: number;
   globalStudentGrowth: number;
   globalDiscount: number;
-  // Annual fees charged to all students
+  // Annual fees charged to all students (Forecasted)
   schoolAnnualFee: number;
   hostelAnnualFee: number;
-  // DCP (Digital Companion Pack) - only for school students, not hostels
+  // DCP (Digital Companion Pack) - only for school students, not hostels (Forecasted)
   schoolDCP: number;
-  // New Admission Fee per student
+  // New Admission Fee per student (Forecasted) - only for school students
   newAdmissionFeePerStudent: number;
   newAdmissionFeeHostelPerStudent: number;
+  // Last year actual fees for comparison
+  lastYearSchoolAnnualFee: number;
+  lastYearHostelAnnualFee: number;
+  lastYearSchoolDCP: number;
+  lastYearNewAdmissionFee: number;
   // Custom fees
   customFees: CustomFee[];
 }
@@ -866,5 +872,10 @@ export const initialGlobalSettings: GlobalSettings = {
   schoolDCP: 10000,
   newAdmissionFeePerStudent: 25000,
   newAdmissionFeeHostelPerStudent: 15000,
+  // Last year fees (defaults to same as forecasted)
+  lastYearSchoolAnnualFee: 25000,
+  lastYearHostelAnnualFee: 15000,
+  lastYearSchoolDCP: 10000,
+  lastYearNewAdmissionFee: 25000,
   customFees: [],
 };
