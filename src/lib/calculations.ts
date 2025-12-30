@@ -327,6 +327,10 @@ export function calculateTotals(
 
 // Format currency in PKR
 export function formatCurrency(value: number): string {
+  // Handle null/undefined values
+  if (value === null || value === undefined) {
+    return '₨0';
+  }
   if (value >= 1e9) {
     return `₨${(value / 1e9).toFixed(2)}B`;
   } else if (value >= 1e6) {
@@ -339,6 +343,10 @@ export function formatCurrency(value: number): string {
 
 // Format number with commas
 export function formatNumber(value: number): string {
+  // Handle null/undefined values
+  if (value === null || value === undefined) {
+    return '0';
+  }
   return value.toLocaleString();
 }
 
