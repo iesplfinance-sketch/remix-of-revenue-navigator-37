@@ -26,26 +26,26 @@ function CampusBreakdownRow({ campus, calculation, globalSettings }: CampusBreak
   const effectiveNewGrowth = (campus.newStudentGrowth + globalSettings.globalStudentGrowth) / 100;
 
   // Current Year calculations (using last year discount)
-  let currentRenewalRevenue = 0;
-  let currentNewAdmRevenue = 0;
+  let currentRenewalRevenueGross = 0;
+  let currentNewAdmRevenueGross = 0;
   let currentTotalStudents = 0;
   let currentNewStudents = 0;
 
   campus.classes.forEach(cls => {
-    currentRenewalRevenue += cls.renewalCount * cls.renewalFee;
-    currentNewAdmRevenue += cls.newAdmissionCount * cls.newAdmissionFee;
+    currentRenewalRevenueGross += cls.renewalCount * cls.renewalFee;
+    currentNewAdmRevenueGross += cls.newAdmissionCount * cls.newAdmissionFee;
     currentTotalStudents += cls.renewalCount + cls.newAdmissionCount;
     currentNewStudents += cls.newAdmissionCount;
   });
 
-  // Apply last year discount for current calculations
-  const currentRenewalNet = currentRenewalRevenue * (1 - lastYearDiscountRate);
-  const currentNewAdmNet = currentNewAdmRevenue * (1 - lastYearDiscountRate);
-  const currentTuitionSubtotal = currentRenewalNet + currentNewAdmNet;
+  // Gross tuition and discount for current year
+  const currentTuitionGross = currentRenewalRevenueGross + currentNewAdmRevenueGross;
+  const currentDiscountAmount = currentTuitionGross * lastYearDiscountRate;
+  const currentTuitionNet = currentTuitionGross - currentDiscountAmount;
 
   // Forecasted Year calculations
-  let projectedRenewalRevenue = 0;
-  let projectedNewAdmRevenue = 0;
+  let projectedRenewalRevenueGross = 0;
+  let projectedNewAdmRevenueGross = 0;
   let projectedTotalStudents = 0;
   let projectedNewStudents = 0;
 
@@ -55,16 +55,16 @@ function CampusBreakdownRow({ campus, calculation, globalSettings }: CampusBreak
     const hikedRenewalFee = cls.renewalFee * (1 + effectiveRenewalFeeHike);
     const hikedNewFee = cls.newAdmissionFee * (1 + effectiveNewFeeHike);
     
-    projectedRenewalRevenue += projRenewal * hikedRenewalFee;
-    projectedNewAdmRevenue += projNew * hikedNewFee;
+    projectedRenewalRevenueGross += projRenewal * hikedRenewalFee;
+    projectedNewAdmRevenueGross += projNew * hikedNewFee;
     projectedTotalStudents += projRenewal + projNew;
     projectedNewStudents += projNew;
   });
 
-  // Apply forecasted discount for projected calculations
-  const projectedRenewalNet = projectedRenewalRevenue * (1 - forecastDiscountRate);
-  const projectedNewAdmNet = projectedNewAdmRevenue * (1 - forecastDiscountRate);
-  const projectedTuitionSubtotal = projectedRenewalNet + projectedNewAdmNet;
+  // Gross tuition and discount for projected year
+  const projectedTuitionGross = projectedRenewalRevenueGross + projectedNewAdmRevenueGross;
+  const projectedDiscountAmount = projectedTuitionGross * forecastDiscountRate;
+  const projectedTuitionNet = projectedTuitionGross - projectedDiscountAmount;
 
   // New Admission Fees (one-time, only for new students)
   const newAdmFeePerStudent = 25000;
@@ -79,17 +79,18 @@ function CampusBreakdownRow({ campus, calculation, globalSettings }: CampusBreak
   const currentDCP = currentTotalStudents * globalSettings.schoolDCP;
   const projectedDCP = projectedTotalStudents * globalSettings.schoolDCP;
 
-  // Grand Total
-  const currentGrandTotal = currentTuitionSubtotal + currentNewAdmissionFees + currentAnnualFees + currentDCP;
-  const projectedGrandTotal = projectedTuitionSubtotal + projectedNewAdmissionFees + projectedAnnualFees + projectedDCP;
+  // Grand Total = Tuition Net (after discount) + Other Fees
+  const currentGrandTotal = currentTuitionNet + currentNewAdmissionFees + currentAnnualFees + currentDCP;
+  const projectedGrandTotal = projectedTuitionNet + projectedNewAdmissionFees + projectedAnnualFees + projectedDCP;
 
   const grandTotalDelta = projectedGrandTotal - currentGrandTotal;
   const grandTotalChangePercent = currentGrandTotal > 0 ? (grandTotalDelta / currentGrandTotal) * 100 : 0;
 
   // Deltas
-  const renewalDelta = projectedRenewalNet - currentRenewalNet;
-  const newAdmDelta = projectedNewAdmNet - currentNewAdmNet;
-  const tuitionDelta = projectedTuitionSubtotal - currentTuitionSubtotal;
+  const renewalDelta = projectedRenewalRevenueGross - currentRenewalRevenueGross;
+  const newAdmDelta = projectedNewAdmRevenueGross - currentNewAdmRevenueGross;
+  const tuitionGrossDelta = projectedTuitionGross - currentTuitionGross;
+  const discountDelta = projectedDiscountAmount - currentDiscountAmount;
   const newAdmissionFeesDelta = projectedNewAdmissionFees - currentNewAdmissionFees;
   const annualFeesDelta = projectedAnnualFees - currentAnnualFees;
   const dcpDelta = projectedDCP - currentDCP;
@@ -137,26 +138,26 @@ function CampusBreakdownRow({ campus, calculation, globalSettings }: CampusBreak
                   <tbody>
                     <tr className="border-b border-border/50">
                       <td className="py-2 pl-2 text-muted-foreground">Tuition - Renewal Students</td>
-                      <td className="text-right py-2 font-mono bg-muted/10">{formatCurrency(currentRenewalNet)}</td>
-                      <td className="text-right py-2 font-mono bg-primary/5">{formatCurrency(projectedRenewalNet)}</td>
+                      <td className="text-right py-2 font-mono bg-muted/10">{formatCurrency(currentRenewalRevenueGross)}</td>
+                      <td className="text-right py-2 font-mono bg-primary/5">{formatCurrency(projectedRenewalRevenueGross)}</td>
                       <td className={`text-right py-2 font-mono ${renewalDelta >= 0 ? 'text-positive' : 'text-negative'}`}>
                         {renewalDelta >= 0 ? '+' : ''}{formatCurrency(renewalDelta)}
                       </td>
                     </tr>
                     <tr className="border-b border-border/50">
                       <td className="py-2 pl-2 text-muted-foreground">Tuition - New Admission Students</td>
-                      <td className="text-right py-2 font-mono bg-muted/10">{formatCurrency(currentNewAdmNet)}</td>
-                      <td className="text-right py-2 font-mono bg-primary/5">{formatCurrency(projectedNewAdmNet)}</td>
+                      <td className="text-right py-2 font-mono bg-muted/10">{formatCurrency(currentNewAdmRevenueGross)}</td>
+                      <td className="text-right py-2 font-mono bg-primary/5">{formatCurrency(projectedNewAdmRevenueGross)}</td>
                       <td className={`text-right py-2 font-mono ${newAdmDelta >= 0 ? 'text-positive' : 'text-negative'}`}>
                         {newAdmDelta >= 0 ? '+' : ''}{formatCurrency(newAdmDelta)}
                       </td>
                     </tr>
                     <tr className="border-b border-border bg-muted/20">
                       <td className="py-2 pl-2 font-semibold">Tuition Fees Subtotal</td>
-                      <td className="text-right py-2 font-mono font-semibold">{formatCurrency(currentTuitionSubtotal)}</td>
-                      <td className="text-right py-2 font-mono font-semibold">{formatCurrency(projectedTuitionSubtotal)}</td>
-                      <td className={`text-right py-2 font-mono font-semibold ${tuitionDelta >= 0 ? 'text-positive' : 'text-negative'}`}>
-                        {tuitionDelta >= 0 ? '+' : ''}{formatCurrency(tuitionDelta)}
+                      <td className="text-right py-2 font-mono font-semibold">{formatCurrency(currentTuitionGross)}</td>
+                      <td className="text-right py-2 font-mono font-semibold">{formatCurrency(projectedTuitionGross)}</td>
+                      <td className={`text-right py-2 font-mono font-semibold ${tuitionGrossDelta >= 0 ? 'text-positive' : 'text-negative'}`}>
+                        {tuitionGrossDelta >= 0 ? '+' : ''}{formatCurrency(tuitionGrossDelta)}
                       </td>
                     </tr>
                     {/* Discount Row */}
@@ -165,14 +166,13 @@ function CampusBreakdownRow({ campus, calculation, globalSettings }: CampusBreak
                         Discount Applied ({campus.lastYearDiscount}% last year → {campus.discountRate}% forecast)
                       </td>
                       <td className="text-right py-2 font-mono bg-muted/10 text-warning">
-                        -{formatCurrency(currentRenewalRevenue * lastYearDiscountRate + currentNewAdmRevenue * lastYearDiscountRate)}
+                        -{formatCurrency(currentDiscountAmount)}
                       </td>
                       <td className="text-right py-2 font-mono bg-primary/5 text-warning">
-                        -{formatCurrency(projectedRenewalRevenue * forecastDiscountRate + projectedNewAdmRevenue * forecastDiscountRate)}
+                        -{formatCurrency(projectedDiscountAmount)}
                       </td>
-                      <td className={`text-right py-2 font-mono ${(projectedRenewalRevenue * forecastDiscountRate + projectedNewAdmRevenue * forecastDiscountRate) <= (currentRenewalRevenue * lastYearDiscountRate + currentNewAdmRevenue * lastYearDiscountRate) ? 'text-positive' : 'text-negative'}`}>
-                        {(projectedRenewalRevenue * forecastDiscountRate + projectedNewAdmRevenue * forecastDiscountRate) <= (currentRenewalRevenue * lastYearDiscountRate + currentNewAdmRevenue * lastYearDiscountRate) ? '-' : '+'}
-                        {formatCurrency(Math.abs((projectedRenewalRevenue * forecastDiscountRate + projectedNewAdmRevenue * forecastDiscountRate) - (currentRenewalRevenue * lastYearDiscountRate + currentNewAdmRevenue * lastYearDiscountRate)))}
+                      <td className={`text-right py-2 font-mono ${discountDelta <= 0 ? 'text-positive' : 'text-negative'}`}>
+                        {discountDelta <= 0 ? '-' : '+'}{formatCurrency(Math.abs(discountDelta))}
                       </td>
                     </tr>
                     <tr className="border-b border-border/50">
@@ -223,30 +223,31 @@ function CampusBreakdownRow({ campus, calculation, globalSettings }: CampusBreak
 export function CalculationBreakdown({ campuses, calculations, globalSettings }: CalculationBreakdownProps) {
   // Calculate grand totals matching the same logic as CampusBreakdownRow
   const calculateCampusGrandTotal = (campus: CampusData) => {
-    const discountRate = campus.discountRate / 100;
+    const lastYearDiscountRate = campus.lastYearDiscount / 100;
+    const forecastDiscountRate = campus.discountRate / 100;
     const effectiveRenewalFeeHike = (campus.renewalFeeHike + globalSettings.globalFeeHike) / 100;
     const effectiveNewFeeHike = (campus.newAdmissionFeeHike + globalSettings.globalFeeHike) / 100;
     const effectiveRenewalGrowth = (campus.renewalGrowth + globalSettings.globalStudentGrowth) / 100;
     const effectiveNewGrowth = (campus.newStudentGrowth + globalSettings.globalStudentGrowth) / 100;
 
-    let currentRenewalRevenue = 0;
-    let currentNewAdmRevenue = 0;
+    let currentRenewalRevenueGross = 0;
+    let currentNewAdmRevenueGross = 0;
     let currentTotalStudents = 0;
     let currentNewStudents = 0;
 
     campus.classes.forEach(cls => {
-      currentRenewalRevenue += cls.renewalCount * cls.renewalFee;
-      currentNewAdmRevenue += cls.newAdmissionCount * cls.newAdmissionFee;
+      currentRenewalRevenueGross += cls.renewalCount * cls.renewalFee;
+      currentNewAdmRevenueGross += cls.newAdmissionCount * cls.newAdmissionFee;
       currentTotalStudents += cls.renewalCount + cls.newAdmissionCount;
       currentNewStudents += cls.newAdmissionCount;
     });
 
-    const currentRenewalNet = currentRenewalRevenue * (1 - discountRate);
-    const currentNewAdmNet = currentNewAdmRevenue * (1 - discountRate);
-    const currentTuitionSubtotal = currentRenewalNet + currentNewAdmNet;
+    const currentTuitionGross = currentRenewalRevenueGross + currentNewAdmRevenueGross;
+    const currentDiscountAmount = currentTuitionGross * lastYearDiscountRate;
+    const currentTuitionNet = currentTuitionGross - currentDiscountAmount;
 
-    let projectedRenewalRevenue = 0;
-    let projectedNewAdmRevenue = 0;
+    let projectedRenewalRevenueGross = 0;
+    let projectedNewAdmRevenueGross = 0;
     let projectedTotalStudents = 0;
     let projectedNewStudents = 0;
 
@@ -256,15 +257,15 @@ export function CalculationBreakdown({ campuses, calculations, globalSettings }:
       const hikedRenewalFee = cls.renewalFee * (1 + effectiveRenewalFeeHike);
       const hikedNewFee = cls.newAdmissionFee * (1 + effectiveNewFeeHike);
       
-      projectedRenewalRevenue += projRenewal * hikedRenewalFee;
-      projectedNewAdmRevenue += projNew * hikedNewFee;
+      projectedRenewalRevenueGross += projRenewal * hikedRenewalFee;
+      projectedNewAdmRevenueGross += projNew * hikedNewFee;
       projectedTotalStudents += projRenewal + projNew;
       projectedNewStudents += projNew;
     });
 
-    const projectedRenewalNet = projectedRenewalRevenue * (1 - discountRate);
-    const projectedNewAdmNet = projectedNewAdmRevenue * (1 - discountRate);
-    const projectedTuitionSubtotal = projectedRenewalNet + projectedNewAdmNet;
+    const projectedTuitionGross = projectedRenewalRevenueGross + projectedNewAdmRevenueGross;
+    const projectedDiscountAmount = projectedTuitionGross * forecastDiscountRate;
+    const projectedTuitionNet = projectedTuitionGross - projectedDiscountAmount;
 
     const newAdmFeePerStudent = 25000;
     const currentNewAdmissionFees = currentNewStudents * newAdmFeePerStudent;
@@ -276,8 +277,8 @@ export function CalculationBreakdown({ campuses, calculations, globalSettings }:
     const currentDCP = currentTotalStudents * globalSettings.schoolDCP;
     const projectedDCP = projectedTotalStudents * globalSettings.schoolDCP;
 
-    const currentGrandTotal = currentTuitionSubtotal + currentNewAdmissionFees + currentAnnualFees + currentDCP;
-    const projectedGrandTotal = projectedTuitionSubtotal + projectedNewAdmissionFees + projectedAnnualFees + projectedDCP;
+    const currentGrandTotal = currentTuitionNet + currentNewAdmissionFees + currentAnnualFees + currentDCP;
+    const projectedGrandTotal = projectedTuitionNet + projectedNewAdmissionFees + projectedAnnualFees + projectedDCP;
 
     return { currentTotalStudents, projectedTotalStudents, currentGrandTotal, projectedGrandTotal };
   };
