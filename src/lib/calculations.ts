@@ -253,7 +253,8 @@ export function calculateTotals(
   }, 0);
   
   const annualFeeRevenue = (studentsWithAnnualFee * globalSettings.schoolAnnualFee) + (hostelStudents * globalSettings.hostelAnnualFee);
-  const dcpRevenue = (projectedSchoolStudents * globalSettings.schoolDCP) + (hostelStudents * globalSettings.hostelDCP);
+  // DCP only applies to school students, not hostels
+  const dcpRevenue = projectedSchoolStudents * globalSettings.schoolDCP;
   const newAdmissionFeeRevenue = projectedNewStudents * 25000; // New admission fee per student
   const tuitionRevenue = schoolRevenue + hostelRevenue;
   const grandTotalRevenue = tuitionRevenue + annualFeeRevenue + dcpRevenue + newAdmissionFeeRevenue;
@@ -338,8 +339,7 @@ export function generateCSVExport(
   rows.push(['Global Discount Rate', `${globalSettings.globalDiscount}%`]);
   rows.push(['School Annual Fee', `Rs. ${globalSettings.schoolAnnualFee.toLocaleString()}`]);
   rows.push(['Hostel Annual Fee', `Rs. ${globalSettings.hostelAnnualFee.toLocaleString()}`]);
-  rows.push(['School DCP', `Rs. ${globalSettings.schoolDCP.toLocaleString()}`]);
-  rows.push(['Hostel DCP', `Rs. ${globalSettings.hostelDCP.toLocaleString()}`]);
+  rows.push(['School DCP (School Only)', `Rs. ${globalSettings.schoolDCP.toLocaleString()}`]);
   rows.push(['']);
 
   // Campus Details Header

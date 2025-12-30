@@ -845,9 +845,8 @@ export interface GlobalSettings {
   // Annual fees charged to all students
   schoolAnnualFee: number;
   hostelAnnualFee: number;
-  // DCP (Digital Companion Pack) charged to all students
+  // DCP (Digital Companion Pack) - only for school students, not hostels
   schoolDCP: number;
-  hostelDCP: number;
   // New Admission Fee per student
   newAdmissionFeePerStudent: number;
   // Custom fees
@@ -861,7 +860,6 @@ export const initialGlobalSettings: GlobalSettings = {
   schoolAnnualFee: 25000,
   hostelAnnualFee: 15000,
   schoolDCP: 10000,
-  hostelDCP: 5000,
   newAdmissionFeePerStudent: 25000,
   customFees: [],
 };
