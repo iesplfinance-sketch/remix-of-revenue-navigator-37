@@ -68,27 +68,41 @@ interface HeaderMetricsProps {
   schoolRevenue: number;
   hostelRevenue: number;
   totalStudents: number;
+  projectedStudents: number;
   hostelStudents: number;
   annualFeeRevenue: number;
   dcpRevenue: number;
   grandTotalRevenue: number;
   newAdmissionFeeRevenue: number;
+  currentDiscountAmount: number;
+  projectedDiscountAmount: number;
+  lastYearDiscountPercent: number;
+  projectedDiscountPercent: number;
 }
 
 export function HeaderMetrics({
   schoolRevenue,
   hostelRevenue,
   totalStudents,
+  projectedStudents,
   hostelStudents,
   annualFeeRevenue,
   dcpRevenue,
   grandTotalRevenue,
   newAdmissionFeeRevenue,
+  currentDiscountAmount,
+  projectedDiscountAmount,
+  lastYearDiscountPercent,
+  projectedDiscountPercent,
 }: HeaderMetricsProps) {
+  const studentChange = projectedStudents - totalStudents;
+  const studentChangePercent = totalStudents > 0 ? (studentChange / totalStudents) * 100 : 0;
+  const discountChange = projectedDiscountAmount - currentDiscountAmount;
+
   return (
     <div className="space-y-2">
       {/* Main Revenue Row */}
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2">
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2">
         <MetricCard
           title="Grand Total"
           value={formatCurrency(grandTotalRevenue)}
@@ -107,9 +121,15 @@ export function HeaderMetrics({
           subtitle="Residential Revenue"
         />
         <MetricCard
-          title="School Students"
+          title="Current Students"
           value={formatNumber(totalStudents)}
           subtitle="All Campuses"
+        />
+        <MetricCard
+          title="Forecasted Students"
+          value={formatNumber(projectedStudents)}
+          subtitle={`${studentChange >= 0 ? '+' : ''}${formatNumber(studentChange)} (${studentChangePercent >= 0 ? '+' : ''}${studentChangePercent.toFixed(1)}%)`}
+          variant="primary"
         />
         <MetricCard
           title="Hostel Students"
@@ -118,8 +138,8 @@ export function HeaderMetrics({
         />
       </div>
       
-      {/* Additional Fees Row */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+      {/* Additional Fees & Discount Row */}
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
         <MetricCard
           title="Admission Fees"
           value={formatCurrency(newAdmissionFeeRevenue)}
@@ -133,7 +153,19 @@ export function HeaderMetrics({
         <MetricCard
           title="DCP Revenue"
           value={formatCurrency(dcpRevenue)}
-          subtitle="Development Charges"
+          subtitle="Digital Companion Pack"
+        />
+        <MetricCard
+          title="Last Year Discount"
+          value={formatCurrency(currentDiscountAmount)}
+          subtitle={`${lastYearDiscountPercent.toFixed(1)}% avg rate`}
+          variant="warning"
+        />
+        <MetricCard
+          title="Projected Discount"
+          value={formatCurrency(projectedDiscountAmount)}
+          subtitle={`${projectedDiscountPercent.toFixed(1)}% avg rate | Δ ${discountChange >= 0 ? '+' : ''}${formatCurrency(discountChange)}`}
+          variant="warning"
         />
       </div>
     </div>

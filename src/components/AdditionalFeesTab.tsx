@@ -223,20 +223,36 @@ export function AdditionalFeesTab({
       <div className="campus-card p-5">
         <h3 className="text-sm font-medium text-foreground mb-4 flex items-center gap-2">
           <DollarSign className="w-4 h-4 text-info" />
-          New Admission Fee (Per Student)
+          New Admission Fee Configuration
         </h3>
         <p className="text-xs text-muted-foreground mb-4">
           One-time fee charged to new students at the time of admission. This is applied only to new admission students, not renewals.
+          <span className="text-info font-medium"> Note: This fee is charged to all new students across school and hostel.</span>
         </p>
-        <div className="flex items-center gap-4">
-          <span className="text-muted-foreground text-sm">₨</span>
-          <Input
-            type="number"
-            value={newAdmissionFeePerStudent}
-            onChange={(e) => onUpdateGlobalSettings({ newAdmissionFeePerStudent: parseInt(e.target.value) || 0 })}
-            className="w-40 font-mono bg-surface-2 border-border text-right"
-          />
-          <span className="text-xs text-muted-foreground">per new student</span>
+        
+        <div className="space-y-4">
+          <div className="flex items-center justify-between p-4 bg-surface-2 rounded-lg">
+            <div>
+              <p className="text-sm font-medium text-foreground">Fee Per New Student</p>
+              <p className="text-xs text-muted-foreground">Applied at admission</p>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-muted-foreground text-sm">₨</span>
+              <Input
+                type="number"
+                value={newAdmissionFeePerStudent}
+                onChange={(e) => onUpdateGlobalSettings({ newAdmissionFeePerStudent: parseInt(e.target.value) || 0 })}
+                className="w-32 font-mono bg-surface-1 border-border text-right"
+              />
+            </div>
+          </div>
+
+          <div className="pt-3 border-t border-border">
+            <div className="flex justify-between text-sm">
+              <span className="text-muted-foreground">Total New Admission Fee Revenue</span>
+              <span className="font-mono text-info font-semibold">Calculated from new students projection</span>
+            </div>
+          </div>
         </div>
       </div>
 

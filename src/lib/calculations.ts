@@ -52,6 +52,7 @@ export interface TotalCalculation {
   schoolStudents: number;
   hostelStudents: number;
   totalStudents: number;
+  projectedSchoolStudents: number;
   schoolRevenue: number;
   hostelRevenue: number;
   totalRevenue: number;
@@ -64,6 +65,11 @@ export interface TotalCalculation {
   grandTotalRevenue: number;
   newAdmissionFeeRevenue: number;
   projectedNewStudents: number;
+  // Discount tracking
+  currentDiscountAmount: number;
+  projectedDiscountAmount: number;
+  lastYearDiscountPercent: number;
+  projectedDiscountPercent: number;
 }
 
 // Calculate revenue for a single campus
@@ -218,6 +224,8 @@ export function calculateTotals(
   let projectedNewStudents = 0;
   let schoolRevenue = 0;
   let currentSchoolRevenue = 0;
+  let currentGrossRevenue = 0;
+  let projectedGrossRevenue = 0;
 
   campuses.forEach(campus => {
     const calc = calculateCampusRevenue(campus, globalSettings);
@@ -226,7 +234,23 @@ export function calculateTotals(
     projectedNewStudents += calc.projectedNewStudents;
     schoolRevenue += calc.projectedNetRevenue;
     currentSchoolRevenue += calc.currentNetRevenue;
+    currentGrossRevenue += calc.currentGrossRevenue;
+    projectedGrossRevenue += calc.projectedGrossRevenue;
   });
+
+  // Calculate discount amounts
+  const currentDiscountAmount = currentGrossRevenue - currentSchoolRevenue;
+  const projectedDiscountAmount = projectedGrossRevenue - schoolRevenue;
+
+  // Calculate average discount percentages
+  let totalLastYearDiscount = 0;
+  let totalProjectedDiscount = 0;
+  campuses.forEach(campus => {
+    totalLastYearDiscount += campus.lastYearDiscount || 0;
+    totalProjectedDiscount += campus.discountRate;
+  });
+  const lastYearDiscountPercent = campuses.length > 0 ? totalLastYearDiscount / campuses.length : 0;
+  const projectedDiscountPercent = campuses.length > 0 ? totalProjectedDiscount / campuses.length : 0;
 
   let hostelStudents = 0;
   let hostelRevenue = 0;
@@ -255,7 +279,7 @@ export function calculateTotals(
   const annualFeeRevenue = (studentsWithAnnualFee * globalSettings.schoolAnnualFee) + (hostelStudents * globalSettings.hostelAnnualFee);
   // DCP only applies to school students, not hostels
   const dcpRevenue = projectedSchoolStudents * globalSettings.schoolDCP;
-  const newAdmissionFeeRevenue = projectedNewStudents * 25000; // New admission fee per student
+  const newAdmissionFeeRevenue = projectedNewStudents * (globalSettings.newAdmissionFeePerStudent || 25000);
   const tuitionRevenue = schoolRevenue + hostelRevenue;
   const grandTotalRevenue = tuitionRevenue + annualFeeRevenue + dcpRevenue + newAdmissionFeeRevenue;
 
@@ -263,6 +287,7 @@ export function calculateTotals(
     schoolStudents,
     hostelStudents,
     totalStudents,
+    projectedSchoolStudents,
     schoolRevenue,
     hostelRevenue,
     totalRevenue: tuitionRevenue,
@@ -274,6 +299,10 @@ export function calculateTotals(
     grandTotalRevenue,
     newAdmissionFeeRevenue,
     projectedNewStudents,
+    currentDiscountAmount,
+    projectedDiscountAmount,
+    lastYearDiscountPercent,
+    projectedDiscountPercent,
   };
 }
 
