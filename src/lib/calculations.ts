@@ -4,6 +4,7 @@ import { CampusData, HostelData, GlobalSettings } from '@/data/schoolData';
 export interface CampusCalculation {
   campusId: string;
   campusName: string;
+  shortName: string;
   currentRenewalStudents: number;
   currentNewStudents: number;
   currentTotalStudents: number;
@@ -130,6 +131,7 @@ export function calculateCampusRevenue(
   return {
     campusId: campus.id,
     campusName: campus.name,
+    shortName: campus.shortName,
     currentRenewalStudents,
     currentNewStudents,
     currentTotalStudents,
