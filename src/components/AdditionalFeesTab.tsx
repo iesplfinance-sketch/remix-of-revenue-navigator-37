@@ -1,7 +1,10 @@
-import { GlobalSettings } from '@/data/schoolData';
+import { useState } from 'react';
+import { GlobalSettings, CustomFee } from '@/data/schoolData';
 import { formatCurrency, formatNumber } from '@/lib/calculations';
 import { Input } from '@/components/ui/input';
-import { DollarSign, GraduationCap, Building } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { DollarSign, GraduationCap, Building, Plus, Trash2, Package } from 'lucide-react';
+import { Switch } from '@/components/ui/switch';
 
 interface AdditionalFeesTabProps {
   globalSettings: GlobalSettings;
@@ -16,11 +19,16 @@ export function AdditionalFeesTab({
   hostelStudents,
   onUpdateGlobalSettings 
 }: AdditionalFeesTabProps) {
+  const [newFeeName, setNewFeeName] = useState('');
+  const [newFeeAmount, setNewFeeAmount] = useState(0);
+
   // Safe defaults for fee values
   const schoolAnnualFee = globalSettings?.schoolAnnualFee ?? 25000;
   const hostelAnnualFee = globalSettings?.hostelAnnualFee ?? 15000;
   const schoolDCP = globalSettings?.schoolDCP ?? 10000;
   const hostelDCP = globalSettings?.hostelDCP ?? 5000;
+  const newAdmissionFeePerStudent = globalSettings?.newAdmissionFeePerStudent ?? 25000;
+  const customFees = globalSettings?.customFees ?? [];
 
   // Calculate totals
   const schoolAnnualTotal = schoolStudents * schoolAnnualFee;
@@ -31,16 +39,55 @@ export function AdditionalFeesTab({
   const hostelDCPTotal = hostelStudents * hostelDCP;
   const totalDCP = schoolDCPTotal + hostelDCPTotal;
 
-  const grandTotal = totalAnnualFee + totalDCP;
+  // Calculate custom fees totals
+  const totalCustomFees = customFees.reduce((sum, fee) => {
+    let feeTotal = 0;
+    if (fee.appliesToSchool) feeTotal += schoolStudents * fee.amountPerStudent;
+    if (fee.appliesToHostel) feeTotal += hostelStudents * fee.amountPerStudent;
+    return sum + feeTotal;
+  }, 0);
+
+  const grandTotal = totalAnnualFee + totalDCP + totalCustomFees;
+
+  const addCustomFee = () => {
+    if (!newFeeName.trim() || newFeeAmount <= 0) return;
+    
+    const newFee: CustomFee = {
+      id: `custom-${Date.now()}`,
+      name: newFeeName.trim(),
+      amountPerStudent: newFeeAmount,
+      appliesToSchool: true,
+      appliesToHostel: false,
+    };
+    
+    onUpdateGlobalSettings({
+      customFees: [...customFees, newFee]
+    });
+    
+    setNewFeeName('');
+    setNewFeeAmount(0);
+  };
+
+  const removeCustomFee = (feeId: string) => {
+    onUpdateGlobalSettings({
+      customFees: customFees.filter(f => f.id !== feeId)
+    });
+  };
+
+  const updateCustomFee = (feeId: string, updates: Partial<CustomFee>) => {
+    onUpdateGlobalSettings({
+      customFees: customFees.map(f => f.id === feeId ? { ...f, ...updates } : f)
+    });
+  };
 
   return (
     <div className="space-y-6 animate-fade-in">
       {/* Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <div className="campus-card p-5">
           <div className="flex items-center gap-2 mb-3">
             <DollarSign className="w-5 h-5 text-primary" />
-            <h3 className="text-sm font-medium text-foreground">Total Annual Fee Revenue</h3>
+            <h3 className="text-sm font-medium text-foreground">Annual Fee Revenue</h3>
           </div>
           <div className="font-mono text-2xl text-primary">{formatCurrency(totalAnnualFee)}</div>
           <div className="text-xs text-muted-foreground mt-1">
@@ -50,8 +97,8 @@ export function AdditionalFeesTab({
 
         <div className="campus-card p-5">
           <div className="flex items-center gap-2 mb-3">
-            <DollarSign className="w-5 h-5 text-warning" />
-            <h3 className="text-sm font-medium text-foreground">Total DCP Revenue</h3>
+            <Package className="w-5 h-5 text-warning" />
+            <h3 className="text-sm font-medium text-foreground">Digital Companion Pack</h3>
           </div>
           <div className="font-mono text-2xl text-warning">{formatCurrency(totalDCP)}</div>
           <div className="text-xs text-muted-foreground mt-1">
@@ -59,14 +106,25 @@ export function AdditionalFeesTab({
           </div>
         </div>
 
+        <div className="campus-card p-5">
+          <div className="flex items-center gap-2 mb-3">
+            <DollarSign className="w-5 h-5 text-info" />
+            <h3 className="text-sm font-medium text-foreground">Custom Fees</h3>
+          </div>
+          <div className="font-mono text-2xl text-info">{formatCurrency(totalCustomFees)}</div>
+          <div className="text-xs text-muted-foreground mt-1">
+            {customFees.length} custom fee(s) configured
+          </div>
+        </div>
+
         <div className="campus-card p-5 border-primary/30">
           <div className="flex items-center gap-2 mb-3">
             <DollarSign className="w-5 h-5 text-positive" />
-            <h3 className="text-sm font-medium text-foreground">Combined Additional Revenue</h3>
+            <h3 className="text-sm font-medium text-foreground">Combined Revenue</h3>
           </div>
           <div className="font-mono text-2xl text-positive">{formatCurrency(grandTotal)}</div>
           <div className="text-xs text-muted-foreground mt-1">
-            Annual Fee + DCP
+            All Additional Fees
           </div>
         </div>
       </div>
@@ -128,11 +186,11 @@ export function AdditionalFeesTab({
         {/* DCP Configuration */}
         <div className="campus-card p-5">
           <h3 className="text-sm font-medium text-foreground mb-4 flex items-center gap-2">
-            <Building className="w-4 h-4 text-warning" />
-            DCP (Development Charges) Configuration
+            <Package className="w-4 h-4 text-warning" />
+            DCP (Digital Companion Pack) Configuration
           </h3>
           <p className="text-xs text-muted-foreground mb-4">
-            DCP is a one-time development charge for infrastructure improvements, new facilities, and campus development projects.
+            DCP provides students with digital learning resources, educational software licenses, and technology support for enhanced learning.
           </p>
           
           <div className="space-y-4">
@@ -178,30 +236,169 @@ export function AdditionalFeesTab({
         </div>
       </div>
 
+      {/* New Admission Fee Configuration */}
+      <div className="campus-card p-5">
+        <h3 className="text-sm font-medium text-foreground mb-4 flex items-center gap-2">
+          <DollarSign className="w-4 h-4 text-info" />
+          New Admission Fee (Per Student)
+        </h3>
+        <p className="text-xs text-muted-foreground mb-4">
+          One-time fee charged to new students at the time of admission. This is applied only to new admission students, not renewals.
+        </p>
+        <div className="flex items-center gap-4">
+          <span className="text-muted-foreground text-sm">₨</span>
+          <Input
+            type="number"
+            value={newAdmissionFeePerStudent}
+            onChange={(e) => onUpdateGlobalSettings({ newAdmissionFeePerStudent: parseInt(e.target.value) || 0 })}
+            className="w-40 font-mono bg-surface-2 border-border text-right"
+          />
+          <span className="text-xs text-muted-foreground">per new student</span>
+        </div>
+      </div>
+
+      {/* Custom Fees Section */}
+      <div className="campus-card p-5">
+        <h3 className="text-sm font-medium text-foreground mb-4 flex items-center gap-2">
+          <Plus className="w-4 h-4 text-positive" />
+          Custom Fees
+        </h3>
+        <p className="text-xs text-muted-foreground mb-4">
+          Add additional fees like Stationery Charges, Lab Fees, Sports Fees, etc. These will be reflected in campus summaries and the main dashboard.
+        </p>
+
+        {/* Add New Fee Form */}
+        <div className="flex items-end gap-4 p-4 bg-surface-2 rounded-lg mb-4">
+          <div className="flex-1">
+            <label className="text-xs text-muted-foreground uppercase tracking-wide mb-2 block">Fee Name</label>
+            <Input
+              type="text"
+              value={newFeeName}
+              onChange={(e) => setNewFeeName(e.target.value)}
+              placeholder="e.g., Stationery Charges"
+              className="bg-surface-1 border-border"
+            />
+          </div>
+          <div className="w-40">
+            <label className="text-xs text-muted-foreground uppercase tracking-wide mb-2 block">Amount (₨)</label>
+            <Input
+              type="number"
+              value={newFeeAmount || ''}
+              onChange={(e) => setNewFeeAmount(parseInt(e.target.value) || 0)}
+              placeholder="0"
+              className="bg-surface-1 border-border text-right font-mono"
+            />
+          </div>
+          <Button 
+            onClick={addCustomFee}
+            disabled={!newFeeName.trim() || newFeeAmount <= 0}
+            className="gap-2"
+          >
+            <Plus className="w-4 h-4" />
+            Add Fee
+          </Button>
+        </div>
+
+        {/* Existing Custom Fees */}
+        {customFees.length > 0 ? (
+          <div className="space-y-3">
+            {customFees.map(fee => {
+              const schoolFeeTotal = fee.appliesToSchool ? schoolStudents * fee.amountPerStudent : 0;
+              const hostelFeeTotal = fee.appliesToHostel ? hostelStudents * fee.amountPerStudent : 0;
+              const feeTotal = schoolFeeTotal + hostelFeeTotal;
+
+              return (
+                <div key={fee.id} className="flex items-center gap-4 p-4 bg-surface-2 rounded-lg">
+                  <div className="flex-1">
+                    <Input
+                      type="text"
+                      value={fee.name}
+                      onChange={(e) => updateCustomFee(fee.id, { name: e.target.value })}
+                      className="bg-surface-1 border-border font-medium"
+                    />
+                  </div>
+                  <div className="w-32">
+                    <Input
+                      type="number"
+                      value={fee.amountPerStudent}
+                      onChange={(e) => updateCustomFee(fee.id, { amountPerStudent: parseInt(e.target.value) || 0 })}
+                      className="bg-surface-1 border-border text-right font-mono"
+                    />
+                  </div>
+                  <div className="flex items-center gap-2 text-xs">
+                    <span className="text-muted-foreground">School</span>
+                    <Switch
+                      checked={fee.appliesToSchool}
+                      onCheckedChange={(checked) => updateCustomFee(fee.id, { appliesToSchool: checked })}
+                    />
+                  </div>
+                  <div className="flex items-center gap-2 text-xs">
+                    <span className="text-muted-foreground">Hostel</span>
+                    <Switch
+                      checked={fee.appliesToHostel}
+                      onCheckedChange={(checked) => updateCustomFee(fee.id, { appliesToHostel: checked })}
+                    />
+                  </div>
+                  <div className="w-24 text-right">
+                    <span className="font-mono text-sm text-primary">{formatCurrency(feeTotal)}</span>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => removeCustomFee(fee.id)}
+                    className="text-negative hover:text-negative hover:bg-negative/10"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </Button>
+                </div>
+              );
+            })}
+          </div>
+        ) : (
+          <div className="text-center py-8 text-muted-foreground text-sm">
+            No custom fees configured. Add a fee above to get started.
+          </div>
+        )}
+      </div>
+
       {/* How It's Added to Total */}
       <div className="campus-card p-5">
         <h3 className="text-sm font-medium text-foreground mb-4">How Additional Fees Add to Total Revenue</h3>
         <div className="bg-surface-2 rounded-lg p-4 font-mono text-sm">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <p className="text-muted-foreground mb-2">School Students:</p>
+              <p className="text-muted-foreground mb-2">School Students ({formatNumber(schoolStudents)}):</p>
               <p className="text-foreground">
-                {formatNumber(schoolStudents)} × ₨{schoolAnnualFee.toLocaleString()} = <span className="text-primary">{formatCurrency(schoolAnnualTotal)}</span> (Annual)
+                Annual Fee: <span className="text-primary">{formatCurrency(schoolAnnualTotal)}</span>
               </p>
               <p className="text-foreground">
-                {formatNumber(schoolStudents)} × ₨{schoolDCP.toLocaleString()} = <span className="text-warning">{formatCurrency(schoolDCPTotal)}</span> (DCP)
+                DCP: <span className="text-warning">{formatCurrency(schoolDCPTotal)}</span>
               </p>
             </div>
             <div>
-              <p className="text-muted-foreground mb-2">Hostel Students:</p>
+              <p className="text-muted-foreground mb-2">Hostel Students ({formatNumber(hostelStudents)}):</p>
               <p className="text-foreground">
-                {formatNumber(hostelStudents)} × ₨{hostelAnnualFee.toLocaleString()} = <span className="text-primary">{formatCurrency(hostelAnnualTotal)}</span> (Annual)
+                Annual Fee: <span className="text-primary">{formatCurrency(hostelAnnualTotal)}</span>
               </p>
               <p className="text-foreground">
-                {formatNumber(hostelStudents)} × ₨{hostelDCP.toLocaleString()} = <span className="text-warning">{formatCurrency(hostelDCPTotal)}</span> (DCP)
+                DCP: <span className="text-warning">{formatCurrency(hostelDCPTotal)}</span>
               </p>
             </div>
           </div>
+          {customFees.length > 0 && (
+            <div className="mt-4 pt-4 border-t border-border">
+              <p className="text-muted-foreground mb-2">Custom Fees:</p>
+              {customFees.map(fee => {
+                const schoolFeeTotal = fee.appliesToSchool ? schoolStudents * fee.amountPerStudent : 0;
+                const hostelFeeTotal = fee.appliesToHostel ? hostelStudents * fee.amountPerStudent : 0;
+                return (
+                  <p key={fee.id} className="text-foreground">
+                    {fee.name}: <span className="text-info">{formatCurrency(schoolFeeTotal + hostelFeeTotal)}</span>
+                  </p>
+                );
+              })}
+            </div>
+          )}
           <div className="mt-4 pt-4 border-t border-border">
             <p className="text-positive font-semibold">
               Total Additional Revenue = {formatCurrency(grandTotal)}

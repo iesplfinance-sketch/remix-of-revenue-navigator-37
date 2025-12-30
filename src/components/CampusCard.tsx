@@ -57,7 +57,7 @@ export function CampusCard({ campus, calculation, globalSettings, onUpdate, isEx
 
   // Calculate current grand total for comparison (including hostel if applicable)
   const calculateCurrentGrandTotal = () => {
-    const discountRate = campus.discountRate / 100;
+    const lastYearDiscountRate = campus.lastYearDiscount / 100;
     let currentTotalStudents = 0;
     let currentNewStudents = 0;
     let currentTuitionRevenue = 0;
@@ -68,8 +68,8 @@ export function CampusCard({ campus, calculation, globalSettings, onUpdate, isEx
       currentNewStudents += cls.newAdmissionCount;
     });
 
-    const tuitionNet = currentTuitionRevenue * (1 - discountRate);
-    const newAdmissionFees = currentNewStudents * 25000;
+    const tuitionNet = currentTuitionRevenue * (1 - lastYearDiscountRate);
+    const newAdmissionFees = currentNewStudents * (globalSettings.newAdmissionFeePerStudent || 25000);
     const annualFees = campus.annualFeeApplicable ? currentTotalStudents * globalSettings.schoolAnnualFee : 0;
     const dcp = currentTotalStudents * globalSettings.schoolDCP;
     
@@ -517,7 +517,7 @@ export function CampusCard({ campus, calculation, globalSettings, onUpdate, isEx
                             </td>
                           </tr>
                           <tr className="border-b border-border/50">
-                            <td className="py-2 pl-2 text-muted-foreground">DCP (All Students)</td>
+                            <td className="py-2 pl-2 text-muted-foreground">Digital Companion Pack (All Students)</td>
                             <td className="text-right py-2 font-mono bg-muted/10">{formatCurrency(currentDCP)}</td>
                             <td className="text-right py-2 font-mono bg-primary/5">{formatCurrency(projectedDCP)}</td>
                             <td className={`text-right py-2 font-mono ${dcpDelta >= 0 ? 'text-positive' : 'text-negative'}`}>
