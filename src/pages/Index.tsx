@@ -185,7 +185,7 @@ const Index = () => {
             </div>
 
             {/* Calculation Breakdown Table */}
-            <CalculationBreakdown campuses={campuses} calculations={campusCalculations} globalSettings={globalSettings} />
+            <CalculationBreakdown campuses={campuses} calculations={campusCalculations} globalSettings={globalSettings} hostels={hostels} />
 
             {/* Fee Calculation Explainer */}
             <FeeExplainer globalFeeHike={globalSettings.globalFeeHike} globalStudentGrowth={globalSettings.globalStudentGrowth} globalDiscount={globalSettings.globalDiscount} />

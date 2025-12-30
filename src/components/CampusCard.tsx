@@ -76,12 +76,12 @@ export function CampusCard({ campus, calculation, globalSettings, onUpdate, onUp
     });
 
     const tuitionNet = currentTuitionRevenue * (1 - lastYearDiscountRate);
-    const newAdmissionFees = currentNewStudents * (globalSettings.newAdmissionFeePerStudent || 25000);
-    const annualFees = campus.annualFeeApplicable ? currentTotalStudents * globalSettings.schoolAnnualFee : 0;
-    const dcp = currentTotalStudents * globalSettings.schoolDCP;
+    const newAdmissionFees = currentNewStudents * (globalSettings.lastYearNewAdmissionFee || globalSettings.newAdmissionFeePerStudent || 25000);
+    const annualFees = campus.annualFeeApplicable ? currentTotalStudents * (globalSettings.lastYearSchoolAnnualFee || globalSettings.schoolAnnualFee) : 0;
+    const dcp = currentTotalStudents * (globalSettings.lastYearSchoolDCP || globalSettings.schoolDCP);
     
-    // Add hostel revenue if this campus has a hostel
-    const hostelRevenue = hostel ? hostel.currentOccupancy * hostel.feePerStudent : 0;
+    // Add hostel revenue if this campus has a hostel - use last year fee
+    const hostelRevenue = hostel ? hostel.currentOccupancy * (hostel.lastYearFeePerStudent || hostel.feePerStudent) : 0;
 
     return tuitionNet + newAdmissionFees + annualFees + dcp + hostelRevenue;
   };
@@ -495,24 +495,24 @@ export function CampusCard({ campus, calculation, globalSettings, onUpdate, onUp
                       const discountDelta = projectedDiscountAmount - currentDiscountAmount;
 
                       // New Admission Fees (one-time, only for new students)
-                      const newAdmFeePerStudent = 25000; // Placeholder - this could be a global setting
-                      const currentNewAdmissionFees = currentNewStudents * newAdmFeePerStudent;
-                      const projectedNewAdmissionFees = projectedNewStudents * newAdmFeePerStudent;
+                      const currentNewAdmissionFees = currentNewStudents * (globalSettings.lastYearNewAdmissionFee || globalSettings.newAdmissionFeePerStudent || 25000);
+                      const projectedNewAdmissionFees = projectedNewStudents * (globalSettings.newAdmissionFeePerStudent || 25000);
 
-                      // Annual Fees
-                      const currentAnnualFees = currentTotalStudents * globalSettings.schoolAnnualFee;
+                      // Annual Fees - use last year values for current
+                      const currentAnnualFees = currentTotalStudents * (globalSettings.lastYearSchoolAnnualFee || globalSettings.schoolAnnualFee);
                       const projectedAnnualFees = projectedTotalStudents * globalSettings.schoolAnnualFee;
 
-                      // DCP
-                      const currentDCP = currentTotalStudents * globalSettings.schoolDCP;
+                      // DCP - use last year values for current
+                      const currentDCP = currentTotalStudents * (globalSettings.lastYearSchoolDCP || globalSettings.schoolDCP);
                       const projectedDCP = projectedTotalStudents * globalSettings.schoolDCP;
 
-                      // Hostel Revenue (if applicable)
-                      const hostelRevenue = hostel ? hostel.currentOccupancy * hostel.feePerStudent : 0;
+                      // Hostel Revenue (if applicable) - use last year fee for current
+                      const currentHostelRevenue = hostel ? hostel.currentOccupancy * (hostel.lastYearFeePerStudent || hostel.feePerStudent) : 0;
+                      const projectedHostelRevenue = hostel ? hostel.currentOccupancy * hostel.feePerStudent : 0;
 
                       // Grand Total (including hostel)
-                      const currentGrandTotal = currentTuitionSubtotal + currentNewAdmissionFees + currentAnnualFees + currentDCP + hostelRevenue;
-                      const projectedGrandTotal = projectedTuitionSubtotal + projectedNewAdmissionFees + projectedAnnualFees + projectedDCP + hostelRevenue;
+                      const currentGrandTotal = currentTuitionSubtotal + currentNewAdmissionFees + currentAnnualFees + currentDCP + currentHostelRevenue;
+                      const projectedGrandTotal = projectedTuitionSubtotal + projectedNewAdmissionFees + projectedAnnualFees + projectedDCP + projectedHostelRevenue;
 
                       const renewalDelta = projectedRenewalNet - currentRenewalNet;
                       const newAdmDelta = projectedNewAdmNet - currentNewAdmNet;
@@ -531,9 +531,10 @@ export function CampusCard({ campus, calculation, globalSettings, onUpdate, onUp
                       const projectedTuitionNet = projectedTuitionGross - projectedDiscountAmount;
                       
                       // Recalculate Grand Total correctly: Tuition Net + Other Fees
-                      const currentGrandTotalCorrect = currentTuitionNet + currentNewAdmissionFees + currentAnnualFees + currentDCP + hostelRevenue;
-                      const projectedGrandTotalCorrect = projectedTuitionNet + projectedNewAdmissionFees + projectedAnnualFees + projectedDCP + hostelRevenue;
+                      const currentGrandTotalCorrect = currentTuitionNet + currentNewAdmissionFees + currentAnnualFees + currentDCP + currentHostelRevenue;
+                      const projectedGrandTotalCorrect = projectedTuitionNet + projectedNewAdmissionFees + projectedAnnualFees + projectedDCP + projectedHostelRevenue;
                       const grandTotalDeltaCorrect = projectedGrandTotalCorrect - currentGrandTotalCorrect;
+                      const hostelDelta = projectedHostelRevenue - currentHostelRevenue;
 
                       return (
                         <>
@@ -603,9 +604,11 @@ export function CampusCard({ campus, calculation, globalSettings, onUpdate, onUp
                           {hostel && (
                             <tr className="border-b border-border/50">
                               <td className="py-2 pl-2 text-muted-foreground">Hostel Fees ({hostel.currentOccupancy} students)</td>
-                              <td className="text-right py-2 font-mono bg-muted/10">{formatCurrency(hostelRevenue)}</td>
-                              <td className="text-right py-2 font-mono bg-primary/5">{formatCurrency(hostelRevenue)}</td>
-                              <td className="text-right py-2 font-mono text-muted-foreground">₨0</td>
+                              <td className="text-right py-2 font-mono bg-muted/10">{formatCurrency(currentHostelRevenue)}</td>
+                              <td className="text-right py-2 font-mono bg-primary/5">{formatCurrency(projectedHostelRevenue)}</td>
+                              <td className={`text-right py-2 font-mono ${hostelDelta >= 0 ? 'text-positive' : 'text-negative'}`}>
+                                {hostelDelta >= 0 ? '+' : ''}{formatCurrency(hostelDelta)}
+                              </td>
                             </tr>
                           )}
                           <tr className="bg-primary/10 font-bold">

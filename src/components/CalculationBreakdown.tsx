@@ -1,12 +1,13 @@
 import { useState } from 'react';
 import { ChevronDown, ChevronRight, Calculator } from 'lucide-react';
-import { CampusData, GlobalSettings } from '@/data/schoolData';
+import { CampusData, GlobalSettings, HostelData } from '@/data/schoolData';
 import { CampusCalculation, formatCurrency, formatNumber } from '@/lib/calculations';
 
 interface CalculationBreakdownProps {
   campuses: CampusData[];
   calculations: CampusCalculation[];
   globalSettings: GlobalSettings;
+  hostels?: HostelData[];
 }
 
 interface CampusBreakdownRowProps {
@@ -66,17 +67,16 @@ function CampusBreakdownRow({ campus, calculation, globalSettings }: CampusBreak
   const projectedDiscountAmount = projectedTuitionGross * forecastDiscountRate;
   const projectedTuitionNet = projectedTuitionGross - projectedDiscountAmount;
 
-  // New Admission Fees (one-time, only for new students)
-  const newAdmFeePerStudent = 25000;
-  const currentNewAdmissionFees = currentNewStudents * newAdmFeePerStudent;
-  const projectedNewAdmissionFees = projectedNewStudents * newAdmFeePerStudent;
+  // New Admission Fees (one-time, only for new students) - use last year fee for current
+  const currentNewAdmissionFees = currentNewStudents * (globalSettings.lastYearNewAdmissionFee || globalSettings.newAdmissionFeePerStudent || 25000);
+  const projectedNewAdmissionFees = projectedNewStudents * (globalSettings.newAdmissionFeePerStudent || 25000);
 
-  // Annual Fees (only if applicable for this campus)
-  const currentAnnualFees = campus.annualFeeApplicable ? currentTotalStudents * globalSettings.schoolAnnualFee : 0;
+  // Annual Fees (only if applicable for this campus) - use last year fee for current
+  const currentAnnualFees = campus.annualFeeApplicable ? currentTotalStudents * (globalSettings.lastYearSchoolAnnualFee || globalSettings.schoolAnnualFee) : 0;
   const projectedAnnualFees = campus.annualFeeApplicable ? projectedTotalStudents * globalSettings.schoolAnnualFee : 0;
 
-  // DCP
-  const currentDCP = currentTotalStudents * globalSettings.schoolDCP;
+  // DCP - use last year fee for current
+  const currentDCP = currentTotalStudents * (globalSettings.lastYearSchoolDCP || globalSettings.schoolDCP);
   const projectedDCP = projectedTotalStudents * globalSettings.schoolDCP;
 
   // Grand Total = Tuition Net (after discount) + Other Fees
@@ -220,7 +220,7 @@ function CampusBreakdownRow({ campus, calculation, globalSettings }: CampusBreak
   );
 }
 
-export function CalculationBreakdown({ campuses, calculations, globalSettings }: CalculationBreakdownProps) {
+export function CalculationBreakdown({ campuses, calculations, globalSettings, hostels = [] }: CalculationBreakdownProps) {
   // Calculate grand totals matching the same logic as CampusBreakdownRow
   const calculateCampusGrandTotal = (campus: CampusData) => {
     const lastYearDiscountRate = campus.lastYearDiscount / 100;
@@ -267,84 +267,261 @@ export function CalculationBreakdown({ campuses, calculations, globalSettings }:
     const projectedDiscountAmount = projectedTuitionGross * forecastDiscountRate;
     const projectedTuitionNet = projectedTuitionGross - projectedDiscountAmount;
 
-    const newAdmFeePerStudent = 25000;
-    const currentNewAdmissionFees = currentNewStudents * newAdmFeePerStudent;
-    const projectedNewAdmissionFees = projectedNewStudents * newAdmFeePerStudent;
+    const currentNewAdmissionFees = currentNewStudents * (globalSettings.lastYearNewAdmissionFee || globalSettings.newAdmissionFeePerStudent || 25000);
+    const projectedNewAdmissionFees = projectedNewStudents * (globalSettings.newAdmissionFeePerStudent || 25000);
 
-    const currentAnnualFees = campus.annualFeeApplicable ? currentTotalStudents * globalSettings.schoolAnnualFee : 0;
+    const currentAnnualFees = campus.annualFeeApplicable ? currentTotalStudents * (globalSettings.lastYearSchoolAnnualFee || globalSettings.schoolAnnualFee) : 0;
     const projectedAnnualFees = campus.annualFeeApplicable ? projectedTotalStudents * globalSettings.schoolAnnualFee : 0;
 
-    const currentDCP = currentTotalStudents * globalSettings.schoolDCP;
+    const currentDCP = currentTotalStudents * (globalSettings.lastYearSchoolDCP || globalSettings.schoolDCP);
     const projectedDCP = projectedTotalStudents * globalSettings.schoolDCP;
 
     const currentGrandTotal = currentTuitionNet + currentNewAdmissionFees + currentAnnualFees + currentDCP;
     const projectedGrandTotal = projectedTuitionNet + projectedNewAdmissionFees + projectedAnnualFees + projectedDCP;
 
-    return { currentTotalStudents, projectedTotalStudents, currentGrandTotal, projectedGrandTotal };
+    return { 
+      currentTotalStudents, 
+      projectedTotalStudents, 
+      currentGrandTotal, 
+      projectedGrandTotal,
+      currentRenewalRevenueGross,
+      currentNewAdmRevenueGross,
+      currentTuitionGross,
+      currentDiscountAmount,
+      currentTuitionNet,
+      currentNewAdmissionFees,
+      currentAnnualFees,
+      currentDCP,
+      projectedRenewalRevenueGross,
+      projectedNewAdmRevenueGross,
+      projectedTuitionGross,
+      projectedDiscountAmount,
+      projectedTuitionNet,
+      projectedNewAdmissionFees,
+      projectedAnnualFees,
+      projectedDCP,
+      currentNewStudents,
+      projectedNewStudents,
+    };
   };
 
-  const grandTotals = campuses.reduce(
-    (acc, campus) => {
-      const campusTotals = calculateCampusGrandTotal(campus);
+  // Calculate hostel totals
+  const hostelTotals = hostels.reduce(
+    (acc, hostel) => {
+      const currentRevenue = hostel.currentOccupancy * (hostel.lastYearFeePerStudent || hostel.feePerStudent);
+      const projectedRevenue = hostel.currentOccupancy * hostel.feePerStudent;
       return {
-        currentStudents: acc.currentStudents + campusTotals.currentTotalStudents,
-        projectedStudents: acc.projectedStudents + campusTotals.projectedTotalStudents,
-        currentRevenue: acc.currentRevenue + campusTotals.currentGrandTotal,
-        projectedRevenue: acc.projectedRevenue + campusTotals.projectedGrandTotal,
+        students: acc.students + hostel.currentOccupancy,
+        currentRevenue: acc.currentRevenue + currentRevenue,
+        projectedRevenue: acc.projectedRevenue + projectedRevenue,
       };
     },
-    { currentStudents: 0, projectedStudents: 0, currentRevenue: 0, projectedRevenue: 0 }
+    { students: 0, currentRevenue: 0, projectedRevenue: 0 }
   );
+
+  // Calculate combined fee breakdown across all campuses
+  const combinedBreakdown = campuses.reduce(
+    (acc, campus) => {
+      const details = calculateCampusGrandTotal(campus);
+      return {
+        currentRenewalRevenue: acc.currentRenewalRevenue + details.currentRenewalRevenueGross,
+        currentNewAdmRevenue: acc.currentNewAdmRevenue + details.currentNewAdmRevenueGross,
+        currentTuitionGross: acc.currentTuitionGross + details.currentTuitionGross,
+        currentDiscountAmount: acc.currentDiscountAmount + details.currentDiscountAmount,
+        currentNewAdmissionFees: acc.currentNewAdmissionFees + details.currentNewAdmissionFees,
+        currentAnnualFees: acc.currentAnnualFees + details.currentAnnualFees,
+        currentDCP: acc.currentDCP + details.currentDCP,
+        projectedRenewalRevenue: acc.projectedRenewalRevenue + details.projectedRenewalRevenueGross,
+        projectedNewAdmRevenue: acc.projectedNewAdmRevenue + details.projectedNewAdmRevenueGross,
+        projectedTuitionGross: acc.projectedTuitionGross + details.projectedTuitionGross,
+        projectedDiscountAmount: acc.projectedDiscountAmount + details.projectedDiscountAmount,
+        projectedNewAdmissionFees: acc.projectedNewAdmissionFees + details.projectedNewAdmissionFees,
+        projectedAnnualFees: acc.projectedAnnualFees + details.projectedAnnualFees,
+        projectedDCP: acc.projectedDCP + details.projectedDCP,
+        currentStudents: acc.currentStudents + details.currentTotalStudents,
+        projectedStudents: acc.projectedStudents + details.projectedTotalStudents,
+        currentGrandTotal: acc.currentGrandTotal + details.currentGrandTotal,
+        projectedGrandTotal: acc.projectedGrandTotal + details.projectedGrandTotal,
+      };
+    },
+    {
+      currentRenewalRevenue: 0, currentNewAdmRevenue: 0, currentTuitionGross: 0, currentDiscountAmount: 0,
+      currentNewAdmissionFees: 0, currentAnnualFees: 0, currentDCP: 0,
+      projectedRenewalRevenue: 0, projectedNewAdmRevenue: 0, projectedTuitionGross: 0, projectedDiscountAmount: 0,
+      projectedNewAdmissionFees: 0, projectedAnnualFees: 0, projectedDCP: 0,
+      currentStudents: 0, projectedStudents: 0, currentGrandTotal: 0, projectedGrandTotal: 0,
+    }
+  );
+
+  // Add hostel to grand totals
+  const grandTotals = {
+    currentStudents: combinedBreakdown.currentStudents,
+    projectedStudents: combinedBreakdown.projectedStudents,
+    currentRevenue: combinedBreakdown.currentGrandTotal + hostelTotals.currentRevenue,
+    projectedRevenue: combinedBreakdown.projectedGrandTotal + hostelTotals.projectedRevenue,
+  };
 
   const revenueChange = grandTotals.projectedRevenue - grandTotals.currentRevenue;
   const changePercent = grandTotals.currentRevenue > 0 ? (revenueChange / grandTotals.currentRevenue) * 100 : 0;
 
+  // Calculate average discount rates
+  const avgLastYearDiscount = campuses.length > 0 
+    ? campuses.reduce((sum, c) => sum + c.lastYearDiscount, 0) / campuses.length 
+    : 0;
+  const avgForecastDiscount = campuses.length > 0 
+    ? campuses.reduce((sum, c) => sum + c.discountRate, 0) / campuses.length 
+    : 0;
+
   return (
-    <div className="campus-card overflow-hidden">
-      <div className="p-4 border-b border-border">
-        <h3 className="text-sm font-medium text-foreground flex items-center gap-2">
-          <Calculator className="w-4 h-4 text-primary" />
-          Detailed Calculation Breakdown
-        </h3>
-        <p className="text-xs text-muted-foreground mt-1">
-          Click on any campus to expand and see the fee summary breakdown
-        </p>
+    <div className="space-y-6">
+      {/* Revenue Summary Table */}
+      <div className="campus-card overflow-hidden">
+        <div className="p-4 border-b border-border">
+          <h3 className="text-sm font-medium text-foreground uppercase tracking-wide">Revenue Summary</h3>
+        </div>
+        <div className="overflow-x-auto">
+          <table className="w-full text-xs">
+            <thead>
+              <tr className="border-b border-border">
+                <th className="text-left py-2 px-4 font-medium text-muted-foreground">Fee Category</th>
+                <th className="text-right py-2 px-4 font-medium bg-muted/30">Session 25-26</th>
+                <th className="text-right py-2 px-4 font-medium bg-primary/10">Forecast 26-27</th>
+                <th className="text-right py-2 px-4 font-medium">Delta</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr className="border-b border-border/50">
+                <td className="py-2 px-4 text-muted-foreground">Tuition - Renewal Students</td>
+                <td className="text-right py-2 px-4 font-mono bg-muted/10">{formatCurrency(combinedBreakdown.currentRenewalRevenue)}</td>
+                <td className="text-right py-2 px-4 font-mono bg-primary/5">{formatCurrency(combinedBreakdown.projectedRenewalRevenue)}</td>
+                <td className={`text-right py-2 px-4 font-mono ${combinedBreakdown.projectedRenewalRevenue - combinedBreakdown.currentRenewalRevenue >= 0 ? 'text-positive' : 'text-negative'}`}>
+                  {combinedBreakdown.projectedRenewalRevenue - combinedBreakdown.currentRenewalRevenue >= 0 ? '+' : ''}{formatCurrency(combinedBreakdown.projectedRenewalRevenue - combinedBreakdown.currentRenewalRevenue)}
+                </td>
+              </tr>
+              <tr className="border-b border-border/50">
+                <td className="py-2 px-4 text-muted-foreground">Tuition - New Admission Students</td>
+                <td className="text-right py-2 px-4 font-mono bg-muted/10">{formatCurrency(combinedBreakdown.currentNewAdmRevenue)}</td>
+                <td className="text-right py-2 px-4 font-mono bg-primary/5">{formatCurrency(combinedBreakdown.projectedNewAdmRevenue)}</td>
+                <td className={`text-right py-2 px-4 font-mono ${combinedBreakdown.projectedNewAdmRevenue - combinedBreakdown.currentNewAdmRevenue >= 0 ? 'text-positive' : 'text-negative'}`}>
+                  {combinedBreakdown.projectedNewAdmRevenue - combinedBreakdown.currentNewAdmRevenue >= 0 ? '+' : ''}{formatCurrency(combinedBreakdown.projectedNewAdmRevenue - combinedBreakdown.currentNewAdmRevenue)}
+                </td>
+              </tr>
+              <tr className="border-b border-border bg-muted/20">
+                <td className="py-2 px-4 font-semibold">Tuition Fees Subtotal</td>
+                <td className="text-right py-2 px-4 font-mono font-semibold">{formatCurrency(combinedBreakdown.currentTuitionGross)}</td>
+                <td className="text-right py-2 px-4 font-mono font-semibold">{formatCurrency(combinedBreakdown.projectedTuitionGross)}</td>
+                <td className={`text-right py-2 px-4 font-mono font-semibold ${combinedBreakdown.projectedTuitionGross - combinedBreakdown.currentTuitionGross >= 0 ? 'text-positive' : 'text-negative'}`}>
+                  {combinedBreakdown.projectedTuitionGross - combinedBreakdown.currentTuitionGross >= 0 ? '+' : ''}{formatCurrency(combinedBreakdown.projectedTuitionGross - combinedBreakdown.currentTuitionGross)}
+                </td>
+              </tr>
+              <tr className="border-b border-border/50 bg-warning/5">
+                <td className="py-2 px-4 text-warning">
+                  Discount Applied ({avgLastYearDiscount.toFixed(0)}% last year → {avgForecastDiscount.toFixed(0)}% forecast)
+                </td>
+                <td className="text-right py-2 px-4 font-mono bg-muted/10 text-warning">
+                  -{formatCurrency(combinedBreakdown.currentDiscountAmount)}
+                </td>
+                <td className="text-right py-2 px-4 font-mono bg-primary/5 text-warning">
+                  -{formatCurrency(combinedBreakdown.projectedDiscountAmount)}
+                </td>
+                <td className={`text-right py-2 px-4 font-mono ${combinedBreakdown.projectedDiscountAmount - combinedBreakdown.currentDiscountAmount <= 0 ? 'text-positive' : 'text-negative'}`}>
+                  {combinedBreakdown.projectedDiscountAmount - combinedBreakdown.currentDiscountAmount <= 0 ? '-' : '+'}{formatCurrency(Math.abs(combinedBreakdown.projectedDiscountAmount - combinedBreakdown.currentDiscountAmount))}
+                </td>
+              </tr>
+              <tr className="border-b border-border/50">
+                <td className="py-2 px-4 text-muted-foreground">New Admission Fees (New Students Only)</td>
+                <td className="text-right py-2 px-4 font-mono bg-muted/10">{formatCurrency(combinedBreakdown.currentNewAdmissionFees)}</td>
+                <td className="text-right py-2 px-4 font-mono bg-primary/5">{formatCurrency(combinedBreakdown.projectedNewAdmissionFees)}</td>
+                <td className={`text-right py-2 px-4 font-mono ${combinedBreakdown.projectedNewAdmissionFees - combinedBreakdown.currentNewAdmissionFees >= 0 ? 'text-positive' : 'text-negative'}`}>
+                  {combinedBreakdown.projectedNewAdmissionFees - combinedBreakdown.currentNewAdmissionFees >= 0 ? '+' : ''}{formatCurrency(combinedBreakdown.projectedNewAdmissionFees - combinedBreakdown.currentNewAdmissionFees)}
+                </td>
+              </tr>
+              <tr className="border-b border-border/50">
+                <td className="py-2 px-4 text-muted-foreground">Annual Fees (All Students)</td>
+                <td className="text-right py-2 px-4 font-mono bg-muted/10">{formatCurrency(combinedBreakdown.currentAnnualFees)}</td>
+                <td className="text-right py-2 px-4 font-mono bg-primary/5">{formatCurrency(combinedBreakdown.projectedAnnualFees)}</td>
+                <td className={`text-right py-2 px-4 font-mono ${combinedBreakdown.projectedAnnualFees - combinedBreakdown.currentAnnualFees >= 0 ? 'text-positive' : 'text-negative'}`}>
+                  {combinedBreakdown.projectedAnnualFees - combinedBreakdown.currentAnnualFees >= 0 ? '+' : ''}{formatCurrency(combinedBreakdown.projectedAnnualFees - combinedBreakdown.currentAnnualFees)}
+                </td>
+              </tr>
+              <tr className="border-b border-border/50">
+                <td className="py-2 px-4 text-muted-foreground">Digital Companion Pack (All Students)</td>
+                <td className="text-right py-2 px-4 font-mono bg-muted/10">{formatCurrency(combinedBreakdown.currentDCP)}</td>
+                <td className="text-right py-2 px-4 font-mono bg-primary/5">{formatCurrency(combinedBreakdown.projectedDCP)}</td>
+                <td className={`text-right py-2 px-4 font-mono ${combinedBreakdown.projectedDCP - combinedBreakdown.currentDCP >= 0 ? 'text-positive' : 'text-negative'}`}>
+                  {combinedBreakdown.projectedDCP - combinedBreakdown.currentDCP >= 0 ? '+' : ''}{formatCurrency(combinedBreakdown.projectedDCP - combinedBreakdown.currentDCP)}
+                </td>
+              </tr>
+              {hostelTotals.students > 0 && (
+                <tr className="border-b border-border/50">
+                  <td className="py-2 px-4 text-muted-foreground">Hostel Fees ({hostelTotals.students} students)</td>
+                  <td className="text-right py-2 px-4 font-mono bg-muted/10">{formatCurrency(hostelTotals.currentRevenue)}</td>
+                  <td className="text-right py-2 px-4 font-mono bg-primary/5">{formatCurrency(hostelTotals.projectedRevenue)}</td>
+                  <td className={`text-right py-2 px-4 font-mono ${hostelTotals.projectedRevenue - hostelTotals.currentRevenue >= 0 ? 'text-positive' : 'text-negative'}`}>
+                    {hostelTotals.projectedRevenue - hostelTotals.currentRevenue >= 0 ? '+' : ''}{formatCurrency(hostelTotals.projectedRevenue - hostelTotals.currentRevenue)}
+                  </td>
+                </tr>
+              )}
+              <tr className="bg-primary/10 font-bold">
+                <td className="py-3 px-4 text-foreground">GRAND TOTAL</td>
+                <td className="text-right py-3 px-4 font-mono">{formatCurrency(grandTotals.currentRevenue)}</td>
+                <td className="text-right py-3 px-4 font-mono">{formatCurrency(grandTotals.projectedRevenue)}</td>
+                <td className={`text-right py-3 px-4 font-mono ${revenueChange >= 0 ? 'text-positive' : 'text-negative'}`}>
+                  {revenueChange >= 0 ? '+' : ''}{formatCurrency(revenueChange)}
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
       </div>
-      <div className="overflow-x-auto">
-        <table className="w-full text-sm">
-          <thead className="bg-surface-2">
-            <tr>
-              <th className="text-left py-3 px-4 text-xs uppercase tracking-wide text-muted-foreground font-medium">Campus</th>
-              <th className="text-right py-3 px-4 text-xs uppercase tracking-wide text-muted-foreground font-medium">Current Students</th>
-              <th className="text-right py-3 px-4 text-xs uppercase tracking-wide text-muted-foreground font-medium">Projected Students</th>
-              <th className="text-right py-3 px-4 text-xs uppercase tracking-wide text-muted-foreground font-medium">Current Grand Total</th>
-              <th className="text-right py-3 px-4 text-xs uppercase tracking-wide text-muted-foreground font-medium">Projected Grand Total</th>
-              <th className="text-right py-3 px-4 text-xs uppercase tracking-wide text-muted-foreground font-medium">Change</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-border/50">
-            {campuses.map((campus, index) => (
-              <CampusBreakdownRow
-                key={campus.id}
-                campus={campus}
-                calculation={calculations[index]}
-                globalSettings={globalSettings}
-              />
-            ))}
-          </tbody>
-          <tfoot className="bg-primary/10 border-t-2 border-primary">
-            <tr className="font-bold">
-              <td className="py-3 px-4 text-foreground">GRAND TOTAL</td>
-              <td className="text-right font-mono py-3 px-4">{formatNumber(grandTotals.currentStudents)}</td>
-              <td className="text-right font-mono py-3 px-4 text-primary">{formatNumber(grandTotals.projectedStudents)}</td>
-              <td className="text-right font-mono py-3 px-4">{formatCurrency(grandTotals.currentRevenue)}</td>
-              <td className="text-right font-mono py-3 px-4 text-primary">{formatCurrency(grandTotals.projectedRevenue)}</td>
-              <td className={`text-right font-mono py-3 px-4 ${revenueChange >= 0 ? 'text-positive' : 'text-negative'}`}>
-                {revenueChange >= 0 ? '+' : ''}{changePercent.toFixed(1)}%
-              </td>
-            </tr>
-          </tfoot>
-        </table>
+
+      {/* Detailed Campus Breakdown Table */}
+      <div className="campus-card overflow-hidden">
+        <div className="p-4 border-b border-border">
+          <h3 className="text-sm font-medium text-foreground flex items-center gap-2">
+            <Calculator className="w-4 h-4 text-primary" />
+            Detailed Calculation Breakdown
+          </h3>
+          <p className="text-xs text-muted-foreground mt-1">
+            Click on any campus to expand and see the fee summary breakdown
+          </p>
+        </div>
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead className="bg-surface-2">
+              <tr>
+                <th className="text-left py-3 px-4 text-xs uppercase tracking-wide text-muted-foreground font-medium">Campus</th>
+                <th className="text-right py-3 px-4 text-xs uppercase tracking-wide text-muted-foreground font-medium">Current Students</th>
+                <th className="text-right py-3 px-4 text-xs uppercase tracking-wide text-muted-foreground font-medium">Projected Students</th>
+                <th className="text-right py-3 px-4 text-xs uppercase tracking-wide text-muted-foreground font-medium">Current Grand Total</th>
+                <th className="text-right py-3 px-4 text-xs uppercase tracking-wide text-muted-foreground font-medium">Projected Grand Total</th>
+                <th className="text-right py-3 px-4 text-xs uppercase tracking-wide text-muted-foreground font-medium">Change</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-border/50">
+              {campuses.map((campus, index) => (
+                <CampusBreakdownRow
+                  key={campus.id}
+                  campus={campus}
+                  calculation={calculations[index]}
+                  globalSettings={globalSettings}
+                />
+              ))}
+            </tbody>
+            <tfoot className="bg-primary/10 border-t-2 border-primary">
+              <tr className="font-bold">
+                <td className="py-3 px-4 text-foreground">GRAND TOTAL</td>
+                <td className="text-right font-mono py-3 px-4">{formatNumber(grandTotals.currentStudents)}</td>
+                <td className="text-right font-mono py-3 px-4 text-primary">{formatNumber(grandTotals.projectedStudents)}</td>
+                <td className="text-right font-mono py-3 px-4">{formatCurrency(grandTotals.currentRevenue)}</td>
+                <td className="text-right font-mono py-3 px-4 text-primary">{formatCurrency(grandTotals.projectedRevenue)}</td>
+                <td className={`text-right font-mono py-3 px-4 ${revenueChange >= 0 ? 'text-positive' : 'text-negative'}`}>
+                  {revenueChange >= 0 ? '+' : ''}{changePercent.toFixed(1)}%
+                </td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
       </div>
     </div>
   );
