@@ -7,6 +7,7 @@ interface MetricCardProps {
   subtitle?: string;
   trend?: number;
   trendLabel?: string;
+  changePercent?: number;
   variant?: 'default' | 'primary' | 'positive' | 'warning';
 }
 
@@ -16,6 +17,7 @@ export function MetricCard({
   subtitle, 
   trend, 
   trendLabel,
+  changePercent,
   variant = 'default' 
 }: MetricCardProps) {
   const getTrendIcon = () => {
@@ -29,6 +31,20 @@ export function MetricCard({
     if (trend === undefined) return '';
     if (trend > 0) return 'text-positive';
     if (trend < 0) return 'text-negative';
+    return 'text-muted-foreground';
+  };
+
+  const getChangeIcon = () => {
+    if (changePercent === undefined) return null;
+    if (changePercent > 0) return <TrendingUp className="w-3 h-3" />;
+    if (changePercent < 0) return <TrendingDown className="w-3 h-3" />;
+    return <Minus className="w-3 h-3" />;
+  };
+
+  const getChangeColor = () => {
+    if (changePercent === undefined) return '';
+    if (changePercent > 0) return 'text-positive';
+    if (changePercent < 0) return 'text-negative';
     return 'text-muted-foreground';
   };
 
@@ -47,7 +63,15 @@ export function MetricCard({
 
   return (
     <div className={`metric-card ${getVariantStyles()}`}>
-      <div className="metric-label">{title}</div>
+      <div className="flex items-center justify-between">
+        <div className="metric-label">{title}</div>
+        {changePercent !== undefined && (
+          <div className={`flex items-center gap-1 text-[10px] font-medium px-1.5 py-0.5 rounded ${getChangeColor()} ${changePercent > 0 ? 'bg-positive/10' : changePercent < 0 ? 'bg-negative/10' : 'bg-muted'}`}>
+            {getChangeIcon()}
+            <span className="font-mono">{changePercent >= 0 ? '+' : ''}{changePercent.toFixed(1)}%</span>
+          </div>
+        )}
+      </div>
       <div className="metric-value text-foreground">{value}</div>
       {subtitle && (
         <div className="text-[10px] text-muted-foreground">{subtitle}</div>
@@ -78,6 +102,12 @@ interface HeaderMetricsProps {
   projectedDiscountAmount: number;
   lastYearDiscountPercent: number;
   projectedDiscountPercent: number;
+  currentSchoolRevenue?: number;
+  currentHostelRevenue?: number;
+  currentGrandTotal?: number;
+  currentAnnualFeeRevenue?: number;
+  currentDcpRevenue?: number;
+  currentAdmissionFeeRevenue?: number;
 }
 
 export function HeaderMetrics({
@@ -94,41 +124,55 @@ export function HeaderMetrics({
   projectedDiscountAmount,
   lastYearDiscountPercent,
   projectedDiscountPercent,
+  currentSchoolRevenue = 0,
+  currentHostelRevenue = 0,
+  currentGrandTotal = 0,
+  currentAnnualFeeRevenue = 0,
+  currentDcpRevenue = 0,
+  currentAdmissionFeeRevenue = 0,
 }: HeaderMetricsProps) {
   const studentChange = projectedStudents - totalStudents;
   const studentChangePercent = totalStudents > 0 ? (studentChange / totalStudents) * 100 : 0;
   const discountChange = projectedDiscountAmount - currentDiscountAmount;
 
+  // Calculate percentage changes for each metric
+  const grandTotalChangePercent = currentGrandTotal > 0 ? ((grandTotalRevenue - currentGrandTotal) / currentGrandTotal) * 100 : 0;
+  const schoolRevenueChangePercent = currentSchoolRevenue > 0 ? ((schoolRevenue - currentSchoolRevenue) / currentSchoolRevenue) * 100 : 0;
+  const hostelRevenueChangePercent = currentHostelRevenue > 0 ? ((hostelRevenue - currentHostelRevenue) / currentHostelRevenue) * 100 : 0;
+  const admissionFeeChangePercent = currentAdmissionFeeRevenue > 0 ? ((newAdmissionFeeRevenue - currentAdmissionFeeRevenue) / currentAdmissionFeeRevenue) * 100 : 0;
+  const annualFeeChangePercent = currentAnnualFeeRevenue > 0 ? ((annualFeeRevenue - currentAnnualFeeRevenue) / currentAnnualFeeRevenue) * 100 : 0;
+  const dcpChangePercent = currentDcpRevenue > 0 ? ((dcpRevenue - currentDcpRevenue) / currentDcpRevenue) * 100 : 0;
+  const discountChangePercent = currentDiscountAmount > 0 ? ((projectedDiscountAmount - currentDiscountAmount) / currentDiscountAmount) * 100 : 0;
+
   return (
     <div className="space-y-2">
       {/* Main Revenue Row */}
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2">
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2">
         <MetricCard
           title="Grand Total"
           value={formatCurrency(grandTotalRevenue)}
           subtitle="Tuition + Annual + DCP + Admission"
+          changePercent={grandTotalChangePercent}
           variant="positive"
         />
         <MetricCard
           title="School Revenue"
           value={formatCurrency(schoolRevenue)}
           subtitle="Projected Net Tuition"
+          changePercent={schoolRevenueChangePercent}
           variant="primary"
         />
         <MetricCard
           title="Hostel Revenue"
           value={formatCurrency(hostelRevenue)}
           subtitle="Residential Revenue"
-        />
-        <MetricCard
-          title="Current Students"
-          value={formatNumber(totalStudents)}
-          subtitle="All Campuses"
+          changePercent={hostelRevenueChangePercent}
         />
         <MetricCard
           title="Forecasted Students"
           value={formatNumber(projectedStudents)}
-          subtitle={`${studentChange >= 0 ? '+' : ''}${formatNumber(studentChange)} (${studentChangePercent >= 0 ? '+' : ''}${studentChangePercent.toFixed(1)}%)`}
+          subtitle={`${studentChange >= 0 ? '+' : ''}${formatNumber(studentChange)} from current`}
+          changePercent={studentChangePercent}
           variant="primary"
         />
         <MetricCard
@@ -144,16 +188,19 @@ export function HeaderMetrics({
           title="Admission Fees"
           value={formatCurrency(newAdmissionFeeRevenue)}
           subtitle="New Students Only"
+          changePercent={admissionFeeChangePercent}
         />
         <MetricCard
           title="Annual Fee"
           value={formatCurrency(annualFeeRevenue)}
           subtitle="All Students"
+          changePercent={annualFeeChangePercent}
         />
         <MetricCard
           title="DCP Revenue"
           value={formatCurrency(dcpRevenue)}
           subtitle="Digital Companion Pack"
+          changePercent={dcpChangePercent}
         />
         <MetricCard
           title="Last Year Discount"
@@ -165,6 +212,7 @@ export function HeaderMetrics({
           title="Projected Discount"
           value={formatCurrency(projectedDiscountAmount)}
           subtitle={`${projectedDiscountPercent.toFixed(1)}% avg rate | Δ ${discountChange >= 0 ? '+' : ''}${formatCurrency(discountChange)}`}
+          changePercent={discountChangePercent}
           variant="warning"
         />
       </div>
