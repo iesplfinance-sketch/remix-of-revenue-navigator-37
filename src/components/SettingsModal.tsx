@@ -40,6 +40,12 @@ export function SettingsModal({
   const campus = campuses.find(c => c.id === selectedCampus);
   const totalHostelStudents = hostels.reduce((sum, h) => sum + h.currentOccupancy, 0);
 
+  // Safe defaults for last year fees (in case old data doesn't have these fields)
+  const lastYearSchoolAnnualFee = globalSettings.lastYearSchoolAnnualFee ?? globalSettings.schoolAnnualFee ?? 25000;
+  const lastYearHostelAnnualFee = globalSettings.lastYearHostelAnnualFee ?? globalSettings.hostelAnnualFee ?? 15000;
+  const lastYearSchoolDCP = globalSettings.lastYearSchoolDCP ?? globalSettings.schoolDCP ?? 10000;
+  const lastYearNewAdmissionFee = globalSettings.lastYearNewAdmissionFee ?? globalSettings.newAdmissionFeePerStudent ?? 25000;
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       {/* Backdrop */}
@@ -364,7 +370,7 @@ export function SettingsModal({
                         <span className="text-muted-foreground text-sm">₨</span>
                         <Input
                           type="number"
-                          value={globalSettings.lastYearSchoolAnnualFee}
+                          value={lastYearSchoolAnnualFee}
                           onChange={(e) => onUpdateGlobalSettings({ lastYearSchoolAnnualFee: parseInt(e.target.value) || 0 })}
                           className="w-28 font-mono bg-surface-1 border-border text-right"
                         />
@@ -379,7 +385,7 @@ export function SettingsModal({
                         <span className="text-muted-foreground text-sm">₨</span>
                         <Input
                           type="number"
-                          value={globalSettings.lastYearHostelAnnualFee}
+                          value={lastYearHostelAnnualFee}
                           onChange={(e) => onUpdateGlobalSettings({ lastYearHostelAnnualFee: parseInt(e.target.value) || 0 })}
                           className="w-28 font-mono bg-surface-1 border-border text-right"
                         />
@@ -406,7 +412,7 @@ export function SettingsModal({
                       <span className="text-muted-foreground text-sm">₨</span>
                       <Input
                         type="number"
-                        value={globalSettings.lastYearSchoolDCP}
+                        value={lastYearSchoolDCP}
                         onChange={(e) => onUpdateGlobalSettings({ lastYearSchoolDCP: parseInt(e.target.value) || 0 })}
                         className="w-28 font-mono bg-surface-1 border-border text-right"
                       />
@@ -432,7 +438,7 @@ export function SettingsModal({
                       <span className="text-muted-foreground text-sm">₨</span>
                       <Input
                         type="number"
-                        value={globalSettings.lastYearNewAdmissionFee}
+                        value={lastYearNewAdmissionFee}
                         onChange={(e) => onUpdateGlobalSettings({ lastYearNewAdmissionFee: parseInt(e.target.value) || 0 })}
                         className="w-28 font-mono bg-surface-1 border-border text-right"
                       />
@@ -466,7 +472,7 @@ export function SettingsModal({
                               <span className="text-muted-foreground text-xs">₨</span>
                               <Input
                                 type="number"
-                                value={hostel.lastYearFeePerStudent}
+                                value={hostel.lastYearFeePerStudent ?? hostel.feePerStudent ?? 375000}
                                 onChange={(e) => onUpdateHostel(hostel.id, { lastYearFeePerStudent: parseInt(e.target.value) || 0 })}
                                 className="w-28 h-8 text-sm font-mono bg-surface-2 border-border text-right"
                               />
@@ -497,19 +503,19 @@ export function SettingsModal({
                     <div>
                       <p className="text-xs text-muted-foreground uppercase tracking-wide mb-2">Last Year (Session 25-26)</p>
                       <div className="space-y-1">
-                        <p className="text-foreground">School Annual: <span className="font-mono text-warning">{formatCurrency(globalSettings.lastYearSchoolAnnualFee)}</span></p>
-                        <p className="text-foreground">Hostel Annual: <span className="font-mono text-warning">{formatCurrency(globalSettings.lastYearHostelAnnualFee)}</span></p>
-                        <p className="text-foreground">School DCP: <span className="font-mono text-warning">{formatCurrency(globalSettings.lastYearSchoolDCP)}</span></p>
-                        <p className="text-foreground">Admission Fee: <span className="font-mono text-warning">{formatCurrency(globalSettings.lastYearNewAdmissionFee)}</span></p>
+                        <p className="text-foreground">School Annual: <span className="font-mono text-warning">{formatCurrency(lastYearSchoolAnnualFee)}</span></p>
+                        <p className="text-foreground">Hostel Annual: <span className="font-mono text-warning">{formatCurrency(lastYearHostelAnnualFee)}</span></p>
+                        <p className="text-foreground">School DCP: <span className="font-mono text-warning">{formatCurrency(lastYearSchoolDCP)}</span></p>
+                        <p className="text-foreground">Admission Fee: <span className="font-mono text-warning">{formatCurrency(lastYearNewAdmissionFee)}</span></p>
                       </div>
                     </div>
                     <div>
                       <p className="text-xs text-muted-foreground uppercase tracking-wide mb-2">Forecasted (Session 26-27)</p>
                       <div className="space-y-1">
-                        <p className="text-foreground">School Annual: <span className="font-mono text-primary">{formatCurrency(globalSettings.schoolAnnualFee)}</span></p>
-                        <p className="text-foreground">Hostel Annual: <span className="font-mono text-primary">{formatCurrency(globalSettings.hostelAnnualFee)}</span></p>
-                        <p className="text-foreground">School DCP: <span className="font-mono text-primary">{formatCurrency(globalSettings.schoolDCP)}</span></p>
-                        <p className="text-foreground">Admission Fee: <span className="font-mono text-primary">{formatCurrency(globalSettings.newAdmissionFeePerStudent)}</span></p>
+                        <p className="text-foreground">School Annual: <span className="font-mono text-primary">{formatCurrency(globalSettings.schoolAnnualFee ?? 25000)}</span></p>
+                        <p className="text-foreground">Hostel Annual: <span className="font-mono text-primary">{formatCurrency(globalSettings.hostelAnnualFee ?? 15000)}</span></p>
+                        <p className="text-foreground">School DCP: <span className="font-mono text-primary">{formatCurrency(globalSettings.schoolDCP ?? 10000)}</span></p>
+                        <p className="text-foreground">Admission Fee: <span className="font-mono text-primary">{formatCurrency(globalSettings.newAdmissionFeePerStudent ?? 25000)}</span></p>
                       </div>
                     </div>
                   </div>
