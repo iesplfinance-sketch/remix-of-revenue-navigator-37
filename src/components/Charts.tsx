@@ -62,9 +62,9 @@ interface TopCampusesChartProps {
 
 export function TopCampusesChart({ campuses }: TopCampusesChartProps) {
   const data = campuses.map(c => ({
-    name: c.campusName.split(' ').slice(0, 2).join(' '),
+    name: c.campusName,
     revenue: c.projectedNetRevenue,
-    shortName: c.campusName.split(' ')[0],
+    shortName: c.shortName,
   }));
 
   return (
