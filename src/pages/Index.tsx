@@ -104,10 +104,10 @@ const Index = () => {
             projectedDiscountPercent={totals.projectedDiscountPercent}
             currentSchoolRevenue={totals.currentSchoolRevenue}
             currentHostelRevenue={totals.currentHostelRevenue}
-            currentGrandTotal={totals.currentTotalRevenue + totals.annualFeeRevenue + totals.dcpRevenue + totals.newAdmissionFeeRevenue}
-            currentAnnualFeeRevenue={totals.annualFeeRevenue}
-            currentDcpRevenue={totals.dcpRevenue}
-            currentAdmissionFeeRevenue={totals.newAdmissionFeeRevenue}
+            currentGrandTotal={totals.currentGrandTotal}
+            currentAnnualFeeRevenue={totals.currentAnnualFeeRevenue}
+            currentDcpRevenue={totals.currentDcpRevenue}
+            currentAdmissionFeeRevenue={totals.currentNewAdmissionFeeRevenue}
           />
         </div>
       </header>

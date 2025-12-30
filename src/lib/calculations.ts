@@ -54,18 +54,24 @@ export interface TotalCalculation {
   hostelStudents: number;
   totalStudents: number;
   projectedSchoolStudents: number;
+  currentNewStudents: number;
   schoolRevenue: number;
   hostelRevenue: number;
   totalRevenue: number;
   currentSchoolRevenue: number;
   currentHostelRevenue: number;
   currentTotalRevenue: number;
-  // Additional fees
+  // Additional fees (projected)
   annualFeeRevenue: number;
   dcpRevenue: number;
   grandTotalRevenue: number;
   newAdmissionFeeRevenue: number;
   projectedNewStudents: number;
+  // Additional fees (current/last year)
+  currentAnnualFeeRevenue: number;
+  currentDcpRevenue: number;
+  currentNewAdmissionFeeRevenue: number;
+  currentGrandTotal: number;
   // Discount tracking
   currentDiscountAmount: number;
   projectedDiscountAmount: number;
@@ -240,6 +246,7 @@ export function calculateTotals(
   let currentSchoolStudents = 0;
   let projectedSchoolStudents = 0;
   let projectedNewStudents = 0;
+  let currentNewStudents = 0;
   let schoolRevenue = 0;
   let currentSchoolRevenue = 0;
   let currentGrossRevenue = 0;
@@ -250,6 +257,7 @@ export function calculateTotals(
     currentSchoolStudents += calc.currentTotalStudents;
     projectedSchoolStudents += calc.projectedTotalStudents;
     projectedNewStudents += calc.projectedNewStudents;
+    currentNewStudents += calc.currentNewStudents;
     schoolRevenue += calc.projectedNetRevenue;
     currentSchoolRevenue += calc.currentNetRevenue;
     currentGrossRevenue += calc.currentGrossRevenue;
@@ -285,9 +293,16 @@ export function calculateTotals(
   const schoolStudents = currentSchoolStudents;
   const totalStudents = schoolStudents;
 
-  // Calculate additional fees based on projected students for revenue
-  // Only include annual fee for campuses where annualFeeApplicable is true
-  const studentsWithAnnualFee = campuses.reduce((sum, campus) => {
+  // Calculate students with annual fee for both current and projected
+  const currentStudentsWithAnnualFee = campuses.reduce((sum, campus) => {
+    if (campus.annualFeeApplicable) {
+      const calc = calculateCampusRevenue(campus, globalSettings);
+      return sum + calc.currentTotalStudents;
+    }
+    return sum;
+  }, 0);
+  
+  const projectedStudentsWithAnnualFee = campuses.reduce((sum, campus) => {
     if (campus.annualFeeApplicable) {
       const calc = calculateCampusRevenue(campus, globalSettings);
       return sum + calc.projectedTotalStudents;
@@ -295,18 +310,27 @@ export function calculateTotals(
     return sum;
   }, 0);
   
-  const annualFeeRevenue = (studentsWithAnnualFee * globalSettings.schoolAnnualFee) + (hostelStudents * globalSettings.hostelAnnualFee);
-  // DCP only applies to school students, not hostels
+  // Projected additional fees (using forecasted fee rates)
+  const annualFeeRevenue = (projectedStudentsWithAnnualFee * globalSettings.schoolAnnualFee) + (hostelStudents * globalSettings.hostelAnnualFee);
   const dcpRevenue = projectedSchoolStudents * globalSettings.schoolDCP;
   const newAdmissionFeeRevenue = projectedNewStudents * (globalSettings.newAdmissionFeePerStudent || 25000);
   const tuitionRevenue = schoolRevenue + hostelRevenue;
   const grandTotalRevenue = tuitionRevenue + annualFeeRevenue + dcpRevenue + newAdmissionFeeRevenue;
+
+  // Current additional fees (using last year fee rates)
+  const currentAnnualFeeRevenue = (currentStudentsWithAnnualFee * (globalSettings.lastYearSchoolAnnualFee ?? globalSettings.schoolAnnualFee)) + 
+    (hostelStudents * (globalSettings.lastYearHostelAnnualFee ?? globalSettings.hostelAnnualFee));
+  const currentDcpRevenue = currentSchoolStudents * (globalSettings.lastYearSchoolDCP ?? globalSettings.schoolDCP);
+  const currentNewAdmissionFeeRevenue = currentNewStudents * (globalSettings.lastYearNewAdmissionFee ?? globalSettings.newAdmissionFeePerStudent ?? 25000);
+  const currentTuitionRevenue = currentSchoolRevenue + currentHostelRevenue;
+  const currentGrandTotal = currentTuitionRevenue + currentAnnualFeeRevenue + currentDcpRevenue + currentNewAdmissionFeeRevenue;
 
   return {
     schoolStudents,
     hostelStudents,
     totalStudents,
     projectedSchoolStudents,
+    currentNewStudents,
     schoolRevenue,
     hostelRevenue,
     totalRevenue: tuitionRevenue,
@@ -318,6 +342,10 @@ export function calculateTotals(
     grandTotalRevenue,
     newAdmissionFeeRevenue,
     projectedNewStudents,
+    currentAnnualFeeRevenue,
+    currentDcpRevenue,
+    currentNewAdmissionFeeRevenue,
+    currentGrandTotal,
     currentDiscountAmount,
     projectedDiscountAmount,
     lastYearDiscountPercent,
