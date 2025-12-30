@@ -478,30 +478,43 @@ export function CampusCard({ campus, calculation, globalSettings, onUpdate, isEx
                       const dcpDelta = projectedDCP - currentDCP;
                       const grandTotalDelta = projectedGrandTotal - currentGrandTotal;
 
+                      // Gross tuition values (before discount)
+                      const currentTuitionGross = currentRenewalRevenueGross + currentNewAdmRevenueGross;
+                      const projectedTuitionGross = projectedRenewalRevenue + projectedNewAdmRevenue;
+                      
+                      // Net tuition after discount
+                      const currentTuitionNet = currentTuitionGross - currentDiscountAmount;
+                      const projectedTuitionNet = projectedTuitionGross - projectedDiscountAmount;
+                      
+                      // Recalculate Grand Total correctly: Tuition Net + Other Fees
+                      const currentGrandTotalCorrect = currentTuitionNet + currentNewAdmissionFees + currentAnnualFees + currentDCP + hostelRevenue;
+                      const projectedGrandTotalCorrect = projectedTuitionNet + projectedNewAdmissionFees + projectedAnnualFees + projectedDCP + hostelRevenue;
+                      const grandTotalDeltaCorrect = projectedGrandTotalCorrect - currentGrandTotalCorrect;
+
                       return (
                         <>
                           <tr className="border-b border-border/50">
                             <td className="py-2 pl-2 text-muted-foreground">Tuition - Renewal Students</td>
-                            <td className="text-right py-2 font-mono bg-muted/10">{formatCurrency(currentRenewalNet)}</td>
-                            <td className="text-right py-2 font-mono bg-primary/5">{formatCurrency(projectedRenewalNet)}</td>
-                            <td className={`text-right py-2 font-mono ${renewalDelta >= 0 ? 'text-positive' : 'text-negative'}`}>
-                              {renewalDelta >= 0 ? '+' : ''}{formatCurrency(renewalDelta)}
+                            <td className="text-right py-2 font-mono bg-muted/10">{formatCurrency(currentRenewalRevenueGross)}</td>
+                            <td className="text-right py-2 font-mono bg-primary/5">{formatCurrency(projectedRenewalRevenue)}</td>
+                            <td className={`text-right py-2 font-mono ${projectedRenewalRevenue - currentRenewalRevenueGross >= 0 ? 'text-positive' : 'text-negative'}`}>
+                              {projectedRenewalRevenue - currentRenewalRevenueGross >= 0 ? '+' : ''}{formatCurrency(projectedRenewalRevenue - currentRenewalRevenueGross)}
                             </td>
                           </tr>
                           <tr className="border-b border-border/50">
                             <td className="py-2 pl-2 text-muted-foreground">Tuition - New Admission Students</td>
-                            <td className="text-right py-2 font-mono bg-muted/10">{formatCurrency(currentNewAdmNet)}</td>
-                            <td className="text-right py-2 font-mono bg-primary/5">{formatCurrency(projectedNewAdmNet)}</td>
-                            <td className={`text-right py-2 font-mono ${newAdmDelta >= 0 ? 'text-positive' : 'text-negative'}`}>
-                              {newAdmDelta >= 0 ? '+' : ''}{formatCurrency(newAdmDelta)}
+                            <td className="text-right py-2 font-mono bg-muted/10">{formatCurrency(currentNewAdmRevenueGross)}</td>
+                            <td className="text-right py-2 font-mono bg-primary/5">{formatCurrency(projectedNewAdmRevenue)}</td>
+                            <td className={`text-right py-2 font-mono ${projectedNewAdmRevenue - currentNewAdmRevenueGross >= 0 ? 'text-positive' : 'text-negative'}`}>
+                              {projectedNewAdmRevenue - currentNewAdmRevenueGross >= 0 ? '+' : ''}{formatCurrency(projectedNewAdmRevenue - currentNewAdmRevenueGross)}
                             </td>
                           </tr>
                           <tr className="border-b border-border bg-muted/20">
                             <td className="py-2 pl-2 font-semibold">Tuition Fees Subtotal</td>
-                            <td className="text-right py-2 font-mono font-semibold">{formatCurrency(currentTuitionSubtotal)}</td>
-                            <td className="text-right py-2 font-mono font-semibold">{formatCurrency(projectedTuitionSubtotal)}</td>
-                            <td className={`text-right py-2 font-mono font-semibold ${tuitionDelta >= 0 ? 'text-positive' : 'text-negative'}`}>
-                              {tuitionDelta >= 0 ? '+' : ''}{formatCurrency(tuitionDelta)}
+                            <td className="text-right py-2 font-mono font-semibold">{formatCurrency(currentTuitionGross)}</td>
+                            <td className="text-right py-2 font-mono font-semibold">{formatCurrency(projectedTuitionGross)}</td>
+                            <td className={`text-right py-2 font-mono font-semibold ${projectedTuitionGross - currentTuitionGross >= 0 ? 'text-positive' : 'text-negative'}`}>
+                              {projectedTuitionGross - currentTuitionGross >= 0 ? '+' : ''}{formatCurrency(projectedTuitionGross - currentTuitionGross)}
                             </td>
                           </tr>
                           {/* Discount Row */}
@@ -553,10 +566,10 @@ export function CampusCard({ campus, calculation, globalSettings, onUpdate, isEx
                           )}
                           <tr className="bg-primary/10 font-bold">
                             <td className="py-3 pl-2 text-foreground">GRAND TOTAL</td>
-                            <td className="text-right py-3 font-mono">{formatCurrency(currentGrandTotal)}</td>
-                            <td className="text-right py-3 font-mono">{formatCurrency(projectedGrandTotal)}</td>
-                            <td className={`text-right py-3 font-mono ${grandTotalDelta >= 0 ? 'text-positive' : 'text-negative'}`}>
-                              {grandTotalDelta >= 0 ? '+' : ''}{formatCurrency(grandTotalDelta)}
+                            <td className="text-right py-3 font-mono">{formatCurrency(currentGrandTotalCorrect)}</td>
+                            <td className="text-right py-3 font-mono">{formatCurrency(projectedGrandTotalCorrect)}</td>
+                            <td className={`text-right py-3 font-mono ${grandTotalDeltaCorrect >= 0 ? 'text-positive' : 'text-negative'}`}>
+                              {grandTotalDeltaCorrect >= 0 ? '+' : ''}{formatCurrency(grandTotalDeltaCorrect)}
                             </td>
                           </tr>
                         </>
