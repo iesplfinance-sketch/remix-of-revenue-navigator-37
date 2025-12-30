@@ -1,22 +1,24 @@
 import { ChevronDown, ChevronUp, AlertTriangle, Users } from 'lucide-react';
-import { CampusData, HostelData } from '@/data/schoolData';
+import { CampusData, HostelData, ClassData } from '@/data/schoolData';
 import { CampusCalculation, calculateClassBreakdown, formatCurrency, formatNumber, formatPercent } from '@/lib/calculations';
 import { GlobalSettings } from '@/data/schoolData';
 import { Slider } from '@/components/ui/slider';
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
+import { Input } from '@/components/ui/input';
 
 interface CampusCardProps {
   campus: CampusData;
   calculation: CampusCalculation;
   globalSettings: GlobalSettings;
   onUpdate: (updates: Partial<CampusData>) => void;
+  onUpdateClass: (classIndex: number, updates: Partial<ClassData>) => void;
   isExpanded: boolean;
   onToggleExpand: () => void;
   hostel?: HostelData; // Optional hostel linked to this campus
 }
 
-export function CampusCard({ campus, calculation, globalSettings, onUpdate, isExpanded, onToggleExpand, hostel }: CampusCardProps) {
+export function CampusCard({ campus, calculation, globalSettings, onUpdate, onUpdateClass, isExpanded, onToggleExpand, hostel }: CampusCardProps) {
   const classBreakdown = calculateClassBreakdown(campus, globalSettings);
 
   // Calculate grand total for header display (including hostel if applicable)
@@ -32,8 +34,13 @@ export function CampusCard({ campus, calculation, globalSettings, onUpdate, isEx
     let projectedTuitionRevenue = 0;
 
     campus.classes.forEach(cls => {
-      const projRenewal = Math.round(cls.renewalCount * (1 + effectiveRenewalGrowth));
-      const projNew = Math.round(cls.newAdmissionCount * (1 + effectiveNewGrowth));
+      // Use direct forecast if provided, otherwise calculate based on growth rate
+      const projRenewal = cls.forecastedRenewalCount !== undefined 
+        ? cls.forecastedRenewalCount 
+        : Math.round(cls.renewalCount * (1 + effectiveRenewalGrowth));
+      const projNew = cls.forecastedNewCount !== undefined 
+        ? cls.forecastedNewCount 
+        : Math.round(cls.newAdmissionCount * (1 + effectiveNewGrowth));
       const hikedRenewalFee = cls.renewalFee * (1 + effectiveRenewalFeeHike);
       const hikedNewFee = cls.newAdmissionFee * (1 + effectiveNewFeeHike);
       
@@ -277,8 +284,13 @@ export function CampusCard({ campus, calculation, globalSettings, onUpdate, isEx
                 currentTotalRenewal += cls.renewalCount;
                 currentTotalRevenue += (cls.renewalCount * cls.renewalFee + cls.newAdmissionCount * cls.newAdmissionFee);
                 
-                const projRenewal = Math.round(cls.renewalCount * (1 + effectiveRenewalGrowth));
-                const projNew = Math.round(cls.newAdmissionCount * (1 + effectiveNewGrowth));
+                // Use direct forecast if provided, otherwise calculate based on growth rate
+                const projRenewal = cls.forecastedRenewalCount !== undefined 
+                  ? cls.forecastedRenewalCount 
+                  : Math.round(cls.renewalCount * (1 + effectiveRenewalGrowth));
+                const projNew = cls.forecastedNewCount !== undefined 
+                  ? cls.forecastedNewCount 
+                  : Math.round(cls.newAdmissionCount * (1 + effectiveNewGrowth));
                 const hikedRenewalFee = cls.renewalFee * (1 + effectiveRenewalFeeHike);
                 const hikedNewFee = cls.newAdmissionFee * (1 + effectiveNewFeeHike);
                 
@@ -341,8 +353,9 @@ export function CampusCard({ campus, calculation, globalSettings, onUpdate, isEx
                       </tr>
                     </thead>
                     <tbody>
-                      {classBreakdown.map(cls => {
-                        const classData = campus.classes.find(c => c.className === cls.className);
+                      {classBreakdown.map((cls, breakdownIndex) => {
+                        const classIndex = campus.classes.findIndex(c => c.className === cls.className);
+                        const classData = campus.classes[classIndex];
                         const currentRenewalFee = classData?.renewalFee || 0;
                         const currentNewAdmFee = classData?.newAdmissionFee || 0;
                         const projectedRenewalFee = currentRenewalFee * (1 + effectiveRenewalFeeHike);
@@ -352,6 +365,10 @@ export function CampusCard({ campus, calculation, globalSettings, onUpdate, isEx
                         const currentRenewalTotal = cls.currentRenewalStudents * currentRenewalFee;
                         const projectedNewTotal = cls.projectedNewStudents * projectedNewAdmFee;
                         const projectedRenewalTotal = cls.projectedRenewalStudents * projectedRenewalFee;
+
+                        // Check if direct forecast is being used
+                        const hasDirectNewForecast = classData?.forecastedNewCount !== undefined;
+                        const hasDirectRenewalForecast = classData?.forecastedRenewalCount !== undefined;
                         
                         return (
                           <tr key={cls.className}>
@@ -363,11 +380,33 @@ export function CampusCard({ campus, calculation, globalSettings, onUpdate, isEx
                             <td className="text-right font-mono bg-muted/20">{cls.currentRenewalStudents}</td>
                             <td className="text-right font-mono bg-muted/20">{formatNumber(currentRenewalFee)}</td>
                             <td className="text-right font-mono bg-muted/20">{formatCurrency(currentRenewalTotal)}</td>
-                            {/* Forecasted Year */}
-                            <td className="text-right font-mono bg-primary/5">{cls.projectedNewStudents}</td>
+                            {/* Forecasted Year - Editable Inputs */}
+                            <td className="text-right bg-primary/5 p-0">
+                              <Input
+                                type="number"
+                                value={classData?.forecastedNewCount ?? cls.projectedNewStudents}
+                                onChange={(e) => {
+                                  const value = e.target.value === '' ? undefined : parseInt(e.target.value) || 0;
+                                  onUpdateClass(classIndex, { forecastedNewCount: value });
+                                }}
+                                className={`w-16 h-7 text-xs text-right font-mono border-0 bg-transparent focus:bg-background ${hasDirectNewForecast ? 'text-primary font-semibold' : ''}`}
+                                min={0}
+                              />
+                            </td>
                             <td className="text-right font-mono bg-primary/5">{formatNumber(Math.round(projectedNewAdmFee))}</td>
                             <td className="text-right font-mono bg-primary/5">{formatCurrency(projectedNewTotal)}</td>
-                            <td className="text-right font-mono bg-primary/5">{cls.projectedRenewalStudents}</td>
+                            <td className="text-right bg-primary/5 p-0">
+                              <Input
+                                type="number"
+                                value={classData?.forecastedRenewalCount ?? cls.projectedRenewalStudents}
+                                onChange={(e) => {
+                                  const value = e.target.value === '' ? undefined : parseInt(e.target.value) || 0;
+                                  onUpdateClass(classIndex, { forecastedRenewalCount: value });
+                                }}
+                                className={`w-16 h-7 text-xs text-right font-mono border-0 bg-transparent focus:bg-background ${hasDirectRenewalForecast ? 'text-primary font-semibold' : ''}`}
+                                min={0}
+                              />
+                            </td>
                             <td className="text-right font-mono bg-primary/5">{formatNumber(Math.round(projectedRenewalFee))}</td>
                             <td className="text-right font-mono bg-primary/5">{formatCurrency(projectedRenewalTotal)}</td>
                             {/* Delta */}
@@ -432,8 +471,13 @@ export function CampusCard({ campus, calculation, globalSettings, onUpdate, isEx
                       let projectedNewStudents = 0;
 
                       campus.classes.forEach(cls => {
-                        const projRenewal = Math.round(cls.renewalCount * (1 + effectiveRenewalGrowth));
-                        const projNew = Math.round(cls.newAdmissionCount * (1 + effectiveNewGrowth));
+                        // Use direct forecast if provided, otherwise calculate based on growth rate
+                        const projRenewal = cls.forecastedRenewalCount !== undefined 
+                          ? cls.forecastedRenewalCount 
+                          : Math.round(cls.renewalCount * (1 + effectiveRenewalGrowth));
+                        const projNew = cls.forecastedNewCount !== undefined 
+                          ? cls.forecastedNewCount 
+                          : Math.round(cls.newAdmissionCount * (1 + effectiveNewGrowth));
                         const hikedRenewalFee = cls.renewalFee * (1 + effectiveRenewalFeeHike);
                         const hikedNewFee = cls.newAdmissionFee * (1 + effectiveNewFeeHike);
                         

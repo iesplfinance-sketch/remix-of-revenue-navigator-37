@@ -197,7 +197,7 @@ const Index = () => {
               {campuses.map((campus, index) => {
               // Find hostel linked to this campus
               const linkedHostel = hostels.find(h => h.campusId === campus.id);
-              return <CampusCard key={campus.id} campus={campus} calculation={campusCalculations[index]} globalSettings={globalSettings} onUpdate={updates => updateCampus(campus.id, updates)} isExpanded={expandedCampusId === campus.id} onToggleExpand={() => handleToggleCampusExpand(campus.id)} hostel={linkedHostel} />;
+              return <CampusCard key={campus.id} campus={campus} calculation={campusCalculations[index]} globalSettings={globalSettings} onUpdate={updates => updateCampus(campus.id, updates)} onUpdateClass={(classIndex, updates) => updateCampusClass(campus.id, classIndex, updates)} isExpanded={expandedCampusId === campus.id} onToggleExpand={() => handleToggleCampusExpand(campus.id)} hostel={linkedHostel} />;
             })}
             </div>
           </TabsContent>
