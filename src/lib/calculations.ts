@@ -215,7 +215,8 @@ export function calculateClassBreakdown(
 
 // Calculate hostel revenue
 export function calculateHostelRevenue(hostel: HostelData): HostelCalculation {
-  const currentRevenue = hostel.currentOccupancy * hostel.feePerStudent;
+  // Current revenue uses last year fee, projected uses forecasted fee
+  const currentRevenue = hostel.currentOccupancy * (hostel.lastYearFeePerStudent || hostel.feePerStudent);
   const projectedRevenue = hostel.currentOccupancy * hostel.feePerStudent;
   
   return {
@@ -275,8 +276,9 @@ export function calculateTotals(
 
   hostels.forEach(hostel => {
     hostelStudents += hostel.currentOccupancy;
+    // Projected uses current fee, current uses last year fee
     hostelRevenue += hostel.currentOccupancy * hostel.feePerStudent;
-    currentHostelRevenue += hostel.currentOccupancy * hostel.feePerStudent;
+    currentHostelRevenue += hostel.currentOccupancy * (hostel.lastYearFeePerStudent || hostel.feePerStudent);
   });
 
   // Use current students for student breakdown display (consistent)

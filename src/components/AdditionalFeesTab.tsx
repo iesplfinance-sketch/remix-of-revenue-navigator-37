@@ -151,6 +151,7 @@ export function AdditionalFeesTab({
           <h3 className="text-sm font-medium text-foreground mb-4 flex items-center gap-2">
             <GraduationCap className="w-4 h-4 text-primary" />
             Annual Fee Configuration
+            <span className="text-[10px] bg-primary/20 text-primary px-2 py-0.5 rounded-full">Forecasted 26-27</span>
           </h3>
           <p className="text-xs text-muted-foreground mb-4">
             Annual fee is charged once per year to every student. This covers administrative costs, facilities, and other school services.
@@ -203,6 +204,7 @@ export function AdditionalFeesTab({
           <h3 className="text-sm font-medium text-foreground mb-4 flex items-center gap-2">
             <Package className="w-4 h-4 text-warning" />
             DCP (Digital Companion Pack)
+            <span className="text-[10px] bg-primary/20 text-primary px-2 py-0.5 rounded-full">Forecasted 26-27</span>
           </h3>
           <p className="text-xs text-muted-foreground mb-4">
             DCP provides students with digital learning resources and technology support.
@@ -240,6 +242,7 @@ export function AdditionalFeesTab({
           <h3 className="text-sm font-medium text-foreground mb-4 flex items-center gap-2">
             <DollarSign className="w-4 h-4 text-info" />
             New Admission Fee
+            <span className="text-[10px] bg-primary/20 text-primary px-2 py-0.5 rounded-full">Forecasted 26-27</span>
           </h3>
           <p className="text-xs text-muted-foreground mb-4">
             One-time fee charged to new <span className="text-info font-medium">school students only</span> at the time of admission.

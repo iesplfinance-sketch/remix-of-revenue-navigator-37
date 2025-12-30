@@ -217,7 +217,17 @@ const Index = () => {
       </main>
 
       {/* Settings Modal */}
-      <SettingsModal isOpen={isSettingsOpen} onClose={() => setIsSettingsOpen(false)} campuses={campuses} onUpdateCampus={updateCampus} onUpdateCampusClass={updateCampusClass} />
+      <SettingsModal 
+        isOpen={isSettingsOpen} 
+        onClose={() => setIsSettingsOpen(false)} 
+        campuses={campuses} 
+        hostels={hostels}
+        globalSettings={globalSettings}
+        onUpdateCampus={updateCampus} 
+        onUpdateCampusClass={updateCampusClass}
+        onUpdateGlobalSettings={updateGlobalSettings}
+        onUpdateHostel={updateHostel}
+      />
 
       {/* Save/Load Modal */}
       <SaveLoadModal isOpen={isSaveLoadOpen} onClose={() => setIsSaveLoadOpen(false)} campuses={campuses} hostels={hostels} globalSettings={globalSettings} onLoad={loadSimulationState} />
