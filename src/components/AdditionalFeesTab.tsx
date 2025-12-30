@@ -38,12 +38,10 @@ export function AdditionalFeesTab({
   // DCP only applies to school students, not hostels
   const totalDCP = schoolStudents * schoolDCP;
 
-  // New admission fee totals (using new students - estimate 20% of total as new)
+  // New admission fee totals (only for school students, not hostels)
   const estimatedNewSchoolStudents = Math.round(schoolStudents * 0.2);
-  const estimatedNewHostelStudents = Math.round(hostelStudents * 0.2);
   const schoolAdmissionTotal = estimatedNewSchoolStudents * newAdmissionFeePerStudent;
-  const hostelAdmissionTotal = estimatedNewHostelStudents * newAdmissionFeeHostelPerStudent;
-  const totalAdmissionFee = schoolAdmissionTotal + hostelAdmissionTotal;
+  const totalAdmissionFee = schoolAdmissionTotal;
 
   // Calculate custom fees totals
   const totalCustomFees = customFees.reduce((sum, fee) => {
@@ -119,7 +117,7 @@ export function AdditionalFeesTab({
           </div>
           <div className="font-mono text-2xl text-info">{formatCurrency(totalAdmissionFee)}</div>
           <div className="text-xs text-muted-foreground mt-1">
-            School: {formatCurrency(schoolAdmissionTotal)} | Hostel: {formatCurrency(hostelAdmissionTotal)}
+            School students only
           </div>
         </div>
 
@@ -244,14 +242,14 @@ export function AdditionalFeesTab({
             New Admission Fee
           </h3>
           <p className="text-xs text-muted-foreground mb-4">
-            One-time fee charged to new students at the time of admission.
-            <span className="text-info font-medium"> Note: Estimated at 20% new students.</span>
+            One-time fee charged to new <span className="text-info font-medium">school students only</span> at the time of admission.
+            <span className="text-muted-foreground"> (Estimated at 20% new students)</span>
           </p>
           
           <div className="space-y-4">
             <div className="flex items-center justify-between p-4 bg-surface-2 rounded-lg">
               <div>
-                <p className="text-sm font-medium text-foreground">School Students</p>
+                <p className="text-sm font-medium text-foreground">School Students Only</p>
                 <p className="text-xs text-muted-foreground">~{formatNumber(estimatedNewSchoolStudents)} new students</p>
               </div>
               <div className="flex items-center gap-2">
@@ -260,22 +258,6 @@ export function AdditionalFeesTab({
                   type="number"
                   value={newAdmissionFeePerStudent}
                   onChange={(e) => onUpdateGlobalSettings({ newAdmissionFeePerStudent: parseInt(e.target.value) || 0 })}
-                  className="w-24 font-mono bg-surface-1 border-border text-right"
-                />
-              </div>
-            </div>
-
-            <div className="flex items-center justify-between p-4 bg-surface-2 rounded-lg">
-              <div>
-                <p className="text-sm font-medium text-foreground">Hostel Students</p>
-                <p className="text-xs text-muted-foreground">~{formatNumber(estimatedNewHostelStudents)} new students</p>
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="text-muted-foreground text-sm">₨</span>
-                <Input
-                  type="number"
-                  value={newAdmissionFeeHostelPerStudent}
-                  onChange={(e) => onUpdateGlobalSettings({ newAdmissionFeeHostelPerStudent: parseInt(e.target.value) || 0 })}
                   className="w-24 font-mono bg-surface-1 border-border text-right"
                 />
               </div>
