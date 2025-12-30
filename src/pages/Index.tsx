@@ -17,7 +17,6 @@ import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-
 const Index = () => {
   const {
     campuses,
@@ -32,33 +31,27 @@ const Index = () => {
     updateGlobalSettings,
     applyGlobalDiscount,
     resetToDefaults,
-    loadSimulationState,
+    loadSimulationState
   } = useSimulationState();
-
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isSaveLoadOpen, setIsSaveLoadOpen] = useState(false);
   const [expandedCampusId, setExpandedCampusId] = useState<string | null>(null);
-
   const handleExportExcel = () => {
     generateExcelExport(campuses, hostels, globalSettings);
   };
-
   const handleExportPDF = () => {
     generatePDFExport(campuses, hostels, globalSettings);
   };
-
   const handleToggleCampusExpand = (campusId: string) => {
     setExpandedCampusId(prev => prev === campusId ? null : campusId);
   };
-
-  return (
-    <div className="min-h-screen bg-surface-0">
+  return <div className="min-h-screen bg-surface-0">
       {/* Sticky Header */}
       <header className="sticky-header px-4 py-4">
         <div className="max-w-7xl mx-auto">
           <div className="flex items-center justify-between mb-4">
             <div>
-              <h1 className="text-xl font-semibold text-foreground">Pak Turk Maarif School & Colleges</h1>
+              <h1 className="text-xl font-semibold text-foreground">SmartAlphaEnterprises </h1>
               <p className="text-xs text-muted-foreground">Revenue Forecasting Engine - Real-time What-If Simulation</p>
             </div>
             <div className="flex items-center gap-2">
@@ -95,16 +88,7 @@ const Index = () => {
               </DropdownMenu>
             </div>
           </div>
-          <HeaderMetrics
-            schoolRevenue={totals.schoolRevenue}
-            hostelRevenue={totals.hostelRevenue}
-            totalStudents={totals.schoolStudents}
-            hostelStudents={totals.hostelStudents}
-            annualFeeRevenue={totals.annualFeeRevenue}
-            dcpRevenue={totals.dcpRevenue}
-            grandTotalRevenue={totals.grandTotalRevenue}
-            newAdmissionFeeRevenue={totals.newAdmissionFeeRevenue}
-          />
+          <HeaderMetrics schoolRevenue={totals.schoolRevenue} hostelRevenue={totals.hostelRevenue} totalStudents={totals.schoolStudents} hostelStudents={totals.hostelStudents} annualFeeRevenue={totals.annualFeeRevenue} dcpRevenue={totals.dcpRevenue} grandTotalRevenue={totals.grandTotalRevenue} newAdmissionFeeRevenue={totals.newAdmissionFeeRevenue} />
         </div>
       </header>
 
@@ -141,39 +125,25 @@ const Index = () => {
                     <label className="text-xs text-muted-foreground uppercase tracking-wide">Global Fee Hike</label>
                     <span className="font-mono text-sm text-primary">+{globalSettings.globalFeeHike}%</span>
                   </div>
-                  <Slider
-                    value={[globalSettings.globalFeeHike]}
-                    onValueChange={([value]) => updateGlobalSettings({ globalFeeHike: value })}
-                    min={0}
-                    max={50}
-                    step={1}
-                  />
+                  <Slider value={[globalSettings.globalFeeHike]} onValueChange={([value]) => updateGlobalSettings({
+                  globalFeeHike: value
+                })} min={0} max={50} step={1} />
                 </div>
                 <div>
                   <div className="flex justify-between mb-2">
                     <label className="text-xs text-muted-foreground uppercase tracking-wide">Global Student Growth</label>
                     <span className="font-mono text-sm text-primary">{globalSettings.globalStudentGrowth > 0 ? '+' : ''}{globalSettings.globalStudentGrowth}%</span>
                   </div>
-                  <Slider
-                    value={[globalSettings.globalStudentGrowth]}
-                    onValueChange={([value]) => updateGlobalSettings({ globalStudentGrowth: value })}
-                    min={-20}
-                    max={50}
-                    step={1}
-                  />
+                  <Slider value={[globalSettings.globalStudentGrowth]} onValueChange={([value]) => updateGlobalSettings({
+                  globalStudentGrowth: value
+                })} min={-20} max={50} step={1} />
                 </div>
                 <div>
                   <div className="flex justify-between mb-2">
                     <label className="text-xs text-muted-foreground uppercase tracking-wide">Global Discount (All Campuses)</label>
                     <span className="font-mono text-sm text-warning">{globalSettings.globalDiscount}%</span>
                   </div>
-                  <Slider
-                    value={[globalSettings.globalDiscount]}
-                    onValueChange={([value]) => applyGlobalDiscount(value)}
-                    min={0}
-                    max={40}
-                    step={1}
-                  />
+                  <Slider value={[globalSettings.globalDiscount]} onValueChange={([value]) => applyGlobalDiscount(value)} min={0} max={40} step={1} />
                 </div>
               </div>
             </div>
@@ -195,87 +165,42 @@ const Index = () => {
             </div>
 
             {/* Calculation Breakdown Table */}
-            <CalculationBreakdown
-              campuses={campuses}
-              calculations={campusCalculations}
-              globalSettings={globalSettings}
-            />
+            <CalculationBreakdown campuses={campuses} calculations={campusCalculations} globalSettings={globalSettings} />
 
             {/* Fee Calculation Explainer */}
-            <FeeExplainer 
-              globalFeeHike={globalSettings.globalFeeHike}
-              globalStudentGrowth={globalSettings.globalStudentGrowth}
-              globalDiscount={globalSettings.globalDiscount}
-            />
+            <FeeExplainer globalFeeHike={globalSettings.globalFeeHike} globalStudentGrowth={globalSettings.globalStudentGrowth} globalDiscount={globalSettings.globalDiscount} />
           </TabsContent>
 
           {/* Campuses Tab */}
           <TabsContent value="campuses" className="animate-fade-in">
             <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
               {campuses.map((campus, index) => {
-                // Find hostel linked to this campus
-                const linkedHostel = hostels.find(h => h.campusId === campus.id);
-                return (
-                  <CampusCard
-                    key={campus.id}
-                    campus={campus}
-                    calculation={campusCalculations[index]}
-                    globalSettings={globalSettings}
-                    onUpdate={(updates) => updateCampus(campus.id, updates)}
-                    isExpanded={expandedCampusId === campus.id}
-                    onToggleExpand={() => handleToggleCampusExpand(campus.id)}
-                    hostel={linkedHostel}
-                  />
-                );
-              })}
+              // Find hostel linked to this campus
+              const linkedHostel = hostels.find(h => h.campusId === campus.id);
+              return <CampusCard key={campus.id} campus={campus} calculation={campusCalculations[index]} globalSettings={globalSettings} onUpdate={updates => updateCampus(campus.id, updates)} isExpanded={expandedCampusId === campus.id} onToggleExpand={() => handleToggleCampusExpand(campus.id)} hostel={linkedHostel} />;
+            })}
             </div>
           </TabsContent>
 
           {/* Hostels Tab */}
           <TabsContent value="hostels" className="animate-fade-in">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {hostels.map((hostel) => (
-                <HostelCard
-                  key={hostel.id}
-                  hostel={hostel}
-                  onUpdate={(updates) => updateHostel(hostel.id, updates)}
-                />
-              ))}
+              {hostels.map(hostel => <HostelCard key={hostel.id} hostel={hostel} onUpdate={updates => updateHostel(hostel.id, updates)} />)}
             </div>
           </TabsContent>
 
           {/* Annual Fee & DCP Tab */}
           <TabsContent value="fees">
-            <AdditionalFeesTab
-              globalSettings={globalSettings}
-              schoolStudents={totals.schoolStudents}
-              hostelStudents={totals.hostelStudents}
-              onUpdateGlobalSettings={updateGlobalSettings}
-            />
+            <AdditionalFeesTab globalSettings={globalSettings} schoolStudents={totals.schoolStudents} hostelStudents={totals.hostelStudents} onUpdateGlobalSettings={updateGlobalSettings} />
           </TabsContent>
         </Tabs>
       </main>
 
       {/* Settings Modal */}
-      <SettingsModal
-        isOpen={isSettingsOpen}
-        onClose={() => setIsSettingsOpen(false)}
-        campuses={campuses}
-        onUpdateCampus={updateCampus}
-        onUpdateCampusClass={updateCampusClass}
-      />
+      <SettingsModal isOpen={isSettingsOpen} onClose={() => setIsSettingsOpen(false)} campuses={campuses} onUpdateCampus={updateCampus} onUpdateCampusClass={updateCampusClass} />
 
       {/* Save/Load Modal */}
-      <SaveLoadModal
-        isOpen={isSaveLoadOpen}
-        onClose={() => setIsSaveLoadOpen(false)}
-        campuses={campuses}
-        hostels={hostels}
-        globalSettings={globalSettings}
-        onLoad={loadSimulationState}
-      />
-    </div>
-  );
+      <SaveLoadModal isOpen={isSaveLoadOpen} onClose={() => setIsSaveLoadOpen(false)} campuses={campuses} hostels={hostels} globalSettings={globalSettings} onLoad={loadSimulationState} />
+    </div>;
 };
-
 export default Index;
