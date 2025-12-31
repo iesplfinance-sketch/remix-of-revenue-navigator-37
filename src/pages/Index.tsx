@@ -130,7 +130,7 @@ const Index = () => {
             </TabsTrigger>
             <TabsTrigger value="fees" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
               <DollarSign className="w-4 h-4 mr-2" />
-              Annual Fee & DCP
+              Other Incomes
             </TabsTrigger>
           </TabsList>
 

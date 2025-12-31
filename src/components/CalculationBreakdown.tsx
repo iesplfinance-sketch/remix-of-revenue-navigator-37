@@ -85,14 +85,25 @@ function CampusBreakdownRow({ campus, calculation, globalSettings, hostel }: Cam
   const currentDCP = currentTotalStudents * (globalSettings.lastYearSchoolDCP || globalSettings.schoolDCP);
   const projectedDCP = projectedTotalStudents * globalSettings.schoolDCP;
 
+  // Custom Fees (only projected - assume 0 for last year)
+  const customFees = globalSettings.customFees || [];
+  const currentCustomFees = 0; // Assume no custom fees last year
+  const projectedCustomFees = customFees.reduce((sum, fee) => {
+    let feeTotal = 0;
+    if (fee.appliesToSchool) feeTotal += projectedTotalStudents * fee.amountPerStudent;
+    // Note: Hostel fees for campus are calculated at hostel level, not here
+    return sum + feeTotal;
+  }, 0);
+  const customFeesDelta = projectedCustomFees - currentCustomFees;
+
   // Hostel Revenue (if applicable) - use last year fee for current
   const currentHostelRevenue = hostel ? hostel.currentOccupancy * (hostel.lastYearFeePerStudent || hostel.feePerStudent) : 0;
   const projectedHostelRevenue = hostel ? hostel.currentOccupancy * hostel.feePerStudent : 0;
   const hostelDelta = projectedHostelRevenue - currentHostelRevenue;
 
-  // Grand Total = Tuition Net (after discount) + Other Fees + Hostel
-  const currentGrandTotal = currentTuitionNet + currentNewAdmissionFees + currentAnnualFees + currentDCP + currentHostelRevenue;
-  const projectedGrandTotal = projectedTuitionNet + projectedNewAdmissionFees + projectedAnnualFees + projectedDCP + projectedHostelRevenue;
+  // Grand Total = Tuition Net (after discount) + Other Fees + Custom Fees + Hostel
+  const currentGrandTotal = currentTuitionNet + currentNewAdmissionFees + currentAnnualFees + currentDCP + currentCustomFees + currentHostelRevenue;
+  const projectedGrandTotal = projectedTuitionNet + projectedNewAdmissionFees + projectedAnnualFees + projectedDCP + projectedCustomFees + projectedHostelRevenue;
 
   const grandTotalDelta = projectedGrandTotal - currentGrandTotal;
   const grandTotalChangePercent = currentGrandTotal > 0 ? (grandTotalDelta / currentGrandTotal) * 100 : 0;
@@ -212,6 +223,16 @@ function CampusBreakdownRow({ campus, calculation, globalSettings, hostel }: Cam
                         {dcpDelta >= 0 ? '+' : ''}{formatCurrency(dcpDelta)}
                       </td>
                     </tr>
+                    {customFees.length > 0 && (
+                      <tr className="border-b border-border/50">
+                        <td className="py-2 pl-2 text-muted-foreground">Other Incomes ({customFees.map(f => f.name).join(', ')})</td>
+                        <td className="text-right py-2 font-mono bg-muted/10">{formatCurrency(currentCustomFees)}</td>
+                        <td className="text-right py-2 font-mono bg-primary/5">{formatCurrency(projectedCustomFees)}</td>
+                        <td className={`text-right py-2 font-mono ${customFeesDelta >= 0 ? 'text-positive' : 'text-negative'}`}>
+                          {customFeesDelta >= 0 ? '+' : ''}{formatCurrency(customFeesDelta)}
+                        </td>
+                      </tr>
+                    )}
                     {hostel && (
                       <tr className="border-b border-border/50">
                         <td className="py-2 pl-2 text-muted-foreground">Hostel Fees ({hostel.currentOccupancy} students)</td>
@@ -302,8 +323,16 @@ export function CalculationBreakdown({ campuses, calculations, globalSettings, h
     const currentDCP = currentTotalStudents * (globalSettings.lastYearSchoolDCP || globalSettings.schoolDCP);
     const projectedDCP = projectedTotalStudents * globalSettings.schoolDCP;
 
-    const currentGrandTotal = currentTuitionNet + currentNewAdmissionFees + currentAnnualFees + currentDCP;
-    const projectedGrandTotal = projectedTuitionNet + projectedNewAdmissionFees + projectedAnnualFees + projectedDCP;
+    // Custom fees (assume 0 for last year, calculate for projected)
+    const customFeesList = globalSettings.customFees || [];
+    const currentCustomFees = 0;
+    const projectedCustomFees = customFeesList.reduce((sum, fee) => {
+      if (fee.appliesToSchool) return sum + projectedTotalStudents * fee.amountPerStudent;
+      return sum;
+    }, 0);
+
+    const currentGrandTotal = currentTuitionNet + currentNewAdmissionFees + currentAnnualFees + currentDCP + currentCustomFees;
+    const projectedGrandTotal = projectedTuitionNet + projectedNewAdmissionFees + projectedAnnualFees + projectedDCP + projectedCustomFees;
 
     return { 
       currentTotalStudents, 
@@ -318,6 +347,7 @@ export function CalculationBreakdown({ campuses, calculations, globalSettings, h
       currentNewAdmissionFees,
       currentAnnualFees,
       currentDCP,
+      currentCustomFees,
       projectedRenewalRevenueGross,
       projectedNewAdmRevenueGross,
       projectedTuitionGross,
@@ -326,6 +356,7 @@ export function CalculationBreakdown({ campuses, calculations, globalSettings, h
       projectedNewAdmissionFees,
       projectedAnnualFees,
       projectedDCP,
+      projectedCustomFees,
       currentNewStudents,
       projectedNewStudents,
     };
@@ -357,6 +388,7 @@ export function CalculationBreakdown({ campuses, calculations, globalSettings, h
         currentNewAdmissionFees: acc.currentNewAdmissionFees + details.currentNewAdmissionFees,
         currentAnnualFees: acc.currentAnnualFees + details.currentAnnualFees,
         currentDCP: acc.currentDCP + details.currentDCP,
+        currentCustomFees: acc.currentCustomFees + details.currentCustomFees,
         projectedRenewalRevenue: acc.projectedRenewalRevenue + details.projectedRenewalRevenueGross,
         projectedNewAdmRevenue: acc.projectedNewAdmRevenue + details.projectedNewAdmRevenueGross,
         projectedTuitionGross: acc.projectedTuitionGross + details.projectedTuitionGross,
@@ -364,6 +396,7 @@ export function CalculationBreakdown({ campuses, calculations, globalSettings, h
         projectedNewAdmissionFees: acc.projectedNewAdmissionFees + details.projectedNewAdmissionFees,
         projectedAnnualFees: acc.projectedAnnualFees + details.projectedAnnualFees,
         projectedDCP: acc.projectedDCP + details.projectedDCP,
+        projectedCustomFees: acc.projectedCustomFees + details.projectedCustomFees,
         currentStudents: acc.currentStudents + details.currentTotalStudents,
         projectedStudents: acc.projectedStudents + details.projectedTotalStudents,
         currentGrandTotal: acc.currentGrandTotal + details.currentGrandTotal,
@@ -372,12 +405,15 @@ export function CalculationBreakdown({ campuses, calculations, globalSettings, h
     },
     {
       currentRenewalRevenue: 0, currentNewAdmRevenue: 0, currentTuitionGross: 0, currentDiscountAmount: 0,
-      currentNewAdmissionFees: 0, currentAnnualFees: 0, currentDCP: 0,
+      currentNewAdmissionFees: 0, currentAnnualFees: 0, currentDCP: 0, currentCustomFees: 0,
       projectedRenewalRevenue: 0, projectedNewAdmRevenue: 0, projectedTuitionGross: 0, projectedDiscountAmount: 0,
-      projectedNewAdmissionFees: 0, projectedAnnualFees: 0, projectedDCP: 0,
+      projectedNewAdmissionFees: 0, projectedAnnualFees: 0, projectedDCP: 0, projectedCustomFees: 0,
       currentStudents: 0, projectedStudents: 0, currentGrandTotal: 0, projectedGrandTotal: 0,
     }
   );
+
+  // Get custom fees for display
+  const customFeesList = globalSettings.customFees || [];
 
   // Add hostel to grand totals
   const grandTotals = {
@@ -478,6 +514,16 @@ export function CalculationBreakdown({ campuses, calculations, globalSettings, h
                   {combinedBreakdown.projectedDCP - combinedBreakdown.currentDCP >= 0 ? '+' : ''}{formatCurrency(combinedBreakdown.projectedDCP - combinedBreakdown.currentDCP)}
                 </td>
               </tr>
+              {customFeesList.length > 0 && (
+                <tr className="border-b border-border/50">
+                  <td className="py-2 px-4 text-muted-foreground">Other Incomes ({customFeesList.map(f => f.name).join(', ')})</td>
+                  <td className="text-right py-2 px-4 font-mono bg-muted/10">{formatCurrency(combinedBreakdown.currentCustomFees)}</td>
+                  <td className="text-right py-2 px-4 font-mono bg-primary/5">{formatCurrency(combinedBreakdown.projectedCustomFees)}</td>
+                  <td className={`text-right py-2 px-4 font-mono ${combinedBreakdown.projectedCustomFees - combinedBreakdown.currentCustomFees >= 0 ? 'text-positive' : 'text-negative'}`}>
+                    {combinedBreakdown.projectedCustomFees - combinedBreakdown.currentCustomFees >= 0 ? '+' : ''}{formatCurrency(combinedBreakdown.projectedCustomFees - combinedBreakdown.currentCustomFees)}
+                  </td>
+                </tr>
+              )}
               {hostelTotals.students > 0 && (
                 <tr className="border-b border-border/50">
                   <td className="py-2 px-4 text-muted-foreground">Hostel Fees ({hostelTotals.students} students)</td>
