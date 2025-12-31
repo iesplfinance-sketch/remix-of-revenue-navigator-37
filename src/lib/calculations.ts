@@ -89,6 +89,7 @@ export function calculateCampusRevenue(
   const effectiveNewFeeHike = (campus.newAdmissionFeeHike + globalSettings.globalFeeHike) / 100;
   const effectiveRenewalFeeHike = (campus.renewalFeeHike + globalSettings.globalFeeHike) / 100;
   const discountRate = campus.discountRate / 100;
+  const lastYearDiscountRate = (campus.lastYearDiscount ?? campus.discountRate) / 100;
 
   let currentRenewalStudents = 0;
   let currentNewStudents = 0;
@@ -134,7 +135,7 @@ export function calculateCampusRevenue(
   const projectedTotalStudents = projectedRenewalStudents + projectedNewStudents;
 
   const currentGrossRevenue = currentRenewalRevenue + currentNewRevenue;
-  const currentNetRevenue = currentGrossRevenue * (1 - discountRate);
+  const currentNetRevenue = currentGrossRevenue * (1 - lastYearDiscountRate);
 
   const projectedGrossRevenue = projectedRenewalRevenue + projectedNewRevenue;
   const projectedNetRevenue = projectedGrossRevenue * (1 - discountRate);
