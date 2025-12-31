@@ -52,8 +52,13 @@ function CampusBreakdownRow({ campus, calculation, globalSettings, hostel }: Cam
   let projectedNewStudents = 0;
 
   campus.classes.forEach(cls => {
-    const projRenewal = Math.round(cls.renewalCount * (1 + effectiveRenewalGrowth));
-    const projNew = Math.round(cls.newAdmissionCount * (1 + effectiveNewGrowth));
+    // Use direct forecast if provided, otherwise calculate based on growth rate
+    const projRenewal = cls.forecastedRenewalCount !== undefined 
+      ? cls.forecastedRenewalCount 
+      : Math.round(cls.renewalCount * (1 + effectiveRenewalGrowth));
+    const projNew = cls.forecastedNewCount !== undefined 
+      ? cls.forecastedNewCount 
+      : Math.round(cls.newAdmissionCount * (1 + effectiveNewGrowth));
     const hikedRenewalFee = cls.renewalFee * (1 + effectiveRenewalFeeHike);
     const hikedNewFee = cls.newAdmissionFee * (1 + effectiveNewFeeHike);
     
@@ -268,8 +273,13 @@ export function CalculationBreakdown({ campuses, calculations, globalSettings, h
     let projectedNewStudents = 0;
 
     campus.classes.forEach(cls => {
-      const projRenewal = Math.round(cls.renewalCount * (1 + effectiveRenewalGrowth));
-      const projNew = Math.round(cls.newAdmissionCount * (1 + effectiveNewGrowth));
+      // Use direct forecast if provided, otherwise calculate based on growth rate
+      const projRenewal = cls.forecastedRenewalCount !== undefined 
+        ? cls.forecastedRenewalCount 
+        : Math.round(cls.renewalCount * (1 + effectiveRenewalGrowth));
+      const projNew = cls.forecastedNewCount !== undefined 
+        ? cls.forecastedNewCount 
+        : Math.round(cls.newAdmissionCount * (1 + effectiveNewGrowth));
       const hikedRenewalFee = cls.renewalFee * (1 + effectiveRenewalFeeHike);
       const hikedNewFee = cls.newAdmissionFee * (1 + effectiveNewFeeHike);
       
