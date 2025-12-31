@@ -67,10 +67,12 @@ export interface TotalCalculation {
   grandTotalRevenue: number;
   newAdmissionFeeRevenue: number;
   projectedNewStudents: number;
+  customFeesRevenue: number;
   // Additional fees (current/last year)
   currentAnnualFeeRevenue: number;
   currentDcpRevenue: number;
   currentNewAdmissionFeeRevenue: number;
+  currentCustomFeesRevenue: number;
   currentGrandTotal: number;
   // Discount tracking
   currentDiscountAmount: number;
@@ -315,16 +317,30 @@ export function calculateTotals(
   const annualFeeRevenue = (projectedStudentsWithAnnualFee * globalSettings.schoolAnnualFee) + (hostelStudents * globalSettings.hostelAnnualFee);
   const dcpRevenue = projectedSchoolStudents * globalSettings.schoolDCP;
   const newAdmissionFeeRevenue = projectedNewStudents * (globalSettings.newAdmissionFeePerStudent || 25000);
+  
+  // Calculate custom fees revenue (projected uses projected student counts)
+  const customFees = globalSettings.customFees || [];
+  const customFeesRevenue = customFees.reduce((sum, fee) => {
+    let feeTotal = 0;
+    if (fee.appliesToSchool) feeTotal += projectedSchoolStudents * fee.amountPerStudent;
+    if (fee.appliesToHostel) feeTotal += hostelStudents * fee.amountPerStudent;
+    return sum + feeTotal;
+  }, 0);
+  
   const tuitionRevenue = schoolRevenue + hostelRevenue;
-  const grandTotalRevenue = tuitionRevenue + annualFeeRevenue + dcpRevenue + newAdmissionFeeRevenue;
+  const grandTotalRevenue = tuitionRevenue + annualFeeRevenue + dcpRevenue + newAdmissionFeeRevenue + customFeesRevenue;
 
   // Current additional fees (using last year fee rates)
   const currentAnnualFeeRevenue = (currentStudentsWithAnnualFee * (globalSettings.lastYearSchoolAnnualFee ?? globalSettings.schoolAnnualFee)) + 
     (hostelStudents * (globalSettings.lastYearHostelAnnualFee ?? globalSettings.hostelAnnualFee));
   const currentDcpRevenue = currentSchoolStudents * (globalSettings.lastYearSchoolDCP ?? globalSettings.schoolDCP);
   const currentNewAdmissionFeeRevenue = currentNewStudents * (globalSettings.lastYearNewAdmissionFee ?? globalSettings.newAdmissionFeePerStudent ?? 25000);
+  
+  // Current custom fees (uses current student counts - assume no custom fees last year, so 0)
+  const currentCustomFeesRevenue = 0;
+  
   const currentTuitionRevenue = currentSchoolRevenue + currentHostelRevenue;
-  const currentGrandTotal = currentTuitionRevenue + currentAnnualFeeRevenue + currentDcpRevenue + currentNewAdmissionFeeRevenue;
+  const currentGrandTotal = currentTuitionRevenue + currentAnnualFeeRevenue + currentDcpRevenue + currentNewAdmissionFeeRevenue + currentCustomFeesRevenue;
 
   return {
     schoolStudents,
@@ -343,9 +359,11 @@ export function calculateTotals(
     grandTotalRevenue,
     newAdmissionFeeRevenue,
     projectedNewStudents,
+    customFeesRevenue,
     currentAnnualFeeRevenue,
     currentDcpRevenue,
     currentNewAdmissionFeeRevenue,
+    currentCustomFeesRevenue,
     currentGrandTotal,
     currentDiscountAmount,
     projectedDiscountAmount,
