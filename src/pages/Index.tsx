@@ -111,6 +111,7 @@ const Index = () => {
               currentDcpRevenue={totals.currentDcpRevenue}
               currentAdmissionFeeRevenue={totals.currentNewAdmissionFeeRevenue}
               fullCapacityRevenue={totals.fullCapacityRevenue}
+              totalMaxCapacity={totals.totalMaxCapacity}
             />
           )}
           {/* Collapse/Expand Button */}

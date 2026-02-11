@@ -117,6 +117,7 @@ interface HeaderMetricsProps {
   currentDcpRevenue?: number;
   currentAdmissionFeeRevenue?: number;
   fullCapacityRevenue?: number;
+  totalMaxCapacity?: number;
 }
 
 export function HeaderMetrics({
@@ -139,6 +140,7 @@ export function HeaderMetrics({
   currentDcpRevenue = 0,
   currentAdmissionFeeRevenue = 0,
   fullCapacityRevenue = 0,
+  totalMaxCapacity = 0,
 }: HeaderMetricsProps) {
   const studentChange = projectedStudents - totalStudents;
   const studentChangePercent = totalStudents > 0 ? (studentChange / totalStudents) * 100 : 0;
@@ -168,7 +170,7 @@ export function HeaderMetrics({
         <MetricCard
           title="Full Capacity Revenue"
           value={formatCurrency(fullCapacityRevenue)}
-          subtitle="If all seats filled at new adm. rate"
+          subtitle={`${formatNumber(totalMaxCapacity)} seats | If all filled at new adm. rate`}
           variant="warning"
         />
         <MetricCard
