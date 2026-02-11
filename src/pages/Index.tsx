@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { Download, Settings, RotateCcw, TrendingUp, Building, LayoutDashboard, DollarSign, FileSpreadsheet, FileText, Save } from 'lucide-react';
+import { useState, useCallback } from 'react';
+import { Download, Settings, RotateCcw, TrendingUp, Building, LayoutDashboard, DollarSign, FileSpreadsheet, FileText, Save, ChevronUp, ChevronDown } from 'lucide-react';
 import { useSimulationState } from '@/hooks/useSimulationState';
 import { HeaderMetrics } from '@/components/MetricCard';
 import { CampusCard } from '@/components/CampusCard';
@@ -37,6 +37,7 @@ const Index = () => {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isSaveLoadOpen, setIsSaveLoadOpen] = useState(false);
   const [expandedCampusId, setExpandedCampusId] = useState<string | null>(null);
+  const [isHeaderCollapsed, setIsHeaderCollapsed] = useState(false);
   const handleExportExcel = () => {
     generateExcelExport(campuses, hostels, globalSettings);
   };
@@ -48,8 +49,8 @@ const Index = () => {
   };
   return <div className="min-h-screen bg-surface-0">
       {/* Sticky Header */}
-      <header className="sticky-header px-4 py-4">
-        <div className="max-w-[95vw] mx-auto">
+      <header className="sticky-header px-4 py-4 relative">
+        <div className="max-w-[85vw] mx-auto">
           <div className="flex items-center justify-between mb-4">
             <div>
               <h1 className="text-xl font-semibold text-foreground">Pak Turk Maarif Schools</h1>
@@ -89,32 +90,42 @@ const Index = () => {
               </DropdownMenu>
             </div>
           </div>
-          <HeaderMetrics 
-            schoolRevenue={totals.schoolRevenue} 
-            hostelRevenue={totals.hostelRevenue} 
-            totalStudents={totals.schoolStudents} 
-            projectedStudents={totals.projectedSchoolStudents} 
-            hostelStudents={totals.hostelStudents} 
-            annualFeeRevenue={totals.annualFeeRevenue} 
-            dcpRevenue={totals.dcpRevenue} 
-            grandTotalRevenue={totals.grandTotalRevenue} 
-            newAdmissionFeeRevenue={totals.newAdmissionFeeRevenue} 
-            currentDiscountAmount={totals.currentDiscountAmount} 
-            projectedDiscountAmount={totals.projectedDiscountAmount} 
-            projectedDiscountPercent={totals.projectedDiscountPercent}
-            currentSchoolRevenue={totals.currentSchoolRevenue}
-            currentHostelRevenue={totals.currentHostelRevenue}
-            currentGrandTotal={totals.currentGrandTotal}
-            currentAnnualFeeRevenue={totals.currentAnnualFeeRevenue}
-            currentDcpRevenue={totals.currentDcpRevenue}
-            currentAdmissionFeeRevenue={totals.currentNewAdmissionFeeRevenue}
-            fullCapacityRevenue={totals.fullCapacityRevenue}
-          />
+          {!isHeaderCollapsed && (
+            <HeaderMetrics 
+              schoolRevenue={totals.schoolRevenue} 
+              hostelRevenue={totals.hostelRevenue} 
+              totalStudents={totals.schoolStudents} 
+              projectedStudents={totals.projectedSchoolStudents} 
+              hostelStudents={totals.hostelStudents} 
+              annualFeeRevenue={totals.annualFeeRevenue} 
+              dcpRevenue={totals.dcpRevenue} 
+              grandTotalRevenue={totals.grandTotalRevenue} 
+              newAdmissionFeeRevenue={totals.newAdmissionFeeRevenue} 
+              currentDiscountAmount={totals.currentDiscountAmount} 
+              projectedDiscountAmount={totals.projectedDiscountAmount} 
+              projectedDiscountPercent={totals.projectedDiscountPercent}
+              currentSchoolRevenue={totals.currentSchoolRevenue}
+              currentHostelRevenue={totals.currentHostelRevenue}
+              currentGrandTotal={totals.currentGrandTotal}
+              currentAnnualFeeRevenue={totals.currentAnnualFeeRevenue}
+              currentDcpRevenue={totals.currentDcpRevenue}
+              currentAdmissionFeeRevenue={totals.currentNewAdmissionFeeRevenue}
+              fullCapacityRevenue={totals.fullCapacityRevenue}
+            />
+          )}
+          {/* Collapse/Expand Button */}
+          <button
+            onClick={() => setIsHeaderCollapsed(prev => !prev)}
+            className="absolute bottom-1 right-4 p-1 rounded-full bg-surface-1 border border-border shadow-sm hover:bg-accent transition-colors"
+            title={isHeaderCollapsed ? 'Expand metrics' : 'Collapse metrics'}
+          >
+            {isHeaderCollapsed ? <ChevronDown className="w-4 h-4 text-muted-foreground" /> : <ChevronUp className="w-4 h-4 text-muted-foreground" />}
+          </button>
         </div>
       </header>
 
       {/* Main Content */}
-      <main className="max-w-[95vw] mx-auto px-4 py-6">
+      <main className="max-w-[85vw] mx-auto px-4 py-6">
         <Tabs defaultValue="dashboard" className="w-full">
           <TabsList className="bg-surface-1 border border-border mb-6 flex-wrap">
             <TabsTrigger value="dashboard" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
