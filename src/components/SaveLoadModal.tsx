@@ -68,26 +68,31 @@ export function SaveLoadModal({
       return;
     }
 
-    const now = new Date().toISOString();
-    const newSimulation: SavedSimulation = {
-      id: crypto.randomUUID(),
-      name: saveName.trim(),
-      description: saveDescription.trim() || null,
-      created_at: now,
-      updated_at: now,
-      campuses: JSON.parse(JSON.stringify(campuses)),
-      hostels: JSON.parse(JSON.stringify(hostels)),
-      global_settings: JSON.parse(JSON.stringify(globalSettings)),
-    };
+    try {
+      const now = new Date().toISOString();
+      const newSimulation: SavedSimulation = {
+        id: crypto.randomUUID(),
+        name: saveName.trim(),
+        description: saveDescription.trim() || null,
+        created_at: now,
+        updated_at: now,
+        campuses: JSON.parse(JSON.stringify(campuses)),
+        hostels: JSON.parse(JSON.stringify(hostels)),
+        global_settings: JSON.parse(JSON.stringify(globalSettings)),
+      };
 
-    const simulations = getSimulations();
-    simulations.unshift(newSimulation);
-    saveSimulations(simulations);
+      const simulations = getSimulations();
+      simulations.unshift(newSimulation);
+      saveSimulations(simulations);
 
-    toast.success('Simulation saved successfully!');
-    setSaveName('');
-    setSaveDescription('');
-    setSavedSimulations(simulations);
+      toast.success('Simulation saved successfully!');
+      setSaveName('');
+      setSaveDescription('');
+      setSavedSimulations(simulations);
+    } catch (error) {
+      console.error('Failed to save simulation:', error);
+      toast.error('Failed to save simulation. Please try again.');
+    }
   };
 
   const handleLoad = (id: string) => {

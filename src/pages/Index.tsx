@@ -136,38 +136,6 @@ const Index = () => {
 
           {/* Dashboard Tab */}
           <TabsContent value="dashboard" className="animate-fade-in space-y-6">
-            {/* Global Controls */}
-            <div className="campus-card p-5">
-              <h2 className="text-sm font-medium text-foreground mb-4">Master Control Panel</h2>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div>
-                  <div className="flex justify-between mb-2">
-                    <label className="text-xs text-muted-foreground uppercase tracking-wide">Global Fee Hike</label>
-                    <span className="font-mono text-sm text-primary">+{globalSettings.globalFeeHike}%</span>
-                  </div>
-                  <Slider value={[globalSettings.globalFeeHike]} onValueChange={([value]) => updateGlobalSettings({
-                  globalFeeHike: value
-                })} min={0} max={50} step={1} />
-                </div>
-                <div>
-                  <div className="flex justify-between mb-2">
-                    <label className="text-xs text-muted-foreground uppercase tracking-wide">Global Student Growth</label>
-                    <span className="font-mono text-sm text-primary">{globalSettings.globalStudentGrowth > 0 ? '+' : ''}{globalSettings.globalStudentGrowth}%</span>
-                  </div>
-                  <Slider value={[globalSettings.globalStudentGrowth]} onValueChange={([value]) => updateGlobalSettings({
-                  globalStudentGrowth: value
-                })} min={-20} max={50} step={1} />
-                </div>
-                <div>
-                  <div className="flex justify-between mb-2">
-                    <label className="text-xs text-muted-foreground uppercase tracking-wide">Global Discount (All Campuses)</label>
-                    <span className="font-mono text-sm text-warning">{globalSettings.globalDiscount}%</span>
-                  </div>
-                  <Slider value={[globalSettings.globalDiscount]} onValueChange={([value]) => applyGlobalDiscount(value)} min={0} max={40} step={1} />
-                </div>
-              </div>
-            </div>
-
             {/* Charts Row */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div className="campus-card p-5">
