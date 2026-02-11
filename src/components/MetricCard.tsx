@@ -116,6 +116,7 @@ interface HeaderMetricsProps {
   currentAnnualFeeRevenue?: number;
   currentDcpRevenue?: number;
   currentAdmissionFeeRevenue?: number;
+  fullCapacityRevenue?: number;
 }
 
 export function HeaderMetrics({
@@ -137,6 +138,7 @@ export function HeaderMetrics({
   currentAnnualFeeRevenue = 0,
   currentDcpRevenue = 0,
   currentAdmissionFeeRevenue = 0,
+  fullCapacityRevenue = 0,
 }: HeaderMetricsProps) {
   const studentChange = projectedStudents - totalStudents;
   const studentChangePercent = totalStudents > 0 ? (studentChange / totalStudents) * 100 : 0;
@@ -154,7 +156,7 @@ export function HeaderMetrics({
   return (
     <div className="space-y-2">
       {/* Main Revenue Row */}
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2">
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2">
         <MetricCard
           title="Grand Total"
           value={formatCurrency(grandTotalRevenue)}
@@ -162,6 +164,12 @@ export function HeaderMetrics({
           subtitle="Tuition + Annual + DCP + Admission"
           changePercent={grandTotalChangePercent}
           variant="positive"
+        />
+        <MetricCard
+          title="Full Capacity Revenue"
+          value={formatCurrency(fullCapacityRevenue)}
+          subtitle="If all seats filled at new adm. rate"
+          variant="warning"
         />
         <MetricCard
           title="School Revenue"
