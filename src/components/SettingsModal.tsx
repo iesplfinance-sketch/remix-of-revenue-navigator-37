@@ -235,7 +235,7 @@ export function SettingsModal({
                         <TabsContent value="capacity" className="mt-0 pb-4">
                           <div className="space-y-6">
                             <div className="campus-card p-4">
-                              <h4 className="text-sm font-medium text-foreground mb-4">Maximum Student Capacity</h4>
+                              <h4 className="text-sm font-medium text-foreground mb-4">Overall Campus Capacity</h4>
                               <div className="flex items-center gap-4">
                                 <label className="text-xs text-muted-foreground uppercase tracking-wide min-w-32">
                                   Max Strength:
@@ -248,18 +248,61 @@ export function SettingsModal({
                                 />
                                 <span className="text-xs text-muted-foreground">students</span>
                               </div>
-                              <p className="text-xs text-muted-foreground mt-3">
-                                This sets the maximum capacity for this campus. If projected students exceed this, a warning will be shown.
-                              </p>
                             </div>
 
                             <div className="campus-card p-4">
-                              <h4 className="text-sm font-medium text-foreground mb-2">Current Statistics</h4>
+                              <h4 className="text-sm font-medium text-foreground mb-4">Per-Class Capacity</h4>
+                              <p className="text-xs text-muted-foreground mb-3">
+                                Set max capacity per class. Over-capacity classes are highlighted in the campus table.
+                              </p>
+                              <table className="data-grid w-full text-xs">
+                                <thead>
+                                  <tr>
+                                    <th>Class</th>
+                                    <th className="text-right">Forecasted Students</th>
+                                    <th className="text-right">Max Capacity</th>
+                                    <th className="text-right">Status</th>
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                  {campus.classes.filter(c => c.renewalCount > 0 || c.newAdmissionCount > 0 || c.renewalFee > 0).map((cls) => {
+                                    const classIndex = campus.classes.findIndex(c => c.className === cls.className);
+                                    const forecasted = (cls.forecastedRenewalCount ?? cls.renewalCount) + (cls.forecastedNewCount ?? cls.newAdmissionCount);
+                                    const cap = cls.maxCapacity ?? 0;
+                                    const isOver = cap > 0 && forecasted > cap;
+                                    return (
+                                      <tr key={cls.className} className={isOver ? 'bg-destructive/10' : ''}>
+                                        <td className="font-medium">{cls.className}</td>
+                                        <td className="text-right font-mono">{forecasted}</td>
+                                        <td className="text-right">
+                                          <Input
+                                            type="number"
+                                            value={cls.maxCapacity ?? ''}
+                                            placeholder="—"
+                                            onChange={(e) => {
+                                              const val = e.target.value === '' ? undefined : parseInt(e.target.value) || 0;
+                                              onUpdateCampusClass(campus.id, classIndex, { maxCapacity: val as any });
+                                            }}
+                                            className="w-20 h-7 text-xs font-mono bg-surface-2 border-border text-right"
+                                          />
+                                        </td>
+                                        <td className={`text-right font-mono ${isOver ? 'text-destructive font-semibold' : 'text-muted-foreground'}`}>
+                                          {cap > 0 ? (isOver ? `Over by ${forecasted - cap}` : `${cap - forecasted} free`) : '—'}
+                                        </td>
+                                      </tr>
+                                    );
+                                  })}
+                                </tbody>
+                              </table>
+                            </div>
+
+                            <div className="campus-card p-4">
+                              <h4 className="text-sm font-medium text-foreground mb-2">Summary</h4>
                               <div className="grid grid-cols-2 gap-4 text-sm">
                                 <div>
-                                  <span className="text-muted-foreground">Current Students:</span>
+                                  <span className="text-muted-foreground">Forecasted Students:</span>
                                   <span className="ml-2 font-mono text-foreground">
-                                    {campus.classes.reduce((sum, c) => sum + c.renewalCount + c.newAdmissionCount, 0)}
+                                    {campus.classes.reduce((sum, c) => sum + (c.forecastedRenewalCount ?? c.renewalCount) + (c.forecastedNewCount ?? c.newAdmissionCount), 0)}
                                   </span>
                                 </div>
                                 <div>
@@ -269,13 +312,13 @@ export function SettingsModal({
                                 <div>
                                   <span className="text-muted-foreground">Utilization:</span>
                                   <span className="ml-2 font-mono text-foreground">
-                                    {((campus.classes.reduce((sum, c) => sum + c.renewalCount + c.newAdmissionCount, 0) / campus.maxCapacity) * 100).toFixed(1)}%
+                                    {((campus.classes.reduce((sum, c) => sum + (c.forecastedRenewalCount ?? c.renewalCount) + (c.forecastedNewCount ?? c.newAdmissionCount), 0) / campus.maxCapacity) * 100).toFixed(1)}%
                                   </span>
                                 </div>
                                 <div>
                                   <span className="text-muted-foreground">Available Seats:</span>
                                   <span className="ml-2 font-mono text-positive">
-                                    {campus.maxCapacity - campus.classes.reduce((sum, c) => sum + c.renewalCount + c.newAdmissionCount, 0)}
+                                    {campus.maxCapacity - campus.classes.reduce((sum, c) => sum + (c.forecastedRenewalCount ?? c.renewalCount) + (c.forecastedNewCount ?? c.newAdmissionCount), 0)}
                                   </span>
                                 </div>
                               </div>
