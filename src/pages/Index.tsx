@@ -49,7 +49,7 @@ const Index = () => {
   return <div className="min-h-screen bg-surface-0">
       {/* Sticky Header */}
       <header className="sticky-header px-4 py-4">
-        <div className="max-w-7xl mx-auto">
+        <div className="max-w-[95vw] mx-auto">
           <div className="flex items-center justify-between mb-4">
             <div>
               <h1 className="text-xl font-semibold text-foreground">Pak Turk Maarif Schools</h1>
@@ -114,7 +114,7 @@ const Index = () => {
       </header>
 
       {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 py-6">
+      <main className="max-w-[95vw] mx-auto px-4 py-6">
         <Tabs defaultValue="dashboard" className="w-full">
           <TabsList className="bg-surface-1 border border-border mb-6 flex-wrap">
             <TabsTrigger value="dashboard" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
