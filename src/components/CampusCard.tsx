@@ -276,15 +276,18 @@ export function CampusCard({ campus, calculation, globalSettings, onUpdate, onUp
               const effectiveRenewalGrowth = (campus.renewalGrowth + globalSettings.globalStudentGrowth) / 100;
               const effectiveNewGrowth = (campus.newStudentGrowth + globalSettings.globalStudentGrowth) / 100;
 
-              let currentTotalNew = 0, currentTotalRenewal = 0, currentTotalRevenue = 0;
-              let projectedTotalNew = 0, projectedTotalRenewal = 0, projectedTotalRevenue = 0;
+              let currentTotalNew = 0, currentTotalRenewal = 0;
+              let currentNewRevenue = 0, currentRenewalRevenue = 0;
+              let projectedTotalNew = 0, projectedTotalRenewal = 0;
+              let projectedNewRevenue = 0, projectedRenewalRevenue = 0;
+              let totalFullCapRevenue = 0;
 
               campus.classes.forEach(cls => {
                 currentTotalNew += cls.newAdmissionCount;
                 currentTotalRenewal += cls.renewalCount;
-                currentTotalRevenue += (cls.renewalCount * cls.renewalFee + cls.newAdmissionCount * cls.newAdmissionFee);
+                currentNewRevenue += cls.newAdmissionCount * cls.newAdmissionFee;
+                currentRenewalRevenue += cls.renewalCount * cls.renewalFee;
                 
-                // Use direct forecast if provided, otherwise calculate based on growth rate
                 const projRenewal = cls.forecastedRenewalCount !== undefined 
                   ? cls.forecastedRenewalCount 
                   : Math.round(cls.renewalCount * (1 + effectiveRenewalGrowth));
@@ -296,11 +299,21 @@ export function CampusCard({ campus, calculation, globalSettings, onUpdate, onUp
                 
                 projectedTotalRenewal += projRenewal;
                 projectedTotalNew += projNew;
-                projectedTotalRevenue += (projRenewal * hikedRenewalFee + projNew * hikedNewFee);
+                projectedNewRevenue += projNew * hikedNewFee;
+                projectedRenewalRevenue += projRenewal * hikedRenewalFee;
+
+                // Full capacity revenue per class
+                const activeClassCount = campus.classes.filter(c => c.renewalFee > 0 || c.newAdmissionFee > 0).length;
+                const defaultClassCapacity = activeClassCount > 0 ? Math.round(campus.maxCapacity / activeClassCount) : 0;
+                const classCapacity = cls.maxCapacity ?? defaultClassCapacity;
+                const forecastedTotal = projRenewal + projNew;
+                const unutilized = Math.max(0, classCapacity - forecastedTotal);
+                totalFullCapRevenue += (projRenewal * hikedRenewalFee + projNew * hikedNewFee + unutilized * hikedNewFee);
               });
 
-              const currentNetRevenue = currentTotalRevenue * (1 - discountRate);
-              const projectedNetRevenue = projectedTotalRevenue * (1 - discountRate);
+              totalFullCapRevenue *= (1 - discountRate);
+              const currentNetRevenue = (currentNewRevenue + currentRenewalRevenue) * (1 - discountRate);
+              const projectedNetRevenue = (projectedNewRevenue + projectedRenewalRevenue) * (1 - discountRate);
               const revenueDelta = projectedNetRevenue - currentNetRevenue;
 
               return (
@@ -315,8 +328,8 @@ export function CampusCard({ campus, calculation, globalSettings, onUpdate, onUp
                       <tr>
                         <th rowSpan={2} className="align-bottom">{campus.shortName || campus.name}</th>
                         <th rowSpan={2} className="text-center align-bottom">Cap</th>
-                        <th colSpan={5} className="text-center bg-muted/30 border-b border-border">Current</th>
-                        <th colSpan={5} className="text-center bg-primary/10 border-b border-border">Forecasted</th>
+                        <th colSpan={6} className="text-center bg-muted/30 border-b border-border">Current</th>
+                        <th colSpan={6} className="text-center bg-primary/10 border-b border-border">Forecasted</th>
                         <th rowSpan={2} className="text-right align-bottom">Delta</th>
                         <th rowSpan={2} className="text-right align-bottom">Full Cap Rev</th>
                       </tr>
@@ -340,20 +353,20 @@ export function CampusCard({ campus, calculation, globalSettings, onUpdate, onUp
                         <th className="text-center font-mono py-2">{formatNumber(campus.maxCapacity)}</th>
                         <th className="text-right font-mono bg-muted/30 py-2">{formatNumber(currentTotalNew)}</th>
                         <th className="text-right font-mono bg-muted/30 py-2">-</th>
-                        <th className="text-right font-mono bg-muted/30 py-2">{formatCurrency(currentTotalNew * (campus.classes[0]?.newAdmissionFee || 0))}</th>
+                        <th className="text-right font-mono bg-muted/30 py-2">{formatCurrency(currentNewRevenue)}</th>
                         <th className="text-right font-mono bg-muted/30 py-2">{formatNumber(currentTotalRenewal)}</th>
                         <th className="text-right font-mono bg-muted/30 py-2">-</th>
-                        <th className="text-right font-mono bg-muted/30 py-2">{formatCurrency(currentNetRevenue)}</th>
+                        <th className="text-right font-mono bg-muted/30 py-2">{formatCurrency(currentRenewalRevenue)}</th>
                         <th className="text-right font-mono bg-primary/10 py-2">{formatNumber(projectedTotalNew)}</th>
                         <th className="text-right font-mono bg-primary/10 py-2">-</th>
-                        <th className="text-right font-mono bg-primary/10 py-2">{formatCurrency(projectedTotalNew * (campus.classes[0]?.newAdmissionFee || 0) * (1 + effectiveNewFeeHike))}</th>
+                        <th className="text-right font-mono bg-primary/10 py-2">{formatCurrency(projectedNewRevenue)}</th>
                         <th className="text-right font-mono bg-primary/10 py-2">{formatNumber(projectedTotalRenewal)}</th>
                         <th className="text-right font-mono bg-primary/10 py-2">-</th>
-                        <th className="text-right font-mono bg-primary/10 py-2">{formatCurrency(projectedNetRevenue)}</th>
+                        <th className="text-right font-mono bg-primary/10 py-2">{formatCurrency(projectedRenewalRevenue)}</th>
                         <th className={`text-right font-mono font-bold py-2 ${revenueDelta >= 0 ? 'text-positive' : 'text-negative'}`}>
                           {revenueDelta >= 0 ? '+' : ''}{formatCurrency(revenueDelta)}
                         </th>
-                        <th className="text-right font-mono py-2">-</th>
+                        <th className="text-right font-mono py-2">{formatCurrency(totalFullCapRevenue)}</th>
                       </tr>
                     </thead>
                     <tbody>
