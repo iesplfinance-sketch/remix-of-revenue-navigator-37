@@ -108,6 +108,7 @@ const Index = () => {
             currentAnnualFeeRevenue={totals.currentAnnualFeeRevenue}
             currentDcpRevenue={totals.currentDcpRevenue}
             currentAdmissionFeeRevenue={totals.currentNewAdmissionFeeRevenue}
+            fullCapacityRevenue={totals.fullCapacityRevenue}
           />
         </div>
       </header>

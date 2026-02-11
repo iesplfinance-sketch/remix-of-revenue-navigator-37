@@ -314,9 +314,11 @@ export function CampusCard({ campus, calculation, globalSettings, onUpdate, onUp
                     <thead>
                       <tr>
                         <th rowSpan={2} className="align-bottom">{campus.shortName || campus.name}</th>
+                        <th rowSpan={2} className="text-center align-bottom">Cap</th>
                         <th colSpan={5} className="text-center bg-muted/30 border-b border-border">Current</th>
                         <th colSpan={5} className="text-center bg-primary/10 border-b border-border">Forecasted</th>
                         <th rowSpan={2} className="text-right align-bottom">Delta</th>
+                        <th rowSpan={2} className="text-right align-bottom">Full Cap Rev</th>
                       </tr>
                       <tr>
                         <th className="text-right bg-muted/30">New Adm (A)</th>
@@ -335,6 +337,7 @@ export function CampusCard({ campus, calculation, globalSettings, onUpdate, onUp
                       {/* Summary Row in Header */}
                       <tr className="bg-surface-2 border-b-2 border-primary/30">
                         <th className="text-left font-bold py-2">TOTALS</th>
+                        <th className="text-center font-mono py-2">{formatNumber(campus.maxCapacity)}</th>
                         <th className="text-right font-mono bg-muted/30 py-2">{formatNumber(currentTotalNew)}</th>
                         <th className="text-right font-mono bg-muted/30 py-2">-</th>
                         <th className="text-right font-mono bg-muted/30 py-2">{formatCurrency(currentTotalNew * (campus.classes[0]?.newAdmissionFee || 0))}</th>
@@ -350,6 +353,7 @@ export function CampusCard({ campus, calculation, globalSettings, onUpdate, onUp
                         <th className={`text-right font-mono font-bold py-2 ${revenueDelta >= 0 ? 'text-positive' : 'text-negative'}`}>
                           {revenueDelta >= 0 ? '+' : ''}{formatCurrency(revenueDelta)}
                         </th>
+                        <th className="text-right font-mono py-2">-</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -370,9 +374,32 @@ export function CampusCard({ campus, calculation, globalSettings, onUpdate, onUp
                         const hasDirectNewForecast = classData?.forecastedNewCount !== undefined;
                         const hasDirectRenewalForecast = classData?.forecastedRenewalCount !== undefined;
                         
+                        // Capacity check
+                        const activeClassCount = campus.classes.filter(c => c.renewalFee > 0 || c.newAdmissionFee > 0).length;
+                        const defaultClassCapacity = activeClassCount > 0 ? Math.round(campus.maxCapacity / activeClassCount) : 0;
+                        const classCapacity = classData?.maxCapacity ?? defaultClassCapacity;
+                        const forecastedTotal = cls.projectedNewStudents + cls.projectedRenewalStudents;
+                        const isClassOverCapacity = forecastedTotal > classCapacity;
+                        const unutilized = Math.max(0, classCapacity - forecastedTotal);
+                        
+                        // Full capacity revenue for this class
+                        const fullCapRev = (cls.projectedRenewalStudents * projectedRenewalFee + cls.projectedNewStudents * projectedNewAdmFee + unutilized * projectedNewAdmFee) * (1 - discountRate);
+                        
                         return (
-                          <tr key={cls.className}>
-                            <td className="font-medium">{cls.className}</td>
+                          <tr key={cls.className} className={isClassOverCapacity ? 'bg-destructive/10' : ''}>
+                            <td className={`font-medium ${isClassOverCapacity ? 'text-destructive font-bold' : ''}`}>
+                              {cls.className}
+                              {isClassOverCapacity && <AlertTriangle className="w-3 h-3 inline ml-1 text-destructive" />}
+                            </td>
+                            {/* Capacity */}
+                            <td className={`text-center font-mono ${isClassOverCapacity ? 'text-destructive font-bold' : ''}`}>
+                              {classCapacity}
+                              {isClassOverCapacity && (
+                                <span className="text-[9px] block text-destructive">
+                                  +{forecastedTotal - classCapacity}
+                                </span>
+                              )}
+                            </td>
                             {/* Current Year */}
                             <td className="text-right font-mono bg-muted/20">{cls.currentNewStudents}</td>
                             <td className="text-right font-mono bg-muted/20">{formatNumber(currentNewAdmFee)}</td>
@@ -413,6 +440,8 @@ export function CampusCard({ campus, calculation, globalSettings, onUpdate, onUp
                             <td className={`text-right font-mono font-semibold ${cls.revenueChange >= 0 ? 'text-positive' : 'text-negative'}`}>
                               {cls.revenueChange >= 0 ? '+' : ''}{formatCurrency(cls.revenueChange)}
                             </td>
+                            {/* Full Capacity Revenue */}
+                            <td className="text-right font-mono text-muted-foreground">{formatCurrency(fullCapRev)}</td>
                           </tr>
                         );
                       })}

@@ -10,6 +10,8 @@ export interface ClassData {
   // Optional: Direct forecasted counts (overrides slider-based growth calculation)
   forecastedRenewalCount?: number;
   forecastedNewCount?: number;
+  // Optional: Max capacity per class (used for over-capacity highlighting & full capacity revenue)
+  maxCapacity?: number;
 }
 
 export interface CampusData {

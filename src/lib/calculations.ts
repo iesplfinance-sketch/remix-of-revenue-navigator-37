@@ -79,6 +79,10 @@ export interface TotalCalculation {
   projectedDiscountAmount: number;
   lastYearDiscountPercent: number;
   projectedDiscountPercent: number;
+  // Full capacity revenue
+  fullCapacityRevenue: number;
+  totalMaxCapacity: number;
+  totalUnutilizedSeats: number;
 }
 
 // Calculate revenue for a single campus
@@ -254,9 +258,18 @@ export function calculateTotals(
   let currentSchoolRevenue = 0;
   let currentGrossRevenue = 0;
   let projectedGrossRevenue = 0;
+  let fullCapacityRevenue = 0;
+  let totalMaxCapacity = 0;
+  let totalUnutilizedSeats = 0;
 
   campuses.forEach(campus => {
     const calc = calculateCampusRevenue(campus, globalSettings);
+    const effectiveRenewalFeeHike = (campus.renewalFeeHike + globalSettings.globalFeeHike) / 100;
+    const effectiveNewFeeHike = (campus.newAdmissionFeeHike + globalSettings.globalFeeHike) / 100;
+    const effectiveRenewalGrowth = (campus.renewalGrowth + globalSettings.globalStudentGrowth) / 100;
+    const effectiveNewGrowth = (campus.newStudentGrowth + globalSettings.globalStudentGrowth) / 100;
+    const discountRate = campus.discountRate / 100;
+    
     currentSchoolStudents += calc.currentTotalStudents;
     projectedSchoolStudents += calc.projectedTotalStudents;
     projectedNewStudents += calc.projectedNewStudents;
@@ -265,6 +278,35 @@ export function calculateTotals(
     currentSchoolRevenue += calc.currentNetRevenue;
     currentGrossRevenue += calc.currentGrossRevenue;
     projectedGrossRevenue += calc.projectedGrossRevenue;
+
+    // Full capacity revenue calculation per class
+    const activeClassCount = campus.classes.filter(cls => cls.renewalFee > 0 || cls.newAdmissionFee > 0).length;
+    const defaultClassCapacity = activeClassCount > 0 ? Math.round(campus.maxCapacity / activeClassCount) : 0;
+    
+    campus.classes.forEach(cls => {
+      if (cls.renewalFee === 0 && cls.newAdmissionFee === 0) return; // Skip inactive classes
+      
+      const classCapacity = cls.maxCapacity ?? defaultClassCapacity;
+      totalMaxCapacity += classCapacity;
+      
+      const projRenewal = cls.forecastedRenewalCount !== undefined 
+        ? cls.forecastedRenewalCount 
+        : Math.round(cls.renewalCount * (1 + effectiveRenewalGrowth));
+      const projNew = cls.forecastedNewCount !== undefined 
+        ? cls.forecastedNewCount 
+        : Math.round(cls.newAdmissionCount * (1 + effectiveNewGrowth));
+      
+      const forecastedTotal = projRenewal + projNew;
+      const unutilized = Math.max(0, classCapacity - forecastedTotal);
+      totalUnutilizedSeats += unutilized;
+      
+      const hikedRenewalFee = cls.renewalFee * (1 + effectiveRenewalFeeHike);
+      const hikedNewFee = cls.newAdmissionFee * (1 + effectiveNewFeeHike);
+      
+      // Full capacity = forecasted students at their rates + unutilized seats at new admission rate
+      const classFullCapRevenue = (projRenewal * hikedRenewalFee + projNew * hikedNewFee + unutilized * hikedNewFee) * (1 - discountRate);
+      fullCapacityRevenue += classFullCapRevenue;
+    });
   });
 
   // Calculate discount amounts
@@ -369,6 +411,9 @@ export function calculateTotals(
     projectedDiscountAmount,
     lastYearDiscountPercent,
     projectedDiscountPercent,
+    fullCapacityRevenue,
+    totalMaxCapacity,
+    totalUnutilizedSeats,
   };
 }
 
