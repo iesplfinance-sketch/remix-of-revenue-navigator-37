@@ -259,21 +259,15 @@ export function SettingsModal({
                                 <thead>
                                   <tr>
                                     <th>Class</th>
-                                    <th className="text-right">Forecasted Students</th>
                                     <th className="text-right">Max Capacity</th>
-                                    <th className="text-right">Status</th>
                                   </tr>
                                 </thead>
                                 <tbody>
                                   {campus.classes.filter(c => c.renewalCount > 0 || c.newAdmissionCount > 0 || c.renewalFee > 0).map((cls) => {
                                     const classIndex = campus.classes.findIndex(c => c.className === cls.className);
-                                    const forecasted = (cls.forecastedRenewalCount ?? cls.renewalCount) + (cls.forecastedNewCount ?? cls.newAdmissionCount);
-                                    const cap = cls.maxCapacity ?? 0;
-                                    const isOver = cap > 0 && forecasted > cap;
                                     return (
-                                      <tr key={cls.className} className={isOver ? 'bg-destructive/10' : ''}>
+                                      <tr key={cls.className}>
                                         <td className="font-medium">{cls.className}</td>
-                                        <td className="text-right font-mono">{forecasted}</td>
                                         <td className="text-right">
                                           <Input
                                             type="number"
@@ -283,11 +277,8 @@ export function SettingsModal({
                                               const val = e.target.value === '' ? undefined : parseInt(e.target.value) || 0;
                                               onUpdateCampusClass(campus.id, classIndex, { maxCapacity: val as any });
                                             }}
-                                            className="w-20 h-7 text-xs font-mono bg-surface-2 border-border text-right"
+                                            className="w-24 h-7 text-xs font-mono bg-surface-2 border-border text-right"
                                           />
-                                        </td>
-                                        <td className={`text-right font-mono ${isOver ? 'text-destructive font-semibold' : 'text-muted-foreground'}`}>
-                                          {cap > 0 ? (isOver ? `Over by ${forecasted - cap}` : `${cap - forecasted} free`) : '—'}
                                         </td>
                                       </tr>
                                     );
