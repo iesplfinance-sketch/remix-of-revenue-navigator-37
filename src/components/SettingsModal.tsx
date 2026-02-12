@@ -263,26 +263,30 @@ export function SettingsModal({
                                   </tr>
                                 </thead>
                                 <tbody>
-                                  {campus.classes.filter(c => c.renewalCount > 0 || c.newAdmissionCount > 0 || c.renewalFee > 0).map((cls) => {
-                                    const classIndex = campus.classes.findIndex(c => c.className === cls.className);
-                                    return (
-                                      <tr key={cls.className}>
-                                        <td className="font-medium">{cls.className}</td>
-                                        <td className="text-right">
-                                          <Input
-                                            type="number"
-                                            value={cls.maxCapacity ?? ''}
-                                            placeholder="—"
-                                            onChange={(e) => {
-                                              const val = e.target.value === '' ? undefined : parseInt(e.target.value) || 0;
-                                              onUpdateCampusClass(campus.id, classIndex, { maxCapacity: val as any });
-                                            }}
-                                            className="w-24 h-7 text-xs font-mono bg-surface-2 border-border text-right"
-                                          />
-                                        </td>
-                                      </tr>
-                                    );
-                                  })}
+                                  {(() => {
+                                    const activeClasses = campus.classes.filter(c => c.renewalCount > 0 || c.newAdmissionCount > 0 || c.renewalFee > 0);
+                                    const defaultClassCapacity = activeClasses.length > 0 ? Math.round(campus.maxCapacity / activeClasses.length) : 0;
+                                    return activeClasses.map((cls) => {
+                                      const classIndex = campus.classes.findIndex(c => c.className === cls.className);
+                                      const displayValue = cls.maxCapacity ?? defaultClassCapacity;
+                                      return (
+                                        <tr key={cls.className}>
+                                          <td className="font-medium">{cls.className}</td>
+                                          <td className="text-right">
+                                            <Input
+                                              type="number"
+                                              value={displayValue}
+                                              onChange={(e) => {
+                                                const val = parseInt(e.target.value) || 0;
+                                                onUpdateCampusClass(campus.id, classIndex, { maxCapacity: val });
+                                              }}
+                                              className="w-24 h-7 text-xs font-mono bg-surface-2 border-border text-right"
+                                            />
+                                          </td>
+                                        </tr>
+                                      );
+                                    });
+                                  })()}
                                 </tbody>
                               </table>
                             </div>
