@@ -835,6 +835,44 @@ export const initialCampusData: CampusData[] = [
   },
 ];
 
+// Per-class capacity data from spreadsheet (campus id → array of capacities in CLASS_NAMES order)
+const CAPACITY_MAP: Record<string, number[]> = {
+  'isb-chak-shahzad':       [36, 36, 36, 48, 48, 48, 48, 48, 72, 72, 72, 78, 78, 112, 112, 48, 48, 24, 48, 48, 10, 10],
+  'intl-maarif-h8':         [16, 32, 48, 54, 36, 36, 36, 36, 78, 78, 78, 78, 78, 130, 130, 52, 26, 52, 26, 26, 10, 10],
+  'isb-f11':                [18, 18, 18, 16, 16, 16, 14, 16, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+  'isb-g10':                [28, 24, 32, 54, 54, 44, 44, 44, 44, 36, 36, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+  'lhr-raiwind':            [24, 54, 54, 48, 48, 48, 48, 48, 78, 52, 52, 52, 52, 104, 78, 78, 78, 78, 52, 52, 10, 10],
+  'lhr-asifa-irfan':        [36, 36, 36, 48, 48, 48, 48, 48, 52, 52, 52, 52, 52, 104, 78, 78, 52, 52, 52, 26, 20, 0],
+  'lhr-dream-gardens':      [48, 54, 54, 72, 72, 72, 72, 72, 52, 52, 52, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+  'lhr-islampura':          [46, 64, 80, 64, 72, 72, 72, 72, 48, 48, 24, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+  'lhr-khayaban':           [36, 54, 54, 72, 48, 48, 48, 48, 52, 52, 52, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+  'multan-ali-chowk':       [18, 18, 18, 36, 40, 48, 24, 24, 26, 14, 14, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+  'multan-model-town':      [32, 32, 32, 36, 36, 36, 36, 36, 40, 40, 40, 40, 40, 80, 40, 20, 20, 0, 20, 20, 20, 20],
+  'psh-hayatabad':          [36, 36, 54, 48, 48, 48, 48, 48, 52, 52, 52, 52, 52, 78, 78, 26, 26, 16, 16, 10, 0, 0],
+  'psh-uni-town-girls':     [14, 28, 28, 32, 32, 32, 32, 32, 16, 16, 16, 18, 18, 18, 18, 0, 0, 0, 0, 0, 0, 0],
+  'jamshoro-lumhs':         [32, 32, 32, 38, 44, 44, 38, 38, 44, 44, 44, 40, 40, 40, 34, 0, 0, 0, 0, 0, 0, 0],
+  'hyd-isra':               [36, 36, 36, 40, 40, 48, 48, 48, 40, 40, 48, 48, 48, 48, 48, 0, 0, 0, 0, 0, 0, 0],
+  'khi-gulistan-johar-boys': [36, 18, 36, 40, 20, 20, 20, 20, 44, 22, 22, 22, 22, 44, 22, 0, 0, 0, 0, 0, 0, 0],
+  'khi-gulshan-iqbal-girls': [18, 18, 18, 22, 22, 22, 22, 18, 20, 34, 20, 22, 22, 46, 46, 22, 22, 22, 0, 14, 0, 0],
+  'quetta-boys':            [36, 36, 36, 24, 24, 24, 24, 24, 78, 78, 78, 78, 78, 78, 78, 0, 0, 0, 0, 0, 0, 0],
+  'quetta-girls':           [40, 60, 60, 72, 72, 72, 72, 72, 52, 44, 46, 26, 26, 26, 26, 0, 0, 0, 0, 0, 0, 0],
+  'quetta-jinnah-town':     [40, 60, 60, 60, 60, 60, 60, 60, 40, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+  'khairpur':               [54, 54, 90, 100, 100, 75, 75, 75, 78, 104, 52, 52, 52, 52, 52, 0, 0, 0, 0, 0, 0, 0],
+};
+
+// Apply per-class capacity data to initial campus data
+initialCampusData.forEach(campus => {
+  const caps = CAPACITY_MAP[campus.id];
+  if (caps) {
+    campus.classes.forEach((cls, i) => {
+      const classIdx = CLASS_NAMES.indexOf(cls.className);
+      if (classIdx >= 0 && classIdx < caps.length) {
+        cls.maxCapacity = caps[classIdx];
+      }
+    });
+  }
+});
+
 // Hostel data
 export const initialHostelData: HostelData[] = [
   { id: 'hostel-intl-maarif', name: 'International Maarif H-8 Hostel', campusId: 'intl-maarif-h8', currentOccupancy: 45, maxCapacity: 56, feePerStudent: 375000, lastYearFeePerStudent: 375000 },
